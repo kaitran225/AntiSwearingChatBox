@@ -20,4 +20,45 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
     }
+
+    /// <summary>
+    /// Handle title bar mouse left button down to allow window dragging
+    /// </summary>
+    private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ClickCount == 2)
+        {
+            // Double click to maximize/restore
+            MaximizeButton_Click(sender, e);
+        }
+        else
+        {
+            // Single click to drag
+            DragMove();
+        }
+    }
+
+    /// <summary>
+    /// Handle minimize button click
+    /// </summary>
+    private void MinimizeButton_Click(object sender, RoutedEventArgs e)
+    {
+        WindowState = WindowState.Minimized;
+    }
+
+    /// <summary>
+    /// Handle maximize/restore button click
+    /// </summary>
+    private void MaximizeButton_Click(object sender, RoutedEventArgs e)
+    {
+        WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+    }
+
+    /// <summary>
+    /// Handle close button click
+    /// </summary>
+    private void CloseButton_Click(object sender, RoutedEventArgs e)
+    {
+        Close();
+    }
 }
