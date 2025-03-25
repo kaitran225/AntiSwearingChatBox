@@ -3,7 +3,7 @@
 ## 1. System Architecture
 
 ### 1.1 Technology Stack
-- Frontend: WPF (.NET 7.0) with MVVM architecture
+- Frontend: WPF (.NET 9.0) with MVVM architecture
 - Backend: ASP.NET Core Web API
 - Database: SQL Server
 - Real-time Communication: SignalR
@@ -12,7 +12,6 @@
 - UI Framework: MaterialDesignInXAML
 - Dependency Injection: Microsoft.Extensions.DependencyInjection
 - Logging: Serilog
-- Testing: MSTest
 
 ### 1.2 System Components
 1. WPF Client Application
@@ -29,75 +28,125 @@
 ## 2. Core Features
 
 ### 2.1 User Interface
+- Color System:
+  - Primary Colors:
+    - #A280FF (Bright Purple) - Primary brand color, main buttons, active states
+    - #8F66FF (Royal Purple) - Secondary actions, links, highlights
+    - #7C4CFF (Deep Purple) - Tertiary actions, focus states
+    - #6933FF (Deep Purple) - Special actions, important UI elements
+    
+  - Accent Colors:
+    - #47D068 (Bright Green) - Success states, online status, positive actions
+    - #C7B3FF (Light Purple) - Subtle highlights, secondary information
+    - #F8F5FF (Light Purple/White) - Background in light mode, text in dark mode
+    
+  - Neutral Colors:
+    - #FFFFFF (Pure White) - Pure white backgrounds, high contrast elements
+    - #B3B3B3 (Gray) - Secondary text, disabled states
+    - #616161 (Dark Gray) - Tertiary text, borders in dark mode
+    - #333333 (Very Dark Gray) - Primary text in light mode
+    - #1C1C1C (Almost Black) - Secondary background in dark mode
+    - #191919 (Dark Gray) - Alternative dark backgrounds
+    - #0E0E0E (Black) - Primary background in dark mode
+    
+  - Transparent Colors:
+    - #D9D9D9 15% - Subtle overlays, disabled backgrounds
+    - #FFFFFF 51% - Light overlays, hover states in light mode
+    - #8F66FF 50% - Purple overlays, focus indicators
+    - #8F66FF 12% - Very subtle purple accents
+    - #8F66FF 88% - Strong purple overlays, active states
+
 - Theme Support:
-  - Dark Mode (Cyberpunk Pastel):
-    - Primary Background: #1A1B2E (Deep Navy)
-    - Secondary Background: #2A2B3E (Rich Purple)
-    - Text Color: #E6E6FA (Lavender)
-    - Accent Color: #FF69B4 (Hot Pink)
-    - Secondary Accent: #00FFFF (Cyan)
-    - Error Color: #FF6B6B (Soft Red)
-    - Success Color: #98FB98 (Pale Green)
-    - Neon Glow Effects:
-      - Button Hover: #FF69B4 with 20% opacity glow
-      - Text Highlight: #00FFFF with 15% opacity glow
-      - Border Accents: #FF69B4 with 10% opacity glow
-  - Light Mode (Pastel Cyber):
-    - Primary Background: #F0F8FF (Alice Blue)
-    - Secondary Background: #E6E6FA (Lavender)
-    - Text Color: #2A2B3E (Deep Purple)
-    - Accent Color: #FF69B4 (Hot Pink)
-    - Secondary Accent: #00CED1 (Dark Turquoise)
-    - Error Color: #FF6B6B (Soft Red)
-    - Success Color: #98FB98 (Pale Green)
-    - Neon Glow Effects:
-      - Button Hover: #FF69B4 with 15% opacity glow
-      - Text Highlight: #00CED1 with 10% opacity glow
-      - Border Accents: #FF69B4 with 8% opacity glow
+  - Dark Mode:
+    - Primary Background: #0E0E0E (Black)
+    - Secondary Background: #1C1C1C (Almost Black)
+    - Text Color: #F8F5FF (Light Purple/White)
+    - Accent Colors:
+      - #47D068 (Bright Green)
+      - #A280FF (Bright Purple)
+      - #8F66FF (Royal Purple)
+      - #7C4CFF (Deep Purple)
+    - Status Colors:
+      - Online: #47D068 (Bright Green)
+      - Error: #FF4D4D (Red)
+      - Success: #47D068 (Bright Green)
+    - Subtle Effects:
+      - Button Hover: rgba(162, 128, 255, 0.1)
+      - Text Highlight: rgba(143, 102, 255, 0.05)
+      - Border Accents: rgba(124, 76, 255, 0.1)
+      - Overlays: rgba(217, 217, 217, 0.15)
+      - Focus States: rgba(143, 102, 255, 0.88)
+  
+  - Light Mode:
+    - Primary Background: #F8F5FF (Light Purple/White)
+    - Secondary Background: #FFFFFF (Pure White)
+    - Text Color: #333333 (Very Dark Gray)
+    - Accent Colors:
+      - #47D068 (Bright Green)
+      - #A280FF (Bright Purple)
+      - #8F66FF (Royal Purple)
+      - #7C4CFF (Deep Purple)
+    - Status Colors:
+      - Online: #47D068 (Bright Green)
+      - Error: #FF4D4D (Red)
+      - Success: #47D068 (Bright Green)
+    - Subtle Effects:
+      - Button Hover: rgba(143, 102, 255, 0.12)
+      - Text Highlight: rgba(143, 102, 255, 0.5)
+      - Border Accents: rgba(143, 102, 255, 0.88)
+      - Overlays: rgba(255, 255, 255, 0.51)
+      - Focus States: rgba(143, 102, 255, 0.88)
+
 - Responsive Design:
   - Minimum Window Size: 800x600
   - Adaptive Layout
   - Grid-based UI
 - Custom Controls:
   - Modern Chat Bubbles
-  - Animated Loading Indicators
-  - Custom Buttons
+  - Loading Indicators
+  - Material Design Buttons
   - Custom TextBoxes
   - Custom ScrollBars
 - UI Elements:
   - Chat Bubbles:
-    - User Messages: Gradient from #FF69B4 to #FFB6C1 (Light Pink)
-    - Other Messages: Gradient from #00FFFF to #00CED1 (Cyan)
-    - Message Time: #E6E6FA (Lavender) in dark mode, #2A2B3E (Deep Purple) in light mode
+    - User Messages: #A280FF (Bright Purple) with #FFFFFF text
+    - Other Messages: #F8F5FF (Light Purple/White) with #333333 text
+    - System Messages: #7C4CFF (Deep Purple) with #FFFFFF text
+    - Message Time: #B3B3B3 (Gray)
+    - Hover State: rgba(143, 102, 255, 0.12)
   - Buttons:
-    - Primary: #FF69B4 (Hot Pink) with neon glow
-    - Secondary: #00FFFF (Cyan) with neon glow
-    - Disabled: #808080 (Gray) with reduced opacity
+    - Primary: #8F66FF (Royal Purple)
+    - Secondary: #7C4CFF (Deep Purple)
+    - Disabled: #616161 (Dark Gray)
+    - Hover: rgba(143, 102, 255, 0.88)
+    - Focus Ring: rgba(143, 102, 255, 0.5)
   - Input Fields:
-    - Background: #2A2B3E (Rich Purple) in dark mode, #F0F8FF (Alice Blue) in light mode
-    - Border: #FF69B4 (Hot Pink) with 2px width
-    - Focus Border: #00FFFF (Cyan) with 2px width and glow
+    - Background: #F8F5FF (Light Purple/White) in light mode, #1C1C1C (Almost Black) in dark mode
+    - Border: #A280FF (Bright Purple)
+    - Focus Border: #8F66FF (Royal Purple)
+    - Placeholder Text: #B3B3B3 (Gray)
+    - Disabled: rgba(217, 217, 217, 0.15)
   - Scrollbars:
-    - Thumb: #FF69B4 (Hot Pink) with 20% opacity
-    - Track: #1A1B2E (Deep Navy) in dark mode, #F0F8FF (Alice Blue) in light mode
+    - Thumb: rgba(162, 128, 255, 0.5)
+    - Track: #F8F5FF (Light Purple/White) in light mode, #0E0E0E (Black) in dark mode
+    - Hover: rgba(143, 102, 255, 0.88)
 - Visual Effects:
-  - Neon Glow: Applied to interactive elements
-  - Gradient Overlays: Subtle gradients for depth
-  - Hover Animations: Smooth color transitions
-  - Loading Spinner: Rotating neon gradient
-  - Message Animations: Fade-in with slight glow
+  - Subtle Shadows: For depth and elevation
+  - Smooth Transitions: For state changes
+  - Loading Spinner: Simple rotating animation
+  - Message Animations: Fade-in effect
 - Typography:
-  - Headers: 'Orbitron' font for cyberpunk feel
-  - Body Text: 'Roboto' for readability
-  - Accent Text: 'Orbitron' for special elements
+  - Headers: 'Segoe UI' for modern look
+  - Body Text: 'Segoe UI' for readability
+  - Accent Text: 'Segoe UI' with different weights
 - Icons:
-  - Line style with neon glow
-  - Cyberpunk-inspired design
-  - Animated state changes
+  - Material Design icons
+  - Clean, minimal style
+  - Consistent with theme
 - Layout:
-  - Grid-based with neon grid lines
-  - Rounded corners (8px radius)
-  - Subtle shadows with neon tint
+  - Grid-based layout
+  - Rounded corners (4px radius)
+  - Subtle shadows
   - Responsive design with minimum 800x600 window size
 
 ### 2.2 User Management
@@ -218,47 +267,72 @@ CREATE TABLE Warnings (
 ## 4. Project Structure
 ```
 Anti-Swearing_Chat_Box/
-├── Anti-Swearing_Chat_Box.sln
-├── Anti-Swearing_Chat_Box/
-│   ├── App.xaml
-│   ├── App.xaml.cs
-│   ├── MainWindow.xaml
-│   ├── MainWindow.xaml.cs
-│   ├── Views/
-│   │   ├── LoginWindow.xaml
-│   │   ├── RegisterWindow.xaml
-│   │   ├── ChatWindow.xaml
-│   │   └── SettingsWindow.xaml
-│   ├── ViewModels/
-│   │   ├── LoginViewModel.cs
-│   │   ├── RegisterViewModel.cs
-│   │   ├── ChatViewModel.cs
-│   │   └── SettingsViewModel.cs
-│   ├── Models/
+├── Anti-Swearing_Chat_Box.Core/           # Core domain and business logic
+│   ├── Models/                            # Domain models
 │   │   ├── User.cs
 │   │   ├── Message.cs
 │   │   ├── ChatThread.cs
 │   │   └── Warning.cs
-│   ├── Services/
+│   ├── Interfaces/                        # Core interfaces
+│   │   ├── IAuthenticationService.cs
+│   │   ├── IChatService.cs
+│   │   ├── IAIService.cs
+│   │   └── INotificationService.cs
+│   └── Constants/                         # Application constants
+│       └── AppConstants.cs
+│
+├── Anti-Swearing_Chat_Box.Services/       # Service implementations
+│   ├── Authentication/                    # Authentication services
 │   │   ├── AuthenticationService.cs
+│   │   └── JwtService.cs
+│   ├── Chat/                              # Chat services
 │   │   ├── ChatService.cs
+│   │   └── SignalRService.cs
+│   └── Notification/                      # Notification services
+│       └── NotificationService.cs
+│
+├── Anti-Swearing_Chat_Box.Repositories/   # Data access layer
+│   ├── Context/                           # Database context
+│   │   └── ApplicationDbContext.cs
+│   ├── Repositories/                      # Repository implementations
+│   │   ├── UserRepository.cs
+│   │   ├── MessageRepository.cs
+│   │   └── ChatThreadRepository.cs
+│   └── Migrations/                        # Database migrations
+│
+├── Anti-Swearing_Chat_Box.AI/            # AI/ML components
+│   ├── Services/                          # AI services
 │   │   ├── AIService.cs
-│   │   └── NotificationService.cs
-│   ├── Helpers/
-│   │   ├── RelayCommand.cs
-│   │   └── ThemeManager.cs
-│   └── Resources/
-│       ├── Styles/
-│       │   ├── ButtonStyles.xaml
-│       │   ├── TextBoxStyles.xaml
-│       │   └── ChatBubbleStyles.xaml
-│       └── Themes/
-│           ├── DarkTheme.xaml
-│           └── LightTheme.xaml
-└── Anti-Swearing_Chat_Box.Tests/
-    ├── ViewModelTests/
-    ├── ServiceTests/
-    └── ModelTests/
+│   │   └── ContentAnalysisService.cs
+│   ├── Models/                            # AI models
+│   │   └── ContentAnalysisModel.cs
+│   └── Utilities/                         # AI utilities
+│       └── TextProcessing.cs
+│
+└── Anti-Swearing_Chat_Box.Presentation/   # WPF UI Layer
+    ├── Views/                             # WPF Views
+    │   ├── MainWindow.xaml
+    │   ├── LoginWindow.xaml
+    │   ├── RegisterWindow.xaml
+    │   ├── ChatWindow.xaml
+    │   └── SettingsWindow.xaml
+    ├── ViewModels/                        # ViewModels
+    │   ├── BaseViewModel.cs
+    │   ├── MainViewModel.cs
+    │   ├── LoginViewModel.cs
+    │   ├── RegisterViewModel.cs
+    │   ├── ChatViewModel.cs
+    │   └── SettingsViewModel.cs
+    ├── Controls/                          # Custom controls
+    │   ├── ChatBubble.xaml
+    │   ├── LoadingSpinner.xaml
+    │   └── CustomButton.xaml
+    ├── Themes/                            # Theme resources
+    │   ├── DarkTheme.xaml
+    │   └── LightTheme.xaml
+    └── Resources/                         # Other resources
+        ├── Styles/
+        └── Icons/
 ```
 
 ## 5. AI Model Specifications
@@ -297,18 +371,4 @@ Anti-Swearing_Chat_Box/
 - Security logs
 - AI model logs
 - Performance metrics
-- Error tracking
-
-## 7. Testing Requirements
-
-### 7.1 Test Types
-- Unit tests
-- Integration tests
-- UI tests
-- Performance tests
-- Security tests
-
-### 7.2 Test Coverage
-- Code coverage: > 80%
-- Critical path coverage: 100%
-- UI component coverage: > 70% 
+- Error tracking 

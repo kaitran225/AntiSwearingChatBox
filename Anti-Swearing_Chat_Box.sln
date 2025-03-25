@@ -1,10 +1,34 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35707.178 d17.12
+VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Anti-Swearing_Chat_Box.Core", "Anti-Swearing_Chat_Box.Core\Anti-Swearing_Chat_Box.Core.csproj", "{A584B765-B817-4AD8-AA3A-9D311813EB08}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Anti-Swearing_Chat_Box.Services", "Anti-Swearing_Chat_Box.Services\Anti-Swearing_Chat_Box.Services.csproj", "{30301E7B-AE34-479E-9F64-F02F6E802970}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Anti-Swearing_Chat_Box.Presentation", "Anti-Swearing_Chat_Box.Presentation\Anti-Swearing_Chat_Box.Presentation.csproj", "{BFA14C84-1C79-4A43-A513-039A972A9690}"
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A584B765-B817-4AD8-AA3A-9D311813EB08}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A584B765-B817-4AD8-AA3A-9D311813EB08}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A584B765-B817-4AD8-AA3A-9D311813EB08}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A584B765-B817-4AD8-AA3A-9D311813EB08}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30301E7B-AE34-479E-9F64-F02F6E802970}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30301E7B-AE34-479E-9F64-F02F6E802970}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30301E7B-AE34-479E-9F64-F02F6E802970}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30301E7B-AE34-479E-9F64-F02F6E802970}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BFA14C84-1C79-4A43-A513-039A972A9690}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BFA14C84-1C79-4A43-A513-039A972A9690}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BFA14C84-1C79-4A43-A513-039A972A9690}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BFA14C84-1C79-4A43-A513-039A972A9690}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
