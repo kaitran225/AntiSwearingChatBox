@@ -14,20 +14,16 @@
                 From="0" To="1" Duration="0:0:0.3"/>
         </Storyboard>
         
-        <LinearGradientBrush x:Key="SentMessageGradient" StartPoint="0,0" EndPoint="1,1">
-            <GradientStop Color="{StaticResource AccentBrightGreen}" Offset="0"/>
-            <GradientStop Color="#35A553" Offset="1"/>
-        </LinearGradientBrush>
+        <!-- Dark pastel matcha green for message bubbles -->
+        <SolidColorBrush x:Key="MatchaGreenBrush" Color="#3A6A47"/>
+        <SolidColorBrush x:Key="MatchaGreenLightBrush" Color="#4D8561"/>
         
-        <LinearGradientBrush x:Key="ReceivedMessageGradient" StartPoint="0,0" EndPoint="1,1">
-            <GradientStop Color="{StaticResource NeutralAlmostBlack}" Offset="0"/>
-            <GradientStop Color="{StaticResource NeutralAltDarkGray}" Offset="1"/>
-        </LinearGradientBrush>
+        <!-- Dark gray for received messages -->
+        <SolidColorBrush x:Key="ReceivedMessageBrush" Color="#252525"/>
     </UserControl.Resources>
     
     <Grid Margin="8,4" x:Name="MainGrid">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -40,36 +36,35 @@
         
         <Border Grid.Row="1"
                 x:Name="MessageBorder"
-                Background="{StaticResource TransparentOverlayBrush}"
-                CornerRadius="16"
+                Background="{StaticResource ReceivedMessageBrush}"
+                CornerRadius="8"
                 Padding="16,12"
-                BorderThickness="1"
-                BorderBrush="{StaticResource NeutralDarkGrayBrush}"
-                materialDesign:ShadowAssist.ShadowDepth="Depth2">
+                BorderThickness="0"
+                materialDesign:ShadowAssist.ShadowDepth="Depth1">
             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
                 
                 <TextBlock x:Name="MessageText"
-                          Grid.Column="0"
+                          Grid.Row="0"
                           TextWrapping="Wrap"
                           Foreground="{StaticResource NeutralWhiteBrush}"
-                          FontSize="14"/>
+                          FontSize="14"
+                          Margin="0,0,0,6"/>
                 
-                <StackPanel Grid.Column="1"
+                <StackPanel Grid.Row="1"
                           Orientation="Horizontal"
-                          Margin="8,0,0,0"
-                          VerticalAlignment="Bottom">
+                          HorizontalAlignment="Right">
                     <TextBlock x:Name="TimeText"
                              Style="{StaticResource MaterialDesignCaptionTextBlock}"
                              Foreground="{StaticResource NeutralGrayBrush}"
-                             FontSize="11"/>
+                             FontSize="10"/>
                     <materialDesign:PackIcon x:Name="StatusIcon"
                                            Kind="CheckAll"
-                                           Height="14"
-                                           Width="14"
+                                           Height="12"
+                                           Width="12"
                                            Margin="4,0,0,0"
                                            Foreground="{StaticResource AccentBrightGreenBrush}"/>
                 </StackPanel>
