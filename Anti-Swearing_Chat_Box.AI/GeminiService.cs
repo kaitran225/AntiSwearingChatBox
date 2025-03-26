@@ -137,18 +137,6 @@ namespace Anti_Swearing_Chat_Box.AI
             return await GenerateJsonResponseAsync(promptTemplate);
         }
 
-        public async Task<string> GenerateModerationInsightsAsync(List<string> flaggedMessages, List<string> userWarnings)
-        {
-            string flaggedMessagesFormatted = string.Join("\n", flaggedMessages);
-            string userWarningsFormatted = string.Join("\n", userWarnings);
-            
-            string promptTemplate = $"Analyze the following set of flagged messages and user warnings to identify trends. " +
-                           $"Return ONLY a JSON object with keys: commonViolations (array), emergingTerms (array), " +
-                           $"moderationEffectiveness (percentage), recommendations (array), and insightSummary (string). " +
-                           $"Flagged messages: \n{flaggedMessagesFormatted}\n\n" +
-                           $"User warnings: \n{userWarningsFormatted}";
-            return await GenerateJsonResponseAsync(promptTemplate);
-        }
         public async Task<string> SuggestAlternativeMessageAsync(string inappropriateMessage)
         {
             string promptTemplate = $"The following message contains inappropriate language or tone. " +
