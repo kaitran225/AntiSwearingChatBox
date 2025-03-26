@@ -1,13 +1,32 @@
+-- Create database if not exists
+IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'AntiSwearingChatBox')
+BEGIN
+    CREATE DATABASE AntiSwearingChatBox;
+END
+GO
+
+USE AntiSwearingChatBox;
+GO
+
 -- Create Users table
 CREATE TABLE Users (
     UserId INT IDENTITY(1,1) PRIMARY KEY,
     Username NVARCHAR(50) NOT NULL UNIQUE,
     Email NVARCHAR(100) NOT NULL UNIQUE,
+    PasswordHash NVARCHAR(256) NOT NULL,
+    VerificationToken NVARCHAR(100) NULL,
+    ResetToken NVARCHAR(100) NULL,
+    Gender NVARCHAR(10) NULL,
+    IsVerified BIT NOT NULL DEFAULT 0,
+    TokenExpiration DATETIME2 NULL,
+    Role NVARCHAR(20) NOT NULL DEFAULT 'User',
     CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
     LastLoginAt DATETIME2,
     TrustScore DECIMAL(3,2) NOT NULL DEFAULT 1.00,
     IsActive BIT NOT NULL DEFAULT 1,
-    CONSTRAINT CHK_TrustScore CHECK (TrustScore >= 0 AND TrustScore <= 1)
+    CONSTRAINT CHK_TrustScore CHECK (TrustScore >= 0 AND TrustScore <= 1),
+    CONSTRAINT CHK_Gender CHECK (Gender IN ('Male', 'Female', 'Other', NULL)),
+    CONSTRAINT CHK_Role CHECK (Role IN ('Admin', 'Moderator', 'User'))
 );
 
 -- Create Threads table
@@ -55,14 +74,17 @@ CREATE TABLE MessageHistory (
 CREATE TABLE UserWarnings (
     WarningId INT IDENTITY(1,1) PRIMARY KEY,
     UserId INT NOT NULL,
+    ThreadId INT NOT NULL,
     WarningMessage NVARCHAR(500) NOT NULL,
     CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
-    CONSTRAINT FK_UserWarnings_Users FOREIGN KEY (UserId) REFERENCES Users(UserId)
+    CONSTRAINT FK_UserWarnings_Users FOREIGN KEY (UserId) REFERENCES Users(UserId),
+    CONSTRAINT FK_UserWarnings_Threads FOREIGN KEY (ThreadId) REFERENCES Threads(ThreadId)
 );
 
 -- Create indexes for better performance
 CREATE INDEX IX_MessageHistory_ThreadId ON MessageHistory(ThreadId);
 CREATE INDEX IX_MessageHistory_UserId ON MessageHistory(UserId);
 CREATE INDEX IX_UserWarnings_UserId ON UserWarnings(UserId);
+CREATE INDEX IX_UserWarnings_ThreadId ON UserWarnings(ThreadId);
 CREATE INDEX IX_ThreadParticipants_UserId ON ThreadParticipants(UserId);
 CREATE INDEX IX_ThreadParticipants_ThreadId ON ThreadParticipants(ThreadId); 
