@@ -1,0 +1,55 @@
+{
+  "Moderation": {
+    "DefaultLanguage": "English",
+    "Sensitivity": "Medium",
+    "AlwaysModerateLanguages": ["English", "Spanish", "French", "Vietnamese", "German"],
+    "FilteringRules": [
+      {
+        "RuleType": "ProfanityFilter",
+        "Enabled": true,
+        "SensitivityLevel": 0.7,
+        "AllowedExceptions": ["hell", "damn", "crap"],
+        "AlwaysFilterTerms": ["n-word", "f-word"]
+      },
+      {
+        "RuleType": "ToxicityFilter",
+        "Enabled": true,
+        "SensitivityLevel": 0.8,
+        "DetectHateSpeech": true,
+        "DetectThreats": true,
+        "DetectSexualContent": true
+      },
+      {
+        "RuleType": "ContextAwareFilter",
+        "Enabled": true,
+        "ConsiderConversationHistory": true,
+        "DetectSarcasm": true,
+        "DetectHumor": true
+      }
+    ],
+    "ResponseOptions": {
+      "IncludeExplanations": true,
+      "StrictJsonFormat": true,
+      "PreserveOriginalText": true,
+      "ShowConfidenceScores": false,
+      "AlwaysShowCulturalContext": true
+    },
+    "AIInstructions": {
+      "PromptPrefix": "IMPORTANT INSTRUCTIONS: ",
+      "Rules": [
+        "Do NOT modify or change the original text unless it contains profanity or inappropriate language.",
+        "If the original text is in a non-English language, analyze it in its original language.",
+        "Do NOT invent profanity that isn't in the original text.",
+        "Only flag actual profanity and inappropriate language based on cultural context.",
+        "Include the exact original text in your response for verification.",
+        "Respond in valid JSON format that can be parsed programmatically."
+      ]
+    },
+    "WarningThresholds": {
+      "LowWarningCount": 3,
+      "MediumWarningCount": 5,
+      "HighWarningCount": 10,
+      "WarningExpiration": "30.00:00:00"
+    }
+  }
+} 

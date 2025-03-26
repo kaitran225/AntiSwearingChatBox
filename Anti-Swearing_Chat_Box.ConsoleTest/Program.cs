@@ -1,4 +1,5 @@
 ﻿using Anti_Swearing_Chat_Box.AI;
+using Anti_Swearing_Chat_Box.Core.Moderation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using System;
@@ -15,12 +16,13 @@ namespace Anti_Swearing_Chat_Box.ConsoleTest
         {
             Console.WriteLine("=== Anti-Swearing Chat Box API Test Console ===");
             Console.WriteLine("This application tests the Gemini AI integration directly.");
-            Console.WriteLine("All responses are in JSON format.");
+            Console.WriteLine("All responses are in JSON format and use configurable settings.");
             Console.WriteLine();
 
             // Load configuration from appsettings.json
+            string projectDir = Directory.GetCurrentDirectory();
             IConfiguration configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
+                .SetBasePath(projectDir)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .Build();
 
@@ -33,6 +35,15 @@ namespace Anti_Swearing_Chat_Box.ConsoleTest
             
             Console.WriteLine($"Using model: {settings.ModelName}");
             Console.WriteLine($"API Key: {settings.ApiKey.Substring(0, 8)}...[redacted]");
+            
+            // Load and display moderation settings
+            var modelSettings = ModelSettings.Instance;
+            Console.WriteLine("\n=== Moderation Settings Loaded ===");
+            Console.WriteLine($"Default Language: {modelSettings.Moderation.DefaultLanguage}");
+            Console.WriteLine($"Sensitivity Level: {modelSettings.Moderation.Sensitivity}");
+            Console.WriteLine($"Number of Filtering Rules: {modelSettings.Moderation.FilteringRules.Count}");
+            Console.WriteLine($"Preserve Original Text: {modelSettings.Moderation.ResponseOptions.PreserveOriginalText}");
+            Console.WriteLine($"Include Explanations: {modelSettings.Moderation.ResponseOptions.IncludeExplanations}");
             
             var geminiService = new GeminiService(Options.Create(settings));
 
@@ -49,6 +60,7 @@ namespace Anti_Swearing_Chat_Box.ConsoleTest
                 Console.WriteLine("8. AI-Based Alternative Suggestion");
                 Console.WriteLine("9. Language-Specific Moderation");
                 Console.WriteLine("10. Reputation & Trust Score Analysis");
+                Console.WriteLine("11. Display Current Model Settings");
                 Console.WriteLine("0. Exit");
                 Console.Write("\nYour choice: ");
 
@@ -88,6 +100,9 @@ namespace Anti_Swearing_Chat_Box.ConsoleTest
                         case "10":
                             await TestReputationAnalysis(geminiService);
                             break;
+                        case "11":
+                            DisplayModelSettings();
+                            break;
                         case "0":
                             Console.WriteLine("Exiting application...");
                             return;
@@ -103,6 +118,71 @@ namespace Anti_Swearing_Chat_Box.ConsoleTest
                     Console.ReadKey();
                 }
             }
+        }
+
+        // Display detailed model settings
+        static void DisplayModelSettings()
+        {
+            var settings = ModelSettings.Instance;
+            
+            Console.WriteLine("\n=== Detailed Model Settings ===");
+            
+            // Main settings
+            Console.WriteLine($"Default Language: {settings.Moderation.DefaultLanguage}");
+            Console.WriteLine($"Sensitivity: {settings.Moderation.Sensitivity}");
+            Console.WriteLine($"Languages Always Moderated: {string.Join(", ", settings.Moderation.AlwaysModerateLanguages)}");
+            
+            // Display filtering rules
+            Console.WriteLine("\nFiltering Rules:");
+            foreach (var rule in settings.Moderation.FilteringRules)
+            {
+                Console.WriteLine($"  - {rule.RuleType} (Enabled: {rule.Enabled})");
+                Console.WriteLine($"    Sensitivity Level: {rule.SensitivityLevel}");
+                
+                if (rule.RuleType == "ProfanityFilter")
+                {
+                    Console.WriteLine($"    Allowed Exceptions: {string.Join(", ", rule.AllowedExceptions)}");
+                    Console.WriteLine($"    Always Filter: {string.Join(", ", rule.AlwaysFilterTerms)}");
+                }
+                else if (rule.RuleType == "ToxicityFilter")
+                {
+                    Console.WriteLine($"    Detect Hate Speech: {rule.DetectHateSpeech}");
+                    Console.WriteLine($"    Detect Threats: {rule.DetectThreats}");
+                    Console.WriteLine($"    Detect Sexual Content: {rule.DetectSexualContent}");
+                }
+                else if (rule.RuleType == "ContextAwareFilter")
+                {
+                    Console.WriteLine($"    Consider Conversation History: {rule.ConsiderConversationHistory}");
+                    Console.WriteLine($"    Detect Sarcasm: {rule.DetectSarcasm}");
+                    Console.WriteLine($"    Detect Humor: {rule.DetectHumor}");
+                }
+            }
+            
+            // Response options
+            Console.WriteLine("\nResponse Options:");
+            Console.WriteLine($"  Include Explanations: {settings.Moderation.ResponseOptions.IncludeExplanations}");
+            Console.WriteLine($"  Strict JSON Format: {settings.Moderation.ResponseOptions.StrictJsonFormat}");
+            Console.WriteLine($"  Preserve Original Text: {settings.Moderation.ResponseOptions.PreserveOriginalText}");
+            Console.WriteLine($"  Show Confidence Scores: {settings.Moderation.ResponseOptions.ShowConfidenceScores}");
+            Console.WriteLine($"  Always Show Cultural Context: {settings.Moderation.ResponseOptions.AlwaysShowCulturalContext}");
+            
+            // AI Instructions
+            Console.WriteLine("\nAI Instructions:");
+            Console.WriteLine($"  Prompt Prefix: {settings.Moderation.AIInstructions.PromptPrefix}");
+            Console.WriteLine("  Rules:");
+            foreach (var rule in settings.Moderation.AIInstructions.Rules)
+            {
+                Console.WriteLine($"    - {rule}");
+            }
+            
+            // Warning thresholds
+            Console.WriteLine("\nWarning Thresholds:");
+            Console.WriteLine($"  Low Warning Count: {settings.Moderation.WarningThresholds.LowWarningCount}");
+            Console.WriteLine($"  Medium Warning Count: {settings.Moderation.WarningThresholds.MediumWarningCount}");
+            Console.WriteLine($"  High Warning Count: {settings.Moderation.WarningThresholds.HighWarningCount}");
+            Console.WriteLine($"  Warning Expiration: {settings.Moderation.WarningThresholds.WarningExpiration}");
+            
+            WaitForKeyPress();
         }
 
         static async Task TestTextGeneration(GeminiService geminiService)
