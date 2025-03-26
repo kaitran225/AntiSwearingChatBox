@@ -14,4 +14,8 @@
     <PackageReference Include="MaterialDesignColors" Version="2.1.4" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Anti-Swearing_Chat_Box.AI\Anti-Swearing_Chat_Box.AI.csproj" />
+  </ItemGroup>
+
 </Project>

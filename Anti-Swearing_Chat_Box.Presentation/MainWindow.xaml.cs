@@ -9,6 +9,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Anti_Swearing_Chat_Box.AI;
+using Microsoft.Extensions.Options;
 
 namespace Anti_Swearing_Chat_Box.Presentation;
 
@@ -24,9 +26,17 @@ public partial class MainWindow : Window
     private ChatThreadModel CurrentChatThread { get; set; }
     private bool IsInChatMode { get; set; } = true;
     
+    // AI Service for message moderation
+    private readonly GeminiService _geminiService;
+    
     public MainWindow()
     {
         InitializeComponent();
+        
+        // Initialize Gemini AI service
+        var settings = new GeminiSettings();
+        _geminiService = new GeminiService(Options.Create(settings));
+        
         InitializeMockData();
     }
     
@@ -167,6 +177,34 @@ public partial class MainWindow : Window
         
         // Update state
         IsInChatMode = false;
+    }
+    
+    /// <summary>
+    /// Send a message and check for inappropriate content
+    /// </summary>
+    private async void SendMessageButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(MessageTextBox.Text))
+            return;
+        
+        string originalMessage = MessageTextBox.Text;
+        
+        // Use AI to moderate the message
+        string moderatedMessage = await _geminiService.ModerateChatMessageAsync(originalMessage);
+        
+        // Here you would normally add the message to your chat UI
+        // For demo purposes, we'll just show a message box with the result
+        if (originalMessage != moderatedMessage)
+        {
+            MessageBox.Show(
+                $"Original: {originalMessage}\nModerated: {moderatedMessage}",
+                "Message Moderated",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        
+        // Clear the text box
+        MessageTextBox.Clear();
     }
     
     // Model classes for storing data

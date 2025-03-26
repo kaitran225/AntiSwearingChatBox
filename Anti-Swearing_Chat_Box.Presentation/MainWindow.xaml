@@ -556,7 +556,8 @@
                                 <materialDesign:PackIcon Kind="Paperclip" Height="20" Width="20"/>
                             </Button>
                             
-                            <TextBox Grid.Column="1"
+                            <TextBox x:Name="MessageTextBox"
+                                    Grid.Column="1"
                                     materialDesign:HintAssist.Hint="Type a message..."
                                     Style="{StaticResource MaterialDesignTextBox}"
                                     Background="Transparent"
@@ -565,12 +566,14 @@
                                     VerticalAlignment="Center"
                                     Margin="8,0"/>
                             
-                            <Button Grid.Column="2"
+                            <Button x:Name="SendButton"
+                                    Grid.Column="2"
                                     Style="{StaticResource MaterialDesignIconButton}"
                                     Background="{StaticResource MatchaGreenBrush}"
                                     Foreground="{StaticResource NeutralWhiteBrush}"
                                     Width="36" Height="36"
-                                    ToolTip="Send message">
+                                    ToolTip="Send message"
+                                    Click="SendMessageButton_Click">
                                 <materialDesign:PackIcon Kind="Send" Height="20" Width="20"/>
                             </Button>
                         </Grid>
