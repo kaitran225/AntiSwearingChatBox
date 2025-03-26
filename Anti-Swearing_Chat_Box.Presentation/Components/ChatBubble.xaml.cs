@@ -70,7 +70,9 @@ namespace Anti_Swearing_Chat_Box.Presentation.Controls
             if (IsOwnMessage)
             {
                 // Own message styling
-                MessageBorder.Background = FindResource("MatchaGreenBrush") as SolidColorBrush;
+                MessageBorder.Background = FindResource("UserMessageBrush") as SolidColorBrush;
+                MessageBorder.BorderBrush = FindResource("MatchaGreenBrush") as SolidColorBrush;
+                MessageBorder.BorderThickness = new Thickness(2);
                 MainGrid.HorizontalAlignment = HorizontalAlignment.Right;
                 UsernameText.HorizontalAlignment = HorizontalAlignment.Right;
                 StatusIcon.Visibility = Visibility.Visible;
@@ -79,6 +81,7 @@ namespace Anti_Swearing_Chat_Box.Presentation.Controls
             {
                 // Other person's message styling
                 MessageBorder.Background = FindResource("ReceivedMessageBrush") as SolidColorBrush;
+                MessageBorder.BorderThickness = new Thickness(0);
                 MainGrid.HorizontalAlignment = HorizontalAlignment.Left;
                 UsernameText.HorizontalAlignment = HorizontalAlignment.Left;
                 StatusIcon.Visibility = Visibility.Collapsed;

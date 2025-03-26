@@ -20,6 +20,9 @@
         
         <!-- Dark gray for received messages -->
         <SolidColorBrush x:Key="ReceivedMessageBrush" Color="#252525"/>
+        
+        <!-- Black for user's own messages -->
+        <SolidColorBrush x:Key="UserMessageBrush" Color="#1E1E1E"/>
     </UserControl.Resources>
     
     <Grid Margin="8,4" x:Name="MainGrid">
