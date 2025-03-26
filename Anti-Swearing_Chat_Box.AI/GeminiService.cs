@@ -38,7 +38,6 @@ namespace Anti_Swearing_Chat_Box.AI
             }
         }
 
-        // Modified to return JSON
         public async Task<string> GenerateJsonResponseAsync(string prompt)
         {
             try
@@ -54,16 +53,13 @@ namespace Anti_Swearing_Chat_Box.AI
                 var response = await _model.GenerateContent(jsonPrompt, config);
                 string responseText = response.Text ?? "{}";
                 
-                // Ensure response is valid JSON
                 try 
                 {
-                    // Attempt to parse as JSON to validate
                     JsonDocument.Parse(responseText);
                     return responseText;
                 }
                 catch
                 {
-                    // If not valid JSON, create a simple valid JSON object
                     return JsonSerializer.Serialize(new { text = responseText });
                 }
             }
@@ -79,11 +75,9 @@ namespace Anti_Swearing_Chat_Box.AI
                             $"If it does, replace those words with appropriate alternatives or censorship. " +
                             $"Return the result in JSON format with the following structure: {{\"original\": \"original message\", \"moderated\": \"moderated message\", \"wasModified\": true/false}}.";
             
-            // Use RequestProcessor to handle the moderation
             return await RequestProcessor.ProcessModeration(this, message, promptTemplate);
         }
 
-        // 1. Profanity Detection & Warning
         public async Task<string> DetectProfanityAsync(string message)
         {
             string promptTemplate = $"Review the following message and determine if it contains swear words or inappropriate language. " +
@@ -94,11 +88,9 @@ namespace Anti_Swearing_Chat_Box.AI
                             $"\"originalMessage\": \"original message here\"}} " +
                             $"If no inappropriate language is found, set containsProfanity to false and leave the inappropriateTerms array empty.";
             
-            // Use RequestProcessor to handle the moderation
             return await RequestProcessor.ProcessModeration(this, message, promptTemplate);
         }
 
-        // 2. Context-Aware Filtering
         public async Task<string> PerformContextAwareFilteringAsync(string message, string conversationContext)
         {
             string promptTemplate = $"Review the following message in the context of the conversation. " +
@@ -108,11 +100,9 @@ namespace Anti_Swearing_Chat_Box.AI
                            $"\"wasModified\": true/false, \"contextualExplanation\": \"explanation about the context-aware decision\"}} " +
                            $"Conversation context: {conversationContext}";
             
-            // Use RequestProcessor to handle the moderation
             return await RequestProcessor.ProcessModeration(this, message, promptTemplate);
         }
 
-        // 3. Sentiment Analysis & Toxicity Detection
         public async Task<string> AnalyzeSentimentAsync(string message)
         {
             string promptTemplate = $"Analyze the sentiment and toxicity of the following message and return ONLY a JSON response. " +
@@ -120,11 +110,9 @@ namespace Anti_Swearing_Chat_Box.AI
                            $"toxicityLevel (none, low, medium, high), emotions (array of emotions detected), " +
                            $"requiresIntervention (boolean), interventionReason (string), and analysis (brief explanation).";
             
-            // Use RequestProcessor to handle the moderation
             return await RequestProcessor.ProcessModeration(this, message, promptTemplate);
         }
 
-        // 4. AI-Powered Auto-Responses
         public async Task<string> GenerateDeescalationResponseAsync(string harmfulMessage)
         {
             string promptTemplate = $"A user has received the following potentially harmful message. " +
@@ -133,14 +121,10 @@ namespace Anti_Swearing_Chat_Box.AI
                            $"\"deescalationResponse\": \"your response here\", " +
                            $"\"responseStrategy\": \"brief explanation of the strategy used\"}}";
             
-            // Use RequestProcessor to handle the moderation
             return await RequestProcessor.ProcessModeration(this, harmfulMessage, promptTemplate);
         }
-
-        // 5. Message History Review
         public async Task<string> ReviewMessageHistoryAsync(List<string> messageHistory)
         {
-            // This requires special handling since it involves multiple messages
             string messagesFormatted = string.Join("\n", messageHistory);
             
             string promptTemplate = $"Review the following message history and identify any patterns of inappropriate language, " +
@@ -150,14 +134,11 @@ namespace Anti_Swearing_Chat_Box.AI
                            $"\"recommendedActions\": [\"action1\", \"action2\"]}} " +
                            $"Message history: \n{messagesFormatted}";
             
-            // This is a special case, so we use GenerateJsonResponseAsync directly
             return await GenerateJsonResponseAsync(promptTemplate);
         }
 
-        // 6. AI-Powered Moderation Dashboard Data
         public async Task<string> GenerateModerationInsightsAsync(List<string> flaggedMessages, List<string> userWarnings)
         {
-            // This requires special handling since it involves multiple messages
             string flaggedMessagesFormatted = string.Join("\n", flaggedMessages);
             string userWarningsFormatted = string.Join("\n", userWarnings);
             
@@ -166,12 +147,8 @@ namespace Anti_Swearing_Chat_Box.AI
                            $"moderationEffectiveness (percentage), recommendations (array), and insightSummary (string). " +
                            $"Flagged messages: \n{flaggedMessagesFormatted}\n\n" +
                            $"User warnings: \n{userWarningsFormatted}";
-            
-            // This is a special case, so we use GenerateJsonResponseAsync directly
             return await GenerateJsonResponseAsync(promptTemplate);
         }
-
-        // 7. AI-Based Alternative Suggestion
         public async Task<string> SuggestAlternativeMessageAsync(string inappropriateMessage)
         {
             string promptTemplate = $"The following message contains inappropriate language or tone. " +
@@ -180,11 +157,9 @@ namespace Anti_Swearing_Chat_Box.AI
                            $"{{\"originalMessage\": \"original message here\", \"suggestedAlternative\": \"suggested rewrite\", " +
                            $"\"explanation\": \"why this alternative is better\"}}";
             
-            // Use RequestProcessor to handle the moderation
             return await RequestProcessor.ProcessModeration(this, inappropriateMessage, promptTemplate);
         }
 
-        // 8. Language-Specific Moderation
         public async Task<string> ModerateMultiLanguageMessageAsync(string message, string detectedLanguage)
         {
             string promptTemplate = $"Moderate the following message which is in {detectedLanguage}. " +
@@ -194,14 +169,11 @@ namespace Anti_Swearing_Chat_Box.AI
                            $"\"language\": \"{detectedLanguage}\", \"wasModified\": true/false, " +
                            $"\"culturalContext\": \"any important cultural notes\"}}";
             
-            // Use RequestProcessor to handle the moderation with special emphasis on language
             return await RequestProcessor.ProcessModeration(this, message, promptTemplate);
         }
 
-        // 9. Reputation & Trust Score Analysis
         public async Task<string> AnalyzeUserReputationAsync(List<string> userMessages, int priorWarnings)
         {
-            // This requires special handling since it involves multiple messages
             string messagesFormatted = string.Join("\n", userMessages);
             
             string promptTemplate = $"Analyze the following message history from a user with {priorWarnings} prior warnings. " +
@@ -209,12 +181,10 @@ namespace Anti_Swearing_Chat_Box.AI
                            $"trustworthiness (low/medium/high), recommendedActions (array), and analysis (string). " +
                            $"Message history: \n{messagesFormatted}";
             
-            // This is a special case, so we use GenerateJsonResponseAsync directly
             return await GenerateJsonResponseAsync(promptTemplate);
         }
     }
 
-    // Result classes for the new functions - kept for backward compatibility
     public class ProfanityDetectionResult
     {
         public bool ContainsProfanity { get; set; }
