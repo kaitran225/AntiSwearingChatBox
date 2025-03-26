@@ -244,9 +244,9 @@
                             </Grid>
                         </Border>
                         
-                        <!-- Content Area (Chats or Contacts) -->
+                        <!-- Content Area -->
                         <Grid Grid.Row="1">
-                            <!-- Chats List (Default visible) -->
+                            <!-- Chats List -->
                             <ListView x:Name="ChatsListView" 
                                     Background="Transparent"
                                     BorderThickness="0"
@@ -324,7 +324,7 @@
                                 </ListViewItem>
                             </ListView>
                             
-                            <!-- Contacts List (Initially Hidden) -->
+                            <!-- Contacts List -->
                             <ListView x:Name="ContactsListView" 
                                     Background="Transparent"
                                     BorderThickness="0"

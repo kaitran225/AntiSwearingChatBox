@@ -74,12 +74,10 @@ namespace Anti_Swearing_Chat_Box.Core.Moderation
                 var options = new JsonSerializerOptions { WriteIndented = true };
                 await JsonSerializer.SerializeAsync(stream, settings, options);
                 
-                // Update the instance
                 _instance = settings;
             }
             catch (Exception ex)
             {
-                // Log the exception if possible
                 Console.WriteLine($"Error saving settings: {ex.Message}");
             }
         }
@@ -125,7 +123,6 @@ namespace Anti_Swearing_Chat_Box.Core.Moderation
         public bool AlwaysShowCulturalContext { get; set; } = true;
     }
 
-    //Create Instruction so that it will prevent the AI to modify the original text or reply with overkill response
     public class AIInstructions
     {
         public string PromptPrefix { get; set; } = "IMPORTANT INSTRUCTIONS: ";
