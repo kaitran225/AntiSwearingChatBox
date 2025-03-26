@@ -40,7 +40,7 @@
                 CornerRadius="8"
                 Padding="16,12"
                 BorderThickness="0"
-                materialDesign:ShadowAssist.ShadowDepth="Depth1">
+                materialDesign:ElevationAssist.Elevation="Dp1">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>

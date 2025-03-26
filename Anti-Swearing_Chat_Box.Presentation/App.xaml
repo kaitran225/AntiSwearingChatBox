@@ -38,6 +38,11 @@
             <Color x:Key="TransparentSubtlePurple">#1F8F66FF</Color>  <!-- 12% -->
             <Color x:Key="TransparentStrongPurple">#E08F66FF</Color>  <!-- 88% -->
             
+            <!-- Define MatchaGreen colors -->
+            <Color x:Key="MatchaGreen">#3A6A47</Color>
+            <Color x:Key="MatchaGreenLight">#4D8561</Color>
+            <Color x:Key="MatchaGreenDark">#2E5035</Color>
+            
             <!-- Brushes -->
             <SolidColorBrush x:Key="PrimaryBrightPurpleBrush" Color="{StaticResource PrimaryBrightPurple}"/>
             <SolidColorBrush x:Key="PrimaryRoyalPurpleBrush" Color="{StaticResource PrimaryRoyalPurple}"/>
@@ -61,6 +66,10 @@
             <SolidColorBrush x:Key="TransparentPurpleOverlayBrush" Color="{StaticResource TransparentPurpleOverlay}"/>
             <SolidColorBrush x:Key="TransparentSubtlePurpleBrush" Color="{StaticResource TransparentSubtlePurple}"/>
             <SolidColorBrush x:Key="TransparentStrongPurpleBrush" Color="{StaticResource TransparentStrongPurple}"/>
+
+            <SolidColorBrush x:Key="MatchaGreenBrush" Color="{StaticResource MatchaGreen}"/>
+            <SolidColorBrush x:Key="MatchaGreenLightBrush" Color="{StaticResource MatchaGreenLight}"/>
+            <SolidColorBrush x:Key="MatchaGreenDarkBrush" Color="{StaticResource MatchaGreenDark}"/>
 
             <!-- Gradients -->
             <LinearGradientBrush x:Key="PurpleGradient" StartPoint="0,0" EndPoint="1,1">

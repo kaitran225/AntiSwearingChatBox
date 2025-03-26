@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Collections.ObjectModel;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -16,9 +17,77 @@ namespace Anti_Swearing_Chat_Box.Presentation;
 /// </summary>
 public partial class MainWindow : Window
 {
+    // Global variables for storing state
+    private ObservableCollection<ContactModel> Contacts { get; set; } = new ObservableCollection<ContactModel>();
+    private ObservableCollection<ChatThreadModel> ChatThreads { get; set; } = new ObservableCollection<ChatThreadModel>();
+    private ContactModel CurrentContact { get; set; }
+    private ChatThreadModel CurrentChatThread { get; set; }
+    private bool IsInChatMode { get; set; } = true;
+    
     public MainWindow()
     {
         InitializeComponent();
+        InitializeMockData();
+    }
+    
+    /// <summary>
+    /// Initialize mock data for testing
+    /// </summary>
+    private void InitializeMockData()
+    {
+        // Add mock contacts
+        Contacts.Add(new ContactModel
+        {
+            Id = Guid.NewGuid(),
+            DisplayName = "John Doe",
+            Initials = "JD",
+            IsOnline = true,
+            LastSeen = DateTime.Now
+        });
+        
+        Contacts.Add(new ContactModel
+        {
+            Id = Guid.NewGuid(),
+            DisplayName = "Jane Smith",
+            Initials = "JS",
+            IsOnline = false,
+            LastSeen = DateTime.Now.AddHours(-2)
+        });
+        
+        Contacts.Add(new ContactModel
+        {
+            Id = Guid.NewGuid(),
+            DisplayName = "Alex Johnson",
+            Initials = "AJ",
+            IsOnline = true,
+            LastSeen = DateTime.Now
+        });
+        
+        // Add mock chat threads
+        var johnContact = Contacts[0];
+        var janeContact = Contacts[1];
+        
+        ChatThreads.Add(new ChatThreadModel
+        {
+            Id = Guid.NewGuid(),
+            Contact = johnContact,
+            LastMessageText = "Hi there! How are you today?",
+            LastMessageTime = DateTime.Now.AddMinutes(-5),
+            UnreadCount = 0
+        });
+        
+        ChatThreads.Add(new ChatThreadModel
+        {
+            Id = Guid.NewGuid(),
+            Contact = janeContact,
+            LastMessageText = "Let's meet tomorrow",
+            LastMessageTime = DateTime.Now.AddHours(-2),
+            UnreadCount = 1
+        });
+        
+        // Default current chat thread
+        CurrentChatThread = ChatThreads[0];
+        CurrentContact = johnContact;
     }
 
     /// <summary>
@@ -60,5 +129,62 @@ public partial class MainWindow : Window
     private void CloseButton_Click(object sender, RoutedEventArgs e)
     {
         Close();
+    }
+
+    /// <summary>
+    /// Handle switching to Chats tab
+    /// </summary>
+    private void ChatsTabButton_Click(object sender, RoutedEventArgs e)
+    {
+        // Update tab button styles
+        ChatsTabButton.Foreground = FindResource("AccentBrightGreenBrush") as SolidColorBrush;
+        ChatsTabButton.FontWeight = FontWeights.Bold;
+        ContactsTabButton.Foreground = FindResource("NeutralGrayBrush") as SolidColorBrush;
+        ContactsTabButton.FontWeight = FontWeights.Normal;
+        
+        // Show chats list, hide contacts list
+        ChatsListView.Visibility = Visibility.Visible;
+        ContactsListView.Visibility = Visibility.Collapsed;
+        
+        // Update state
+        IsInChatMode = true;
+    }
+    
+    /// <summary>
+    /// Handle switching to Contacts tab
+    /// </summary>
+    private void ContactsTabButton_Click(object sender, RoutedEventArgs e)
+    {
+        // Update tab button styles
+        ContactsTabButton.Foreground = FindResource("AccentBrightGreenBrush") as SolidColorBrush;
+        ContactsTabButton.FontWeight = FontWeights.Bold;
+        ChatsTabButton.Foreground = FindResource("NeutralGrayBrush") as SolidColorBrush;
+        ChatsTabButton.FontWeight = FontWeights.Normal;
+        
+        // Show contacts list, hide chats list
+        ContactsListView.Visibility = Visibility.Visible;
+        ChatsListView.Visibility = Visibility.Collapsed;
+        
+        // Update state
+        IsInChatMode = false;
+    }
+    
+    // Model classes for storing data
+    public class ContactModel
+    {
+        public Guid Id { get; set; }
+        public string DisplayName { get; set; }
+        public string Initials { get; set; }
+        public bool IsOnline { get; set; }
+        public DateTime LastSeen { get; set; }
+    }
+    
+    public class ChatThreadModel
+    {
+        public Guid Id { get; set; }
+        public ContactModel Contact { get; set; }
+        public string LastMessageText { get; set; }
+        public DateTime LastMessageTime { get; set; }
+        public int UnreadCount { get; set; }
     }
 }

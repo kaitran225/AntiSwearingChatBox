@@ -7,7 +7,7 @@
         xmlns:local="clr-namespace:Anti_Swearing_Chat_Box.Presentation"
         xmlns:controls="clr-namespace:Anti_Swearing_Chat_Box.Presentation.Controls"
         mc:Ignorable="d"
-        Title="Anti-Swearing Chat Box" Height="720" Width="1280"
+        Title="Anti-Swearing Chat" Height="720" Width="1280"
         TextElement.Foreground="{StaticResource NeutralWhiteBrush}"
         Background="{StaticResource NeutralBlackBrush}"
         TextElement.FontWeight="Medium"
@@ -18,25 +18,67 @@
         FontFamily="{materialDesign:MaterialDesignFont}">
     
     <Window.Resources>
-        <Style x:Key="ChatListItemStyle" TargetType="ListViewItem">
+        <!-- ListItem Style for Chat and Contact lists -->
+        <Style x:Key="SidebarListItemStyle" TargetType="ListViewItem">
             <Setter Property="Margin" Value="4"/>
             <Setter Property="Padding" Value="12"/>
-            <Setter Property="Background" Value="{StaticResource TransparentOverlayBrush}"/>
+            <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ListViewItem">
                         <Border x:Name="Border" 
                                 Background="{TemplateBinding Background}"
                                 BorderThickness="0"
-                                CornerRadius="12">
+                                CornerRadius="8">
                             <ContentPresenter/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="{StaticResource TransparentLightOverlayBrush}"/>
+                                <Setter Property="Background" Value="#252525"/>
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter Property="Background" Value="{StaticResource TransparentPurpleOverlayBrush}"/>
+                                <Setter Property="Background" Value="#2A2A2A"/>
+                                <Setter Property="BorderThickness" Value="1"/>
+                                <Setter Property="BorderBrush" Value="{StaticResource AccentBrightGreenBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        
+        <!-- Tab Button Style -->
+        <Style x:Key="SidebarTabButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource NeutralGrayBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" 
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                SnapsToDevicePixels="true">
+                            <ContentPresenter x:Name="contentPresenter" 
+                                             Focusable="False" 
+                                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                             Margin="{TemplateBinding Padding}" 
+                                             RecognizesAccessKey="True" 
+                                             SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" 
+                                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter Property="Background" Value="#252525"/>
+                                <Setter Property="BorderBrush" Value="{StaticResource AccentBrightGreenBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="true">
+                                <Setter Property="Background" Value="#252525"/>
+                                <Setter Property="BorderBrush" Value="{StaticResource AccentBrightGreenBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -60,12 +102,13 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 
-                <TextBlock Grid.Column="0" 
-                          Text="ANTI-SWEARING CHAT" 
-                          FontSize="16" 
-                          FontWeight="Bold" 
-                          Margin="16,12" 
-                          Foreground="{StaticResource NeutralWhiteBrush}"/>
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <TextBlock Text="ANTI-SWEARING CHAT" 
+                              FontSize="16" 
+                              FontWeight="Bold" 
+                              Margin="16,12" 
+                              Foreground="{StaticResource NeutralWhiteBrush}"/>
+                </StackPanel>
                 
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
                     <Button Style="{StaticResource MaterialDesignIconButton}" 
@@ -91,59 +134,82 @@
 
             <Grid Grid.Row="1">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="320"/>
+                    <ColumnDefinition Width="280"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Left Panel - Chat List -->
-                <Grid Grid.Column="0" Background="{StaticResource NeutralAlmostBlackBrush}">
+                <!-- Left Panel - Sidebar -->
+                <Grid Grid.Column="0" Background="#111111">
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-
-                    <!-- Header -->
+                    
+                    <!-- User Profile -->
                     <Border Grid.Row="0" 
-                           Background="{StaticResource NeutralAltDarkGrayBrush}" 
-                           Padding="16" 
-                           materialDesign:ShadowAssist.ShadowDepth="Depth2">
+                           Background="Transparent" 
+                           Padding="16,16,16,8">
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             
-                            <StackPanel>
-                                <TextBlock Text="Chats" 
-                                         Style="{StaticResource MaterialDesignHeadline6TextBlock}" 
-                                         Foreground="{StaticResource NeutralWhiteBrush}"/>
-                                <TextBox materialDesign:HintAssist.Hint="Search chats..."
-                                        Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                                        Background="{StaticResource TransparentOverlayBrush}"
-                                        Foreground="{StaticResource NeutralWhiteBrush}"
-                                        BorderBrush="{StaticResource NeutralGrayBrush}"
-                                        Margin="0,8,0,0"/>
-                            </StackPanel>
+                            <Border Width="40" Height="40" 
+                                   Background="{StaticResource MatchaGreenBrush}" 
+                                   CornerRadius="20" 
+                                   materialDesign:ElevationAssist.Elevation="Dp2">
+                                <TextBlock Text="ME" 
+                                         VerticalAlignment="Center" 
+                                         HorizontalAlignment="Center" 
+                                         FontWeight="Bold"/>
+                            </Border>
                             
-                            <Button Grid.Column="1"
-                                    Style="{StaticResource MaterialDesignIconButton}"
-                                    Background="{StaticResource AccentBrightGreenBrush}"
-                                    Foreground="{StaticResource NeutralWhiteBrush}"
-                                    ToolTip="New Chat">
-                                <materialDesign:PackIcon Kind="MessagePlus" Height="24" Width="24"/>
-                            </Button>
+                            <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                                <TextBlock Text="Current User" 
+                                         FontWeight="Bold" 
+                                         Foreground="{StaticResource NeutralWhiteBrush}"/>
+                                <TextBlock Text="Online" 
+                                         FontSize="12"
+                                         Foreground="{StaticResource AccentBrightGreenBrush}"/>
+                            </StackPanel>
                         </Grid>
                     </Border>
-
-                    <!-- Chat List -->
-                    <ListView Grid.Row="1" 
-                             Margin="8" 
-                             Background="Transparent"
-                             BorderThickness="0">
-                        <ListView.ItemContainerStyle>
-                            <Style TargetType="ListViewItem" BasedOn="{StaticResource ChatListItemStyle}"/>
-                        </ListView.ItemContainerStyle>
-                        <ListViewItem>
+                    
+                    <!-- Tabs: Chats/Contacts -->
+                    <Grid Grid.Row="1" Margin="0,4,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <Button x:Name="ChatsTabButton" 
+                               Grid.Column="0" 
+                               Content="Chats" 
+                               Style="{StaticResource SidebarTabButtonStyle}" 
+                               Foreground="{StaticResource AccentBrightGreenBrush}"
+                               FontWeight="Bold"
+                               Click="ChatsTabButton_Click"/>
+                        
+                        <Button x:Name="ContactsTabButton" 
+                               Grid.Column="1" 
+                               Content="Contacts" 
+                               Style="{StaticResource SidebarTabButtonStyle}"
+                               Click="ContactsTabButton_Click"/>
+                    </Grid>
+                    
+                    <!-- Search Bar -->
+                    <Grid Grid.Row="2" Margin="16,16,16,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        
+                        <Border Background="#1A1A1A" 
+                               CornerRadius="8" 
+                               Padding="8,0" 
+                               Margin="0,0,0,16">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
@@ -151,85 +217,236 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 
-                                <Border Width="48" Height="48" 
-                                       Background="{StaticResource AccentBrightGreenBrush}" 
-                                       CornerRadius="24" 
-                                       materialDesign:ShadowAssist.ShadowDepth="Depth1">
-                                    <TextBlock Text="JD" 
-                                             VerticalAlignment="Center" 
-                                             HorizontalAlignment="Center" 
-                                             FontWeight="Bold"/>
-                                </Border>
+                                <materialDesign:PackIcon Kind="Magnify" 
+                                                      Grid.Column="0"
+                                                      VerticalAlignment="Center" 
+                                                      Margin="4,0" 
+                                                      Foreground="{StaticResource NeutralGrayBrush}"/>
                                 
-                                <StackPanel Grid.Column="1" Margin="12,0,0,0">
-                                    <TextBlock Text="John Doe" 
-                                             Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                             FontWeight="Bold" 
-                                             Foreground="{StaticResource NeutralWhiteBrush}"/>
-                                    <TextBlock Text="Last message..." 
-                                             Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                             TextTrimming="CharacterEllipsis" 
-                                             Foreground="{StaticResource NeutralGrayBrush}"/>
-                                </StackPanel>
+                                <TextBox Grid.Column="1"
+                                        materialDesign:HintAssist.Hint="Search..."
+                                        Style="{StaticResource MaterialDesignTextBox}"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Foreground="{StaticResource NeutralWhiteBrush}"
+                                        VerticalAlignment="Center"
+                                        Margin="4,8"/>
                                 
-                                <StackPanel Grid.Column="2" HorizontalAlignment="Right">
-                                    <TextBlock Text="2:30 PM" 
-                                             Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                             Foreground="{StaticResource NeutralGrayBrush}"/>
-                                    <materialDesign:PackIcon Kind="CheckAll" 
-                                                           Height="16" 
-                                                           Width="16"
-                                                           HorizontalAlignment="Right"
-                                                           Foreground="{StaticResource AccentBrightGreenBrush}"/>
-                                </StackPanel>
+                                <Button x:Name="NewChatButton"
+                                       Grid.Column="2"
+                                       Style="{StaticResource MaterialDesignIconButton}"
+                                       Background="Transparent"
+                                       Foreground="{StaticResource AccentBrightGreenBrush}"
+                                       ToolTip="New Chat"
+                                       Width="32" Height="32">
+                                    <materialDesign:PackIcon Kind="Plus" Height="20" Width="20"/>
+                                </Button>
                             </Grid>
-                        </ListViewItem>
-                        <ListViewItem>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                
-                                <Border Width="48" Height="48" 
-                                       Background="{StaticResource PrimaryRoyalPurpleBrush}" 
-                                       CornerRadius="24" 
-                                       materialDesign:ShadowAssist.ShadowDepth="Depth1">
-                                    <TextBlock Text="JS" 
-                                             VerticalAlignment="Center" 
-                                             HorizontalAlignment="Center" 
-                                             FontWeight="Bold"/>
-                                </Border>
-                                
-                                <StackPanel Grid.Column="1" Margin="12,0,0,0">
-                                    <TextBlock Text="Jane Smith" 
-                                             Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                             FontWeight="Bold" 
-                                             Foreground="{StaticResource NeutralWhiteBrush}"/>
-                                    <TextBlock Text="Last message..." 
-                                             Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                             TextTrimming="CharacterEllipsis" 
-                                             Foreground="{StaticResource NeutralGrayBrush}"/>
-                                </StackPanel>
-                                
-                                <StackPanel Grid.Column="2" HorizontalAlignment="Right">
-                                    <TextBlock Text="1:45 PM" 
-                                             Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                             Foreground="{StaticResource NeutralGrayBrush}"/>
-                                    <materialDesign:PackIcon Kind="CheckAll" 
-                                                           Height="16" 
-                                                           Width="16"
-                                                           HorizontalAlignment="Right"
-                                                           Foreground="{StaticResource AccentBrightGreenBrush}"/>
-                                </StackPanel>
-                            </Grid>
-                        </ListViewItem>
-                    </ListView>
+                        </Border>
+                        
+                        <!-- Content Area (Chats or Contacts) -->
+                        <Grid Grid.Row="1">
+                            <!-- Chats List (Default visible) -->
+                            <ListView x:Name="ChatsListView" 
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Visibility="Visible">
+                                <ListView.ItemContainerStyle>
+                                    <Style TargetType="ListViewItem" BasedOn="{StaticResource SidebarListItemStyle}"/>
+                                </ListView.ItemContainerStyle>
+                                <ListViewItem>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <Border Width="40" Height="40" 
+                                               Background="{StaticResource MatchaGreenBrush}" 
+                                               CornerRadius="20" 
+                                               materialDesign:ElevationAssist.Elevation="Dp2">
+                                            <TextBlock Text="JD" 
+                                                     VerticalAlignment="Center" 
+                                                     HorizontalAlignment="Center" 
+                                                     FontWeight="Bold"/>
+                                        </Border>
+                                        
+                                        <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                                            <TextBlock Text="John Doe" 
+                                                     FontWeight="Bold" 
+                                                     Foreground="{StaticResource NeutralWhiteBrush}"/>
+                                            <TextBlock Text="Last message..." 
+                                                     TextTrimming="CharacterEllipsis" 
+                                                     Foreground="{StaticResource NeutralGrayBrush}"/>
+                                        </StackPanel>
+                                        
+                                        <TextBlock Grid.Column="2" 
+                                                 Text="2:30 PM" 
+                                                 Foreground="{StaticResource NeutralGrayBrush}"
+                                                 VerticalAlignment="Top"
+                                                 FontSize="10"/>
+                                    </Grid>
+                                </ListViewItem>
+                                <ListViewItem>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <Border Width="40" Height="40" 
+                                               Background="#4D8561" 
+                                               CornerRadius="20" 
+                                               materialDesign:ElevationAssist.Elevation="Dp2">
+                                            <TextBlock Text="JS" 
+                                                     VerticalAlignment="Center" 
+                                                     HorizontalAlignment="Center" 
+                                                     FontWeight="Bold"/>
+                                        </Border>
+                                        
+                                        <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                                            <TextBlock Text="Jane Smith" 
+                                                     FontWeight="Bold" 
+                                                     Foreground="{StaticResource NeutralWhiteBrush}"/>
+                                            <TextBlock Text="Last message..." 
+                                                     TextTrimming="CharacterEllipsis" 
+                                                     Foreground="{StaticResource NeutralGrayBrush}"/>
+                                        </StackPanel>
+                                        
+                                        <TextBlock Grid.Column="2" 
+                                                 Text="1:45 PM" 
+                                                 Foreground="{StaticResource NeutralGrayBrush}"
+                                                 VerticalAlignment="Top"
+                                                 FontSize="10"/>
+                                    </Grid>
+                                </ListViewItem>
+                            </ListView>
+                            
+                            <!-- Contacts List (Initially Hidden) -->
+                            <ListView x:Name="ContactsListView" 
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Visibility="Collapsed">
+                                <ListView.ItemContainerStyle>
+                                    <Style TargetType="ListViewItem" BasedOn="{StaticResource SidebarListItemStyle}"/>
+                                </ListView.ItemContainerStyle>
+                                <ListViewItem>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <Border Width="40" Height="40" 
+                                               Background="{StaticResource MatchaGreenBrush}" 
+                                               CornerRadius="20" 
+                                               materialDesign:ElevationAssist.Elevation="Dp2">
+                                            <TextBlock Text="JD" 
+                                                     VerticalAlignment="Center" 
+                                                     HorizontalAlignment="Center" 
+                                                     FontWeight="Bold"/>
+                                        </Border>
+                                        
+                                        <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                                            <TextBlock Text="John Doe" 
+                                                     FontWeight="Bold" 
+                                                     Foreground="{StaticResource NeutralWhiteBrush}"/>
+                                            <TextBlock Text="Online" 
+                                                     Foreground="{StaticResource AccentBrightGreenBrush}"
+                                                     FontSize="12"/>
+                                        </StackPanel>
+                                        
+                                        <Button Grid.Column="2"
+                                               Style="{StaticResource MaterialDesignIconButton}"
+                                               Background="Transparent"
+                                               Foreground="{StaticResource AccentBrightGreenBrush}"
+                                               Width="32" Height="32">
+                                            <materialDesign:PackIcon Kind="MessageText" Height="16" Width="16"/>
+                                        </Button>
+                                    </Grid>
+                                </ListViewItem>
+                                <ListViewItem>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <Border Width="40" Height="40" 
+                                               Background="#4D8561" 
+                                               CornerRadius="20" 
+                                               materialDesign:ElevationAssist.Elevation="Dp2">
+                                            <TextBlock Text="JS" 
+                                                     VerticalAlignment="Center" 
+                                                     HorizontalAlignment="Center" 
+                                                     FontWeight="Bold"/>
+                                        </Border>
+                                        
+                                        <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                                            <TextBlock Text="Jane Smith" 
+                                                     FontWeight="Bold" 
+                                                     Foreground="{StaticResource NeutralWhiteBrush}"/>
+                                            <TextBlock Text="Offline" 
+                                                     Foreground="{StaticResource NeutralGrayBrush}"
+                                                     FontSize="12"/>
+                                        </StackPanel>
+                                        
+                                        <Button Grid.Column="2"
+                                               Style="{StaticResource MaterialDesignIconButton}"
+                                               Background="Transparent"
+                                               Foreground="{StaticResource AccentBrightGreenBrush}"
+                                               Width="32" Height="32">
+                                            <materialDesign:PackIcon Kind="MessageText" Height="16" Width="16"/>
+                                        </Button>
+                                    </Grid>
+                                </ListViewItem>
+                                <ListViewItem>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <Border Width="40" Height="40" 
+                                               Background="#2E5035" 
+                                               CornerRadius="20" 
+                                               materialDesign:ElevationAssist.Elevation="Dp2">
+                                            <TextBlock Text="AJ" 
+                                                     VerticalAlignment="Center" 
+                                                     HorizontalAlignment="Center" 
+                                                     FontWeight="Bold"/>
+                                        </Border>
+                                        
+                                        <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                                            <TextBlock Text="Alex Johnson" 
+                                                     FontWeight="Bold" 
+                                                     Foreground="{StaticResource NeutralWhiteBrush}"/>
+                                            <TextBlock Text="Online" 
+                                                     Foreground="{StaticResource AccentBrightGreenBrush}"
+                                                     FontSize="12"/>
+                                        </StackPanel>
+                                        
+                                        <Button Grid.Column="2"
+                                               Style="{StaticResource MaterialDesignIconButton}"
+                                               Background="Transparent"
+                                               Foreground="{StaticResource AccentBrightGreenBrush}"
+                                               Width="32" Height="32">
+                                            <materialDesign:PackIcon Kind="MessageText" Height="16" Width="16"/>
+                                        </Button>
+                                    </Grid>
+                                </ListViewItem>
+                            </ListView>
+                        </Grid>
+                    </Grid>
                 </Grid>
 
                 <!-- Right Panel - Chat Area -->
-                <Grid Grid.Column="1" Background="{StaticResource NeutralBlackBrush}">
+                <Grid Grid.Column="1" Background="#0A0A0A">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
@@ -238,9 +455,9 @@
 
                     <!-- Chat Header -->
                     <Border Grid.Row="0" 
-                          Background="{StaticResource NeutralAltDarkGrayBrush}" 
-                          Padding="16" 
-                          materialDesign:ShadowAssist.ShadowDepth="Depth2">
+                          Background="#151515" 
+                          Padding="20,16" 
+                          materialDesign:ElevationAssist.Elevation="Dp1">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
@@ -249,10 +466,10 @@
                             </Grid.ColumnDefinitions>
                             
                             <StackPanel Grid.Column="0" Orientation="Horizontal">
-                                <Border Width="48" Height="48" 
-                                       Background="{StaticResource AccentBrightGreenBrush}" 
-                                       CornerRadius="24" 
-                                       materialDesign:ShadowAssist.ShadowDepth="Depth1">
+                                <Border Width="40" Height="40" 
+                                       Background="{StaticResource MatchaGreenBrush}" 
+                                       CornerRadius="20" 
+                                       materialDesign:ElevationAssist.Elevation="Dp2">
                                     <TextBlock Text="JD" 
                                              VerticalAlignment="Center" 
                                              HorizontalAlignment="Center" 
@@ -260,44 +477,28 @@
                                 </Border>
                                 <StackPanel Margin="12,0,0,0">
                                     <TextBlock Text="John Doe" 
-                                             Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                             FontSize="16"
+                                             FontWeight="Bold" 
                                              Foreground="{StaticResource NeutralWhiteBrush}"/>
                                     <TextBlock Text="Online" 
-                                             Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                             FontSize="12"
                                              Foreground="{StaticResource AccentBrightGreenBrush}"/>
                                 </StackPanel>
                             </StackPanel>
                             
-                            <StackPanel Grid.Column="2" 
-                                      Orientation="Horizontal" 
-                                      HorizontalAlignment="Right">
-                                <Button Style="{StaticResource MaterialDesignIconButton}"
-                                        Background="{StaticResource TransparentOverlayBrush}"
-                                        Foreground="{StaticResource NeutralWhiteBrush}"
-                                        Margin="4,0"
-                                        ToolTip="Video Call">
-                                    <materialDesign:PackIcon Kind="Video" Height="24" Width="24"/>
-                                </Button>
-                                <Button Style="{StaticResource MaterialDesignIconButton}"
-                                        Background="{StaticResource TransparentOverlayBrush}"
-                                        Foreground="{StaticResource NeutralWhiteBrush}"
-                                        Margin="4,0"
-                                        ToolTip="Voice Call">
-                                    <materialDesign:PackIcon Kind="Phone" Height="24" Width="24"/>
-                                </Button>
-                                <Button Style="{StaticResource MaterialDesignIconButton}"
-                                        Background="{StaticResource TransparentOverlayBrush}"
-                                        Foreground="{StaticResource NeutralWhiteBrush}"
-                                        Margin="4,0"
-                                        ToolTip="More Options">
-                                    <materialDesign:PackIcon Kind="DotsVertical" Height="24" Width="24"/>
-                                </Button>
-                            </StackPanel>
+                            <Button Grid.Column="2"
+                                   Style="{StaticResource MaterialDesignIconButton}"
+                                   Background="Transparent"
+                                   Foreground="{StaticResource NeutralGrayBrush}"
+                                   Width="36" Height="36"
+                                   ToolTip="Options">
+                                <materialDesign:PackIcon Kind="DotsVertical" Height="20" Width="20"/>
+                            </Button>
                         </Grid>
                     </Border>
 
                     <!-- Chat Messages -->
-                    <ScrollViewer Grid.Row="1" Margin="16">
+                    <ScrollViewer Grid.Row="1" Margin="20,16">
                         <StackPanel>
                             <controls:ChatBubble Username="John Doe" 
                                                 Message="Hi there! How are you today?"
@@ -334,13 +535,12 @@
 
                     <!-- Message Input -->
                     <Border Grid.Row="2" 
-                          Margin="16" 
-                          Background="{StaticResource TransparentOverlayBrush}" 
-                          CornerRadius="24" 
-                          BorderThickness="1" 
-                          BorderBrush="{StaticResource NeutralDarkGrayBrush}"
-                          Padding="8,4">
-                        <Grid>
+                          Margin="20,0,20,20" 
+                          Background="#151515" 
+                          CornerRadius="8" 
+                          BorderThickness="0"
+                          Padding="16,12">
+    <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
@@ -349,10 +549,11 @@
                             
                             <Button Grid.Column="0"
                                     Style="{StaticResource MaterialDesignIconButton}"
-                                    Background="{StaticResource TransparentOverlayBrush}"
-                                    Foreground="{StaticResource NeutralWhiteBrush}"
+                                    Background="Transparent"
+                                    Foreground="{StaticResource NeutralGrayBrush}"
+                                    Width="36" Height="36"
                                     ToolTip="Attach file">
-                                <materialDesign:PackIcon Kind="Paperclip" Height="24" Width="24"/>
+                                <materialDesign:PackIcon Kind="Paperclip" Height="20" Width="20"/>
                             </Button>
                             
                             <TextBox Grid.Column="1"
@@ -361,11 +562,14 @@
                                     Background="Transparent"
                                     BorderThickness="0"
                                     Foreground="{StaticResource NeutralWhiteBrush}"
+                                    VerticalAlignment="Center"
                                     Margin="8,0"/>
                             
                             <Button Grid.Column="2"
-                                    Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
-                                    Background="{StaticResource AccentBrightGreenBrush}"
+                                    Style="{StaticResource MaterialDesignIconButton}"
+                                    Background="{StaticResource MatchaGreenBrush}"
+                                    Foreground="{StaticResource NeutralWhiteBrush}"
+                                    Width="36" Height="36"
                                     ToolTip="Send message">
                                 <materialDesign:PackIcon Kind="Send" Height="20" Width="20"/>
                             </Button>
@@ -373,6 +577,6 @@
                     </Border>
                 </Grid>
             </Grid>
-        </Grid>
+    </Grid>
     </Border>
 </Window>
