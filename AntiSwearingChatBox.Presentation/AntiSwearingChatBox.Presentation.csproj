@@ -1,21 +1,18 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
-    <RootNamespace>Anti_Swearing_Chat_Box.Presentation</RootNamespace>
+    <RootNamespace>AntiSwearingChatBox.Presentation</RootNamespace>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <AssemblyName>AntiSwearingChatBox.Presentation</AssemblyName>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="MaterialDesignThemes" Version="4.9.0" />
     <PackageReference Include="MaterialDesignColors" Version="2.1.4" />
   </ItemGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\Anti-Swearing_Chat_Box.AI\Anti-Swearing_Chat_Box.AI.csproj" />
+    <ProjectReference Include="..\AntiSwearingChatBox.AI\AntiSwearingChatBox.AI.csproj" />
   </ItemGroup>
-
 </Project>

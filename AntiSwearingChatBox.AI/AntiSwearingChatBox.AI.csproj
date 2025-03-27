@@ -1,21 +1,18 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <RootNamespace>Anti_Swearing_Chat_Box.AI</RootNamespace>
+    <RootNamespace>AntiSwearingChatBox.AI</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <AssemblyName>AntiSwearingChatBox.AI</AssemblyName>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.3" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.3" />
     <PackageReference Include="Mscc.GenerativeAI" Version="2.4.0" />
   </ItemGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\Anti-Swearing_Chat_Box.Core\Anti-Swearing_Chat_Box.Core.csproj" />
+    <ProjectReference Include="..\AntiSwearingChatBox.Core\AntiSwearingChatBox.Core.csproj" />
   </ItemGroup>
-
 </Project>

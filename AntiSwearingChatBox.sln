@@ -1,19 +1,19 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Anti-Swearing_Chat_Box.Core", "Anti-Swearing_Chat_Box.Core\Anti-Swearing_Chat_Box.Core.csproj", "{A584B765-B817-4AD8-AA3A-9D311813EB08}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AntiSwearingChatBox.Core", "AntiSwearingChatBox.Core\AntiSwearingChatBox.Core.csproj", "{A584B765-B817-4AD8-AA3A-9D311813EB08}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Anti-Swearing_Chat_Box.Services", "Anti-Swearing_Chat_Box.Services\Anti-Swearing_Chat_Box.Services.csproj", "{30301E7B-AE34-479E-9F64-F02F6E802970}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AntiSwearingChatBox.Services", "AntiSwearingChatBox.Services\AntiSwearingChatBox.Services.csproj", "{30301E7B-AE34-479E-9F64-F02F6E802970}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Anti-Swearing_Chat_Box.Presentation", "Anti-Swearing_Chat_Box.Presentation\Anti-Swearing_Chat_Box.Presentation.csproj", "{BFA14C84-1C79-4A43-A513-039A972A9690}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AntiSwearingChatBox.Presentation", "AntiSwearingChatBox.Presentation\AntiSwearingChatBox.Presentation.csproj", "{BFA14C84-1C79-4A43-A513-039A972A9690}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Anti-Swearing_Chat_Box.Repositories", "Anti-Swearing_Chat_Box.Repositories\Anti-Swearing_Chat_Box.Repositories.csproj", "{C5A9CB2B-5C0C-46A3-9DB4-7F2244DE31CB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AntiSwearingChatBox.Repositories", "AntiSwearingChatBox.Repositories\AntiSwearingChatBox.Repositories.csproj", "{C5A9CB2B-5C0C-46A3-9DB4-7F2244DE31CB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Anti-Swearing_Chat_Box.AI", "Anti-Swearing_Chat_Box.AI\Anti-Swearing_Chat_Box.AI.csproj", "{5A88C48E-BB6E-43A5-B948-D5E34E0A9978}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AntiSwearingChatBox.AI", "AntiSwearingChatBox.AI\AntiSwearingChatBox.AI.csproj", "{5A88C48E-BB6E-43A5-B948-D5E34E0A9978}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Anti-Swearing_Chat_Box.ConsoleTest", "Anti-Swearing_Chat_Box.ConsoleTest\Anti-Swearing_Chat_Box.ConsoleTest.csproj", "{495AB8ED-2652-423A-991B-3710B3030335}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AntiSwearingChatBox.ConsoleTest", "AntiSwearingChatBox.ConsoleTest\AntiSwearingChatBox.ConsoleTest.csproj", "{495AB8ED-2652-423A-991B-3710B3030335}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -50,3 +50,10 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal
+
+
+
+
+
+
+
