@@ -1,4 +1,3 @@
--- Create database if not exists
 IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'AntiSwearingChatBox')
 BEGIN
     CREATE DATABASE AntiSwearingChatBox;
@@ -221,7 +220,7 @@ VALUES
 (1, 3, 'That sounds great Jane. When is the meeting scheduled?', 'That sounds great Jane. When is the meeting scheduled?', 0, '2023-01-02 09:35:00'),
 (1, 1, 'Let''s aim for this Friday at 10 AM.', 'Let''s aim for this Friday at 10 AM.', 0, '2023-01-02 09:40:00'),
 (1, 4, 'Works for me. I''ll prepare my section of the report.', 'Works for me. I''ll prepare my section of the report.', 0, '2023-01-02 09:45:00'),
-(1, 5, 'Friday is perfect. I'll be ready with my updates.', 'Friday is perfect. I'll be ready with my updates.', 0, '2023-01-02 09:50:00'),
+(1, 5, 'Friday is perfect. I''ll be ready with my updates.', 'Friday is perfect. I''ll be ready with my updates.', 0, '2023-01-02 09:50:00'),
 (1, 2, 'Great! I''ll send a calendar invite to everyone.', 'Great! I''ll send a calendar invite to everyone.', 0, '2023-01-02 09:55:00');
 
 -- Add messages for Thread 2: Project Alpha Discussion
