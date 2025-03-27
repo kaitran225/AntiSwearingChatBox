@@ -7,27 +7,27 @@ namespace AntiSwearingChatBox.Repository.Repositories
     public class UnitOfWork : IUnitOfWork
     {
         private readonly AntiSwearingChatBoxContext _context;
-        private IFilteredWordsRepository _filteredwordsRepository;
+        private IFilteredWordRepository _filteredwordRepository;
         private IMessageHistoryRepository _messagehistoryRepository;
-        private IThreadParticipantsRepository _threadparticipantsRepository;
-        private IThreadsRepository _threadsRepository;
-        private IUsersRepository _usersRepository;
-        private IUserWarningsRepository _userwarningsRepository;
+        private IThreadRepository _threadRepository;
+        private IThreadParticipantRepository _threadparticipantRepository;
+        private IUserRepository _userRepository;
+        private IUserWarningRepository _userwarningRepository;
 
         public UnitOfWork(AntiSwearingChatBoxContext context)
         {
             _context = context;
         }
 
-        public IFilteredWordsRepository FilteredWords
+        public IFilteredWordRepository FilteredWord
         {
             get
             {
-                if (_filteredwordsRepository == null)
+                if (_filteredwordRepository == null)
                 {
-                    _filteredwordsRepository = new FilteredWordsRepository(_context);
+                    _filteredwordRepository = new FilteredWordRepository(_context);
                 }
-                return _filteredwordsRepository;
+                return _filteredwordRepository;
             }
         }
         public IMessageHistoryRepository MessageHistory
@@ -41,48 +41,48 @@ namespace AntiSwearingChatBox.Repository.Repositories
                 return _messagehistoryRepository;
             }
         }
-        public IThreadParticipantsRepository ThreadParticipants
+        public IThreadRepository Thread
         {
             get
             {
-                if (_threadparticipantsRepository == null)
+                if (_threadRepository == null)
                 {
-                    _threadparticipantsRepository = new ThreadParticipantsRepository(_context);
+                    _threadRepository = new ThreadRepository(_context);
                 }
-                return _threadparticipantsRepository;
+                return _threadRepository;
             }
         }
-        public IThreadsRepository Threads
+        public IThreadParticipantRepository ThreadParticipant
         {
             get
             {
-                if (_threadsRepository == null)
+                if (_threadparticipantRepository == null)
                 {
-                    _threadsRepository = new ThreadsRepository(_context);
+                    _threadparticipantRepository = new ThreadParticipantRepository(_context);
                 }
-                return _threadsRepository;
+                return _threadparticipantRepository;
             }
         }
-        public IUsersRepository Users
+        public IUserRepository User
         {
             get
             {
-                if (_usersRepository == null)
+                if (_userRepository == null)
                 {
-                    _usersRepository = new UsersRepository(_context);
+                    _userRepository = new UserRepository(_context);
                 }
-                return _usersRepository;
+                return _userRepository;
             }
         }
-        public IUserWarningsRepository UserWarnings
+        public IUserWarningRepository UserWarning
         {
             get
             {
-                if (_userwarningsRepository == null)
+                if (_userwarningRepository == null)
                 {
-                    _userwarningsRepository = new UserWarningsRepository(_context);
+                    _userwarningRepository = new UserWarningRepository(_context);
                 }
-                return _userwarningsRepository;
+                return _userwarningRepository;
             }
         }
         public int Complete()

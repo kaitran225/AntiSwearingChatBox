@@ -6,26 +6,34 @@ namespace AntiSwearingChatBox.Repository.Models;
 
 public partial class AntiSwearingChatBoxContext : DbContext
 {
+    public AntiSwearingChatBoxContext()
+    {
+    }
+
     public AntiSwearingChatBoxContext(DbContextOptions<AntiSwearingChatBoxContext> options)
         : base(options)
     {
     }
 
-    public virtual DbSet<FilteredWords> FilteredWords { get; set; }
+    public virtual DbSet<FilteredWord> FilteredWords { get; set; }
 
-    public virtual DbSet<MessageHistory> MessageHistory { get; set; }
+    public virtual DbSet<MessageHistory> MessageHistories { get; set; }
 
-    public virtual DbSet<ThreadParticipants> ThreadParticipants { get; set; }
+    public virtual DbSet<Thread> Threads { get; set; }
 
-    public virtual DbSet<Threads> Threads { get; set; }
+    public virtual DbSet<ThreadParticipant> ThreadParticipants { get; set; }
 
-    public virtual DbSet<UserWarnings> UserWarnings { get; set; }
+    public virtual DbSet<User> Users { get; set; }
 
-    public virtual DbSet<Users> Users { get; set; }
+    public virtual DbSet<UserWarning> UserWarnings { get; set; }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseSqlServer("Server=KAINOTE\\SQLEXPRESS;Database=AntiSwearingChatBox;User Id=sa;Password=123456;TrustServerCertificate=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<FilteredWords>(entity =>
+        modelBuilder.Entity<FilteredWord>(entity =>
         {
             entity.HasKey(e => e.WordId).HasName("PK__Filtered__2C20F0663F2E9EA9");
 
@@ -40,24 +48,36 @@ public partial class AntiSwearingChatBoxContext : DbContext
         {
             entity.HasKey(e => e.MessageId).HasName("PK__MessageH__C87C0C9C336D7AD2");
 
+            entity.ToTable("MessageHistory");
+
             entity.HasIndex(e => e.ThreadId, "IX_MessageHistory_ThreadId");
 
             entity.HasIndex(e => e.UserId, "IX_MessageHistory_UserId");
 
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
 
-            entity.HasOne(d => d.Thread).WithMany(p => p.MessageHistory)
+            entity.HasOne(d => d.Thread).WithMany(p => p.MessageHistories)
                 .HasForeignKey(d => d.ThreadId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_MessageHistory_Threads");
 
-            entity.HasOne(d => d.User).WithMany(p => p.MessageHistory)
+            entity.HasOne(d => d.User).WithMany(p => p.MessageHistories)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_MessageHistory_Users");
         });
 
-        modelBuilder.Entity<ThreadParticipants>(entity =>
+        modelBuilder.Entity<Thread>(entity =>
+        {
+            entity.HasKey(e => e.ThreadId).HasName("PK__Threads__68835684F7B229EB");
+
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.LastMessageAt).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.Title).HasMaxLength(200);
+        });
+
+        modelBuilder.Entity<ThreadParticipant>(entity =>
         {
             entity.HasKey(e => new { e.ThreadId, e.UserId });
 
@@ -78,39 +98,7 @@ public partial class AntiSwearingChatBoxContext : DbContext
                 .HasConstraintName("FK_ThreadParticipants_Users");
         });
 
-        modelBuilder.Entity<Threads>(entity =>
-        {
-            entity.HasKey(e => e.ThreadId).HasName("PK__Threads__68835684F7B229EB");
-
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
-            entity.Property(e => e.IsActive).HasDefaultValue(true);
-            entity.Property(e => e.LastMessageAt).HasDefaultValueSql("(getdate())");
-            entity.Property(e => e.Title).HasMaxLength(200);
-        });
-
-        modelBuilder.Entity<UserWarnings>(entity =>
-        {
-            entity.HasKey(e => e.WarningId).HasName("PK__UserWarn__21457158B6C801D1");
-
-            entity.HasIndex(e => e.ThreadId, "IX_UserWarnings_ThreadId");
-
-            entity.HasIndex(e => e.UserId, "IX_UserWarnings_UserId");
-
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
-            entity.Property(e => e.WarningMessage).HasMaxLength(500);
-
-            entity.HasOne(d => d.Thread).WithMany(p => p.UserWarnings)
-                .HasForeignKey(d => d.ThreadId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_UserWarnings_Threads");
-
-            entity.HasOne(d => d.User).WithMany(p => p.UserWarnings)
-                .HasForeignKey(d => d.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_UserWarnings_Users");
-        });
-
-        modelBuilder.Entity<Users>(entity =>
+        modelBuilder.Entity<User>(entity =>
         {
             entity.HasKey(e => e.UserId).HasName("PK__Users__1788CC4C2E69730F");
 
@@ -134,6 +122,28 @@ public partial class AntiSwearingChatBoxContext : DbContext
                 .HasColumnType("decimal(3, 2)");
             entity.Property(e => e.Username).HasMaxLength(50);
             entity.Property(e => e.VerificationToken).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<UserWarning>(entity =>
+        {
+            entity.HasKey(e => e.WarningId).HasName("PK__UserWarn__21457158B6C801D1");
+
+            entity.HasIndex(e => e.ThreadId, "IX_UserWarnings_ThreadId");
+
+            entity.HasIndex(e => e.UserId, "IX_UserWarnings_UserId");
+
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.WarningMessage).HasMaxLength(500);
+
+            entity.HasOne(d => d.Thread).WithMany(p => p.UserWarnings)
+                .HasForeignKey(d => d.ThreadId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_UserWarnings_Threads");
+
+            entity.HasOne(d => d.User).WithMany(p => p.UserWarnings)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_UserWarnings_Users");
         });
 
         OnModelCreatingPartial(modelBuilder);

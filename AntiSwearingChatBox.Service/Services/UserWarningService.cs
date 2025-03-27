@@ -7,70 +7,70 @@ using System.Linq;
 
 namespace AntiSwearingChatBox.Service
 {
-    public class ThreadsService : IThreadsService
+    public class UserWarningService : IUserWarningService
     {
         private readonly IUnitOfWork _unitOfWork;
 
-        public ThreadsService(IUnitOfWork unitOfWork)
+        public UserWarningService(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }
 
-        public IEnumerable<Threads> GetAll()
+        public IEnumerable<UserWarning> GetAll()
         {
-            return _unitOfWork.Threads.GetAll();
+            return _unitOfWork.UserWarning.GetAll();
         }
 
-        public Threads GetById(string id)
+        public UserWarning GetById(string id)
         {
-            return _unitOfWork.Threads.GetById(id);
+            return _unitOfWork.UserWarning.GetById(id);
         }
 
-        public (bool success, string message) Add(Threads entity)
+        public (bool success, string message) Add(UserWarning entity)
         {
             try
             {
-                _unitOfWork.Threads.Add(entity);
+                _unitOfWork.UserWarning.Add(entity);
                 _unitOfWork.Complete();
-                return (true, "Threads added successfully");
+                return (true, "UserWarning added successfully");
             }
             catch (Exception ex)
             {
-                return (false, $"Error adding Threads: {ex.Message}");
+                return (false, $"Error adding UserWarning: {ex.Message}");
             }
         }
 
-        public (bool success, string message) Update(Threads entity)
+        public (bool success, string message) Update(UserWarning entity)
         {
             try
             {
-                _unitOfWork.Threads.Update(entity);
+                _unitOfWork.UserWarning.Update(entity);
                 _unitOfWork.Complete();
-                return (true, "Threads updated successfully");
+                return (true, "UserWarning updated successfully");
             }
             catch (Exception ex)
             {
-                return (false, $"Error updating Threads: {ex.Message}");
+                return (false, $"Error updating UserWarning: {ex.Message}");
             }
         }
 
         public bool Delete(string id)
         {
-            var entity = _unitOfWork.Threads.GetById(id);
+            var entity = _unitOfWork.UserWarning.GetById(id);
             if (entity == null)
                 return false;
 
-            _unitOfWork.Threads.Delete(entity);
+            _unitOfWork.UserWarning.Delete(entity);
             _unitOfWork.Complete();
             return true;
         }
 
-        public IEnumerable<Threads> Search(string searchTerm)
+        public IEnumerable<UserWarning> Search(string searchTerm)
         {
             if (string.IsNullOrWhiteSpace(searchTerm))
                 return GetAll();
 
-            return _unitOfWork.Threads.Find(x => 
+            return _unitOfWork.UserWarning.Find(x => 
                 x.ToString()!.ToLower().Contains(searchTerm.ToLower()));
         }
     }

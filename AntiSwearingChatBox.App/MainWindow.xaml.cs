@@ -8,6 +8,7 @@ using MaterialDesignThemes.Wpf;
 using Anti_Swearing_Chat_Box.Core.Models;
 using Anti_Swearing_Chat_Box.Core.Services;
 using Anti_Swearing_Chat_Box.Core.Converters;
+using AntiSwearingChatBox.Service.IServices;
 
 namespace Anti_Swearing_Chat_Box.App
 {
@@ -17,18 +18,25 @@ namespace Anti_Swearing_Chat_Box.App
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         private readonly IAIModerationService _aiModerationService;
+        private readonly IUserWarningsService _userwarningsService;
+        private readonly IUsersService _usersService;
+        private readonly IThreadsService _threadsService;
+        private readonly IThreadParticipantsService _threadparticipantsService;
+        private readonly IMessageHistoryService _messagehistoryService;
+        private readonly IFilteredWordsService _filteredwordsService;
+
         private readonly IValueConverter _boolToStatusConverter;
         private readonly IValueConverter _boolToStatusColorConverter;
         private readonly IValueConverter _boolToMessageBackgroundConverter;
         private readonly IValueConverter _boolToHorizontalAlignmentConverter;
         private readonly IValueConverter _intToVisibilityConverter;
 
-        private ObservableCollection<Contact> _contacts;
-        private ObservableCollection<ChatThread> _chatThreads;
-        private Contact _currentContact;
-        private ChatThread _currentChatThread;
+        private ObservableCollection<Contact> _contacts = new();
+        private ObservableCollection<ChatThread> _chatThreads = new();
+        private Contact? _currentContact;
+        private ChatThread? _currentChatThread;
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         public ObservableCollection<Contact> Contacts
         {
@@ -50,7 +58,7 @@ namespace Anti_Swearing_Chat_Box.App
             }
         }
 
-        public Contact CurrentContact
+        public Contact? CurrentContact
         {
             get => _currentContact;
             set
@@ -60,7 +68,7 @@ namespace Anti_Swearing_Chat_Box.App
             }
         }
 
-        public ChatThread CurrentChatThread
+        public ChatThread? CurrentChatThread
         {
             get => _currentChatThread;
             set
@@ -70,12 +78,26 @@ namespace Anti_Swearing_Chat_Box.App
             }
         }
 
-        public MainWindow()
+        public MainWindow(
+            IAIModerationService aiModerationService,
+            IUserWarningsService userWarningsService,
+            IUsersService usersService,
+            IThreadsService threadsService,
+            IThreadParticipantsService threadParticipantsService,
+            IMessageHistoryService messageHistoryService,
+            IFilteredWordsService filteredWordsService)
         {
             InitializeComponent();
             DataContext = this;
 
-            _aiModerationService = new AIModerationService();
+            _aiModerationService = aiModerationService;
+            _userwarningsService = userWarningsService;
+            _usersService = usersService;
+            _threadsService = threadsService;
+            _threadparticipantsService = threadParticipantsService;
+            _messagehistoryService = messageHistoryService;
+            _filteredwordsService = filteredWordsService;
+
             _boolToStatusConverter = new BoolToStatusConverter();
             _boolToStatusColorConverter = new BoolToStatusColorConverter();
             _boolToMessageBackgroundConverter = new BoolToMessageBackgroundConverter();

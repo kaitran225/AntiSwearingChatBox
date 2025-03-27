@@ -10,27 +10,27 @@ namespace AntiSwearingChatBox.Service
     {
         private readonly AntiSwearingChatBoxContext _context;
         private readonly IUnitOfWork _unitOfWork;
-                private IFilteredWordsService _filteredwordsService;
+                private IFilteredWordService _filteredwordService;
                 private IMessageHistoryService _messagehistoryService;
-                private IThreadParticipantsService _threadparticipantsService;
-                private IThreadsService _threadsService;
-                private IUsersService _usersService;
-                private IUserWarningsService _userwarningsService;
+                private IThreadService _threadService;
+                private IThreadParticipantService _threadparticipantService;
+                private IUserService _userService;
+                private IUserWarningService _userwarningService;
                 
         public ServiceProvider()
         {
             _context = new AntiSwearingChatBoxContext();
             _unitOfWork = new UnitOfWork(_context);
         }
-                public IFilteredWordsService FilteredWordsService
+                public IFilteredWordService FilteredWordService
         {
             get
             {
-                if (_filteredwordsService == null)
+                if (_filteredwordService == null)
                 {
-                    _filteredwordsService = new FilteredWordsService(_unitOfWork);
+                    _filteredwordService = new FilteredWordService(_unitOfWork);
                 }
-                return _filteredwordsService;
+                return _filteredwordService;
             }
         }
                 public IMessageHistoryService MessageHistoryService
@@ -44,48 +44,48 @@ namespace AntiSwearingChatBox.Service
                 return _messagehistoryService;
             }
         }
-                public IThreadParticipantsService ThreadParticipantsService
+                public IThreadService ThreadService
         {
             get
             {
-                if (_threadparticipantsService == null)
+                if (_threadService == null)
                 {
-                    _threadparticipantsService = new ThreadParticipantsService(_unitOfWork);
+                    _threadService = new ThreadService(_unitOfWork);
                 }
-                return _threadparticipantsService;
+                return _threadService;
             }
         }
-                public IThreadsService ThreadsService
+                public IThreadParticipantService ThreadParticipantService
         {
             get
             {
-                if (_threadsService == null)
+                if (_threadparticipantService == null)
                 {
-                    _threadsService = new ThreadsService(_unitOfWork);
+                    _threadparticipantService = new ThreadParticipantService(_unitOfWork);
                 }
-                return _threadsService;
+                return _threadparticipantService;
             }
         }
-                public IUsersService UsersService
+                public IUserService UserService
         {
             get
             {
-                if (_usersService == null)
+                if (_userService == null)
                 {
-                    _usersService = new UsersService(_unitOfWork);
+                    _userService = new UserService(_unitOfWork);
                 }
-                return _usersService;
+                return _userService;
             }
         }
-                public IUserWarningsService UserWarningsService
+                public IUserWarningService UserWarningService
         {
             get
             {
-                if (_userwarningsService == null)
+                if (_userwarningService == null)
                 {
-                    _userwarningsService = new UserWarningsService(_unitOfWork);
+                    _userwarningService = new UserWarningService(_unitOfWork);
                 }
-                return _userwarningsService;
+                return _userwarningService;
             }
         }
                 public void Dispose()

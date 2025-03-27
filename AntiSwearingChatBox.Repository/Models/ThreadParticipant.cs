@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace AntiSwearingChatBox.Repository.Models;
 
-public partial class ThreadParticipants
+public partial class ThreadParticipant
 {
     public int ThreadId { get; set; }
 
@@ -11,7 +11,7 @@ public partial class ThreadParticipants
 
     public DateTime JoinedAt { get; set; }
 
-    public virtual Threads Thread { get; set; } = null!;
+    public virtual Thread Thread { get; set; } = null!;
 
-    public virtual Users User { get; set; } = null!;
+    public virtual User User { get; set; } = null!;
 }

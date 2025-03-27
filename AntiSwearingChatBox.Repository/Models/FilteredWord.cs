@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace AntiSwearingChatBox.Repository.Models;
 
-public partial class FilteredWords
+public partial class FilteredWord
 {
     public int WordId { get; set; }
 

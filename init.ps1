@@ -195,22 +195,17 @@ if (!(Test-Path $modelsPath)) {
     New-Item -ItemType Directory -Path $modelsPath -Force | Out-Null
 }
 
-# Build the scaffold command with proper parameters
-$command = "dotnet ef dbcontext scaffold `"$connectionString`" " + `
-    "Microsoft.EntityFrameworkCore.SqlServer " + `
-    "--output-dir Models " + `
-    "--context $contextName " + `
-    "--namespace $repoName.Models " + `
-    "--context-namespace $repoName.Models " + `
-    "--project `"$repoName\$repoName.csproj`" " + `
-    "--startup-project `"$wpfAppName\$wpfAppName.csproj`" " + `
-    "--force " + `
-    "--no-onconfiguring " + `
-    "--no-pluralize"
-
-# Change to the solution directory before running the command
-Push-Location $solutionPath
+# Change to the Repository project directory and run scaffold command
+Push-Location $repoName
 try {
+    Write-Host "Changing to Repository project directory..." -ForegroundColor Yellow
+    
+    $command = "dotnet ef dbcontext scaffold `"Server=KAINOTE\SQLEXPRESS;Database=AntiSwearingChatBox;User Id=sa;Password=123456;TrustServerCertificate=True;`" " + `
+        "Microsoft.EntityFrameworkCore.SqlServer " + `
+        "--output-dir Models " + `
+        "--context AntiSwearingChatBoxContext " + `
+        "--force"
+
     Write-Host "Running scaffolding command: $command" -ForegroundColor Yellow
     $result = Invoke-Expression "$command 2>&1"
     if ($LASTEXITCODE -eq 0) {

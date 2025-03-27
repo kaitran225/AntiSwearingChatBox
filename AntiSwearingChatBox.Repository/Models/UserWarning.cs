@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace AntiSwearingChatBox.Repository.Models;
 
-public partial class UserWarnings
+public partial class UserWarning
 {
     public int WarningId { get; set; }
 
@@ -15,7 +15,7 @@ public partial class UserWarnings
 
     public DateTime CreatedAt { get; set; }
 
-    public virtual Threads Thread { get; set; } = null!;
+    public virtual Thread Thread { get; set; } = null!;
 
-    public virtual Users User { get; set; } = null!;
+    public virtual User User { get; set; } = null!;
 }

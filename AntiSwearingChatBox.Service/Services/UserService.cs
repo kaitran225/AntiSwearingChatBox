@@ -7,70 +7,70 @@ using System.Linq;
 
 namespace AntiSwearingChatBox.Service
 {
-    public class UsersService : IUsersService
+    public class UserService : IUserService
     {
         private readonly IUnitOfWork _unitOfWork;
 
-        public UsersService(IUnitOfWork unitOfWork)
+        public UserService(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }
 
-        public IEnumerable<Users> GetAll()
+        public IEnumerable<User> GetAll()
         {
-            return _unitOfWork.Users.GetAll();
+            return _unitOfWork.User.GetAll();
         }
 
-        public Users GetById(string id)
+        public User GetById(string id)
         {
-            return _unitOfWork.Users.GetById(id);
+            return _unitOfWork.User.GetById(id);
         }
 
-        public (bool success, string message) Add(Users entity)
+        public (bool success, string message) Add(User entity)
         {
             try
             {
-                _unitOfWork.Users.Add(entity);
+                _unitOfWork.User.Add(entity);
                 _unitOfWork.Complete();
-                return (true, "Users added successfully");
+                return (true, "User added successfully");
             }
             catch (Exception ex)
             {
-                return (false, $"Error adding Users: {ex.Message}");
+                return (false, $"Error adding User: {ex.Message}");
             }
         }
 
-        public (bool success, string message) Update(Users entity)
+        public (bool success, string message) Update(User entity)
         {
             try
             {
-                _unitOfWork.Users.Update(entity);
+                _unitOfWork.User.Update(entity);
                 _unitOfWork.Complete();
-                return (true, "Users updated successfully");
+                return (true, "User updated successfully");
             }
             catch (Exception ex)
             {
-                return (false, $"Error updating Users: {ex.Message}");
+                return (false, $"Error updating User: {ex.Message}");
             }
         }
 
         public bool Delete(string id)
         {
-            var entity = _unitOfWork.Users.GetById(id);
+            var entity = _unitOfWork.User.GetById(id);
             if (entity == null)
                 return false;
 
-            _unitOfWork.Users.Delete(entity);
+            _unitOfWork.User.Delete(entity);
             _unitOfWork.Complete();
             return true;
         }
 
-        public IEnumerable<Users> Search(string searchTerm)
+        public IEnumerable<User> Search(string searchTerm)
         {
             if (string.IsNullOrWhiteSpace(searchTerm))
                 return GetAll();
 
-            return _unitOfWork.Users.Find(x => 
+            return _unitOfWork.User.Find(x => 
                 x.ToString()!.ToLower().Contains(searchTerm.ToLower()));
         }
     }

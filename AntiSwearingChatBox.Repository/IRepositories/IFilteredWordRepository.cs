@@ -3,7 +3,7 @@ using AntiSwearingChatBox.Repository.Models;
 
 namespace AntiSwearingChatBox.Repository.IRepositories
 {
-    public interface IThreadParticipantsRepository : IRepositoryBase<ThreadParticipants>
+    public interface IFilteredWordRepository : IRepositoryBase<FilteredWord>
     {
     }
 }

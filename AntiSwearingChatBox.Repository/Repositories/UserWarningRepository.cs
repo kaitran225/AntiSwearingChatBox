@@ -5,9 +5,9 @@ using System.Linq;
 
 namespace AntiSwearingChatBox.Repository.Repositories
 {
-    public class UsersRepository : RepositoryBase<Users>, IUsersRepository
+    public class UserWarningRepository : RepositoryBase<UserWarning>, IUserWarningRepository
     {
-        public UsersRepository(AntiSwearingChatBoxContext context) : base(context)
+        public UserWarningRepository(AntiSwearingChatBoxContext context) : base(context)
         {
         }
     }

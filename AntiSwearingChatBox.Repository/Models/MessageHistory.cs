@@ -19,7 +19,7 @@ public partial class MessageHistory
 
     public DateTime CreatedAt { get; set; }
 
-    public virtual Threads Thread { get; set; } = null!;
+    public virtual Thread Thread { get; set; } = null!;
 
-    public virtual Users User { get; set; } = null!;
+    public virtual User User { get; set; } = null!;
 }

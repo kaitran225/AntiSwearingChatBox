@@ -5,9 +5,9 @@ using System.Linq;
 
 namespace AntiSwearingChatBox.Repository.Repositories
 {
-    public class FilteredWordsRepository : RepositoryBase<FilteredWords>, IFilteredWordsRepository
+    public class ThreadRepository : RepositoryBase<Thread>, IThreadRepository
     {
-        public FilteredWordsRepository(AntiSwearingChatBoxContext context) : base(context)
+        public ThreadRepository(AntiSwearingChatBoxContext context) : base(context)
         {
         }
     }

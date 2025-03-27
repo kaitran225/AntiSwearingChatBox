@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace AntiSwearingChatBox.Repository.Models;
 
-public partial class Users
+public partial class User
 {
     public int UserId { get; set; }
 
@@ -39,9 +39,9 @@ public partial class Users
 
     public bool IsActive { get; set; }
 
-    public virtual ICollection<MessageHistory> MessageHistory { get; set; } = new List<MessageHistory>();
+    public virtual ICollection<MessageHistory> MessageHistories { get; set; } = new List<MessageHistory>();
 
-    public virtual ICollection<ThreadParticipants> ThreadParticipants { get; set; } = new List<ThreadParticipants>();
+    public virtual ICollection<ThreadParticipant> ThreadParticipants { get; set; } = new List<ThreadParticipant>();
 
-    public virtual ICollection<UserWarnings> UserWarnings { get; set; } = new List<UserWarnings>();
+    public virtual ICollection<UserWarning> UserWarnings { get; set; } = new List<UserWarning>();
 }
