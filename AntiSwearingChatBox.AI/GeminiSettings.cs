@@ -1,4 +1,4 @@
-namespace Anti_Swearing_Chat_Box.AI
+namespace AntiSwearingChatBox.AI
 {
     public class GeminiSettings
     {

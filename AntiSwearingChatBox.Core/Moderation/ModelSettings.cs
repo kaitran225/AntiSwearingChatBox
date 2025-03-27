@@ -1,10 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Text.Json;
-using System.Threading.Tasks;
 
-namespace Anti_Swearing_Chat_Box.Core.Moderation
+namespace AntiSwearingChatBox.Core.Moderation
 {
     public class ModelSettings
     {

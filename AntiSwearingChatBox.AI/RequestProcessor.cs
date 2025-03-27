@@ -1,8 +1,8 @@
 using System;
 using System.Text.Json;
-using Anti_Swearing_Chat_Box.Core.Moderation;
+using AntiSwearingChatBox.Core.Moderation;
 
-namespace Anti_Swearing_Chat_Box.AI
+namespace AntiSwearingChatBox.AI
 {
     /// <summary>
     /// Handles preprocessing of requests and postprocessing of responses

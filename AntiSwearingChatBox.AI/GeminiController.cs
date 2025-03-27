@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Anti_Swearing_Chat_Box.AI
+namespace AntiSwearingChatBox.AI
 {
     [ApiController]
     [Route("api/[controller]")]

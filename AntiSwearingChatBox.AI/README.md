@@ -29,7 +29,7 @@ The default API key is already set, but it's recommended to use your own API key
 Add the Gemini services to your application's service collection in your `Program.cs` or `Startup.cs`:
 
 ```csharp
-using Anti_Swearing_Chat_Box.AI;
+using AntiSwearingChatBox.AI;
 
 // Add Gemini services
 services.AddGeminiServices(Configuration);
@@ -66,6 +66,8 @@ Content-Type: application/json
 You can also inject and use the `GeminiService` directly in your code:
 
 ```csharp
+using AntiSwearingChatBox.AI;
+
 public class YourService
 {
     private readonly GeminiService _geminiService;

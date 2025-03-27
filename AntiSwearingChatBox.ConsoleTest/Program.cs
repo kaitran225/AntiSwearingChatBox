@@ -1,14 +1,10 @@
-﻿using Anti_Swearing_Chat_Box.AI;
-using Anti_Swearing_Chat_Box.Core.Moderation;
+﻿using AntiSwearingChatBox.AI;
+using AntiSwearingChatBox.Core.Moderation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Text.Json;
-using System.Threading.Tasks;
 
-namespace Anti_Swearing_Chat_Box.ConsoleTest
+namespace AntiSwearingChatBox.ConsoleTest
 {
     class Program
     {

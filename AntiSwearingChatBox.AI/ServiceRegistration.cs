@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Anti_Swearing_Chat_Box.AI
+namespace AntiSwearingChatBox.AI
 {
     public static class ServiceRegistration
     {
