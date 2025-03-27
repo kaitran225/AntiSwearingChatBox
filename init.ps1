@@ -168,21 +168,21 @@ $packages = @(
 Write-Host "Installing packages for Repository project..." -ForegroundColor Green
 Push-Location $repoName
 foreach ($package in $packages) {
-    dotnet add package $package --version 8.0.2  *> $null 2>&1
+    dotnet add package $package --version 9.0.3  *> $null 2>&1
 }
 Pop-Location
 
 Write-Host "Installing packages for Service project..." -ForegroundColor Green
 Push-Location $serviceName
 foreach ($package in $packages) {
-    dotnet add package $package --version 8.0.2  *> $null 2>&1
+    dotnet add package $package --version 9.0.3  *> $null 2>&1
 }
 Pop-Location
 
 Write-Host "Installing packages for WPF project..." -ForegroundColor Green
 Push-Location $wpfAppName
 foreach ($package in $packages) {
-    dotnet add package $package --version 8.0.2  *> $null 2>&1
+    dotnet add package $package --version 9.0.3  *> $null 2>&1
 }
 Pop-Location
 
@@ -204,13 +204,23 @@ $command = "dotnet ef dbcontext scaffold `"$connectionString`" " + `
     "--context-namespace $repoName.Models " + `
     "--project `"$repoName\$repoName.csproj`" " + `
     "--startup-project `"$wpfAppName\$wpfAppName.csproj`" " + `
-    "--force"
+    "--force " + `
+    "--no-onconfiguring " + `
+    "--no-pluralize"
 
 # Change to the solution directory before running the command
 Push-Location $solutionPath
 try {
-    $null = Invoke-Expression "$command 2>&1"
-    Write-Host "Database context generated successfully!" -ForegroundColor Green
+    Write-Host "Running scaffolding command: $command" -ForegroundColor Yellow
+    $result = Invoke-Expression "$command 2>&1"
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "Database context generated successfully!" -ForegroundColor Green
+    } else {
+        Write-Host "Error during scaffolding. Exit code: $LASTEXITCODE" -ForegroundColor Red
+        Write-Host "Error output: $result" -ForegroundColor Red
+        Pop-Location
+        exit
+    }
 } catch {
     Write-Host "Error during scaffolding: $_" -ForegroundColor Red
     Pop-Location
@@ -273,14 +283,14 @@ if ($structureChoice -eq "1") {
     Write-Host "`nInstalling required packages..." -ForegroundColor Cyan
     Push-Location $libraryName
     foreach ($package in $packages) {
-        dotnet add package $package --version 8.0.2  *> $null 2>&1
+        dotnet add package $package --version 9.0.3  *> $null 2>&1
     }
     Pop-Location
 
     Write-Host "Installing packages for WPF project..." -ForegroundColor Green
     Push-Location $wpfAppName
     foreach ($package in $packages) {
-        dotnet add package $package --version 8.0.2  *> $null 2>&1
+        dotnet add package $package --version 9.0.3  *> $null 2>&1
     }
     Pop-Location
 
