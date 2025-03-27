@@ -1,8 +1,6 @@
-﻿using System.Configuration;
-using System.Data;
-using System.Windows;
+﻿using System.Windows;
 
-namespace AntiSwearingChatBox.App;
+namespace Anti_Swearing_Chat_Box.App;
 
 /// <summary>
 /// Interaction logic for App.xaml
