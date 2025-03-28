@@ -45,6 +45,174 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
+        <!--  Chat Menu Popup  -->
+        <Popup
+            x:Name="ChatMenuPopup"
+            AllowsTransparency="True"
+            PlacementTarget="{Binding ElementName=ChatMenuButton}"
+            PopupAnimation="Slide"
+            StaysOpen="False">
+            <Border
+                Width="300"
+                Margin="0,5,0,0"
+                Background="#111111"
+                BorderBrush="#1E1E1E"
+                BorderThickness="1"
+                CornerRadius="4"
+                Effect="{DynamicResource MaterialDesignShadowDepth2}">
+                <StackPanel Margin="10">
+                    <TextBlock
+                        Margin="10,10,0,10"
+                        FontSize="11"
+                        Foreground="#616161"
+                        Text="QUICK ACCESS" />
+
+                    <!--  Pinned Chats  -->
+                    <Border
+                        Margin="0,0,0,8"
+                        Padding="12"
+                        Background="#0D0D0D"
+                        CornerRadius="4"
+                        Cursor="Hand">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Border
+                                Width="36"
+                                Height="36"
+                                Margin="0,0,10,0"
+                                Background="#151515"
+                                CornerRadius="18">
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    FontWeight="SemiBold"
+                                    Foreground="#BCD9B4"
+                                    Text="JD" />
+                            </Border>
+
+                            <TextBlock
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                FontWeight="SemiBold"
+                                Foreground="#F8F5FF"
+                                Text="John Doe" />
+                        </Grid>
+                    </Border>
+
+                    <Border
+                        Margin="0,0,0,8"
+                        Padding="12"
+                        Background="#0D0D0D"
+                        CornerRadius="4"
+                        Cursor="Hand">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Border
+                                Width="36"
+                                Height="36"
+                                Margin="0,0,10,0"
+                                Background="#151515"
+                                CornerRadius="18">
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    FontWeight="SemiBold"
+                                    Foreground="#B3B3B3"
+                                    Text="GT" />
+                            </Border>
+
+                            <TextBlock
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                FontWeight="SemiBold"
+                                Foreground="#F8F5FF"
+                                Text="Group Team" />
+                        </Grid>
+                    </Border>
+
+                    <TextBlock
+                        Margin="10,10,0,10"
+                        FontSize="11"
+                        Foreground="#616161"
+                        Text="ACTIONS" />
+
+                    <!--  Quick Actions  -->
+                    <Button
+                        Height="40"
+                        Margin="0,0,0,8"
+                        HorizontalContentAlignment="Left"
+                        Background="#0D0D0D"
+                        BorderThickness="0">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon
+                                Width="18"
+                                Height="18"
+                                VerticalAlignment="Center"
+                                Foreground="#B3B3B3"
+                                Kind="AccountPlusOutline" />
+                            <TextBlock
+                                Margin="10,0,0,0"
+                                VerticalAlignment="Center"
+                                Foreground="#F8F5FF"
+                                Text="New Conversation" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button
+                        Height="40"
+                        Margin="0,0,0,8"
+                        HorizontalContentAlignment="Left"
+                        Background="#0D0D0D"
+                        BorderThickness="0">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon
+                                Width="18"
+                                Height="18"
+                                VerticalAlignment="Center"
+                                Foreground="#B3B3B3"
+                                Kind="FolderOpenOutline" />
+                            <TextBlock
+                                Margin="10,0,0,0"
+                                VerticalAlignment="Center"
+                                Foreground="#F8F5FF"
+                                Text="Archived Chats" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button
+                        Height="40"
+                        Margin="0,0,0,8"
+                        HorizontalContentAlignment="Left"
+                        Background="#0D0D0D"
+                        BorderThickness="0">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon
+                                Width="18"
+                                Height="18"
+                                VerticalAlignment="Center"
+                                Foreground="#B3B3B3"
+                                Kind="Cog" />
+                            <TextBlock
+                                Margin="10,0,0,0"
+                                VerticalAlignment="Center"
+                                Foreground="#F8F5FF"
+                                Text="Chat Settings" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Border>
+        </Popup>
+
         <!--  Custom Window Bar  -->
         <Border
             Grid.Row="0"
@@ -83,6 +251,17 @@
                     HorizontalAlignment="Right"
                     Orientation="Horizontal">
                     <Button
+                        x:Name="AdminDashboardButton"
+                        Margin="4,0"
+                        Style="{StaticResource WindowBarButtonStyle}">
+                        <materialDesign:PackIcon
+                            Width="16"
+                            Height="16"
+                            Foreground="#BCD9B4"
+                            Kind="ShieldAccount"
+                            ToolTip="Admin Dashboard" />
+                    </Button>
+                    <Button
                         Margin="4,0"
                         Click="MinimizeButton_Click"
                         Style="{StaticResource WindowBarButtonStyle}">
@@ -120,7 +299,6 @@
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="320" />
-                <ColumnDefinition Width="20" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
@@ -174,11 +352,13 @@
                     <!--  Conversation List  -->
                     <ScrollViewer
                         Grid.Row="1"
+                        Margin="16,0"
                         Padding="16,0"
                         VerticalScrollBarVisibility="Auto">
-                        <StackPanel Margin="20">
+                        <StackPanel>
+
                             <TextBlock
-                                Margin="4,16,0,12"
+                                Margin="4,0,0,12"
                                 FontSize="11"
                                 Foreground="#616161"
                                 Text="CHATS" />
@@ -186,7 +366,7 @@
                             <!--  Active Conversation  -->
                             <Border
                                 Margin="0,3"
-                                Padding="12"
+                                Padding="16"
                                 Background="#111111"
                                 BorderBrush="#BCD9B4"
                                 BorderThickness="1"
@@ -254,7 +434,7 @@
                             <!--  Regular Conversation  -->
                             <Border
                                 Margin="0,3"
-                                Padding="12"
+                                Padding="16"
                                 Background="#0D0D0D"
                                 CornerRadius="4"
                                 Cursor="Hand">
@@ -334,7 +514,7 @@
                             <!--  Add more conversations with similar styling  -->
                             <Border
                                 Margin="0,3"
-                                Padding="12"
+                                Padding="16"
                                 Background="#0D0D0D"
                                 CornerRadius="4"
                                 Cursor="Hand">
@@ -387,7 +567,7 @@
                     <Border
                         Grid.Row="2"
                         Margin="16,8,16,16"
-                        Padding="12"
+                        Padding="16"
                         Background="#111111"
                         CornerRadius="4">
                         <Grid>
@@ -452,7 +632,7 @@
             <Grid Grid.Column="1" />
 
             <!--  Main Chat Area  -->
-            <Grid Grid.Column="2">
+            <Grid Grid.Column="1">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
@@ -465,7 +645,7 @@
                     Background="#0E0E0E"
                     BorderBrush="#1E1E1E"
                     BorderThickness="0,0,0,1">
-                    <Grid Margin="20,12">
+                    <Grid Margin="24,16">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
@@ -508,6 +688,16 @@
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <Button
+                                x:Name="ChatMenuButton"
+                                Margin="4,0"
+                                Style="{StaticResource WindowBarButtonStyle}">
+                                <materialDesign:PackIcon
+                                    Width="16"
+                                    Height="16"
+                                    Foreground="#B3B3B3"
+                                    Kind="MessageText" />
+                            </Button>
                             <Button Margin="4,0" Style="{StaticResource WindowBarButtonStyle}">
                                 <materialDesign:PackIcon
                                     Width="16"
@@ -534,345 +724,352 @@
                 </Border>
 
                 <!--  Messages Area  -->
-                <ScrollViewer
-                    Grid.Row="1"
-                    Margin="24,16"
-                    Padding="24,16"
-                    Background="#0A0A0A"
-                    VerticalScrollBarVisibility="Auto">
-                    <StackPanel>
-                        <!--  System Message  -->
-                        <Border
-                            MaxWidth="560"
-                            Margin="0,8"
-                            Padding="14"
-                            HorizontalAlignment="Center"
-                            Background="#111111"
-                            BorderBrush="#1E1E1E"
-                            BorderThickness="1"
-                            CornerRadius="4"
-                            Effect="{DynamicResource MaterialDesignShadowDepth1}">
-                            <TextBlock
-                                FontSize="12"
-                                Foreground="#B3B3B3"
-                                Text="This conversation is being monitored for inappropriate language. Please keep it civil."
-                                TextWrapping="Wrap" />
-                        </Border>
+                <Grid Grid.Row="1" Background="#0A0A0A">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
 
-                        <!--  Timestamp  -->
-                        <Border
-                            Margin="0,16"
-                            Padding="8,3"
-                            HorizontalAlignment="Center"
-                            Background="#111111"
-                            BorderBrush="#1E1E1E"
-                            BorderThickness="1"
-                            CornerRadius="4">
-                            <TextBlock
-                                FontSize="10"
-                                Foreground="#616161"
-                                Text="Today, 12:30 PM" />
-                        </Border>
-
-                        <!--  Received Message - Matte Black  -->
-                        <Grid Margin="0,8" HorizontalAlignment="Left">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-
+                    <ScrollViewer
+                        Margin="24,16"
+                        Padding="24,16"
+                        VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <!--  System Message  -->
                             <Border
-                                Width="32"
-                                Height="32"
-                                Margin="0,0,12,0"
-                                VerticalAlignment="Top"
-                                Background="#151515"
-                                CornerRadius="16">
-                                <TextBlock
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
-                                    FontSize="11"
-                                    Foreground="#B3B3B3"
-                                    Text="JD" />
-                            </Border>
-
-                            <StackPanel Grid.Column="1">
-                                <Border
-                                    MaxWidth="450"
-                                    Padding="14"
-                                    Background="#111111"
-                                    CornerRadius="0,4,4,4"
-                                    Effect="{DynamicResource MaterialDesignShadowDepth1}">
-                                    <TextBlock
-                                        FontSize="13"
-                                        Foreground="#F8F5FF"
-                                        Text="Hi there! How are you doing today? I wanted to talk about our project."
-                                        TextWrapping="Wrap" />
-                                </Border>
-                                <TextBlock
-                                    Margin="8,4,0,0"
-                                    FontSize="10"
-                                    Foreground="#616161"
-                                    Text="12:32 PM" />
-                            </StackPanel>
-                        </Grid>
-
-                        <!--  Sent Message - Matte Black with Matcha Green Outline  -->
-                        <Grid Margin="0,16" HorizontalAlignment="Right">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-
-                            <StackPanel Grid.Column="0" HorizontalAlignment="Right">
-                                <Border
-                                    MaxWidth="450"
-                                    Padding="14"
-                                    Background="#111111"
-                                    BorderBrush="#BCD9B4"
-                                    BorderThickness="1"
-                                    CornerRadius="4,0,4,4"
-                                    Effect="{DynamicResource MaterialDesignShadowDepth1}">
-                                    <TextBlock
-                                        FontSize="13"
-                                        Foreground="#F8F5FF"
-                                        Text="Hey, I'm doing great! I've been working on the project. I've made some progress with the UI design."
-                                        TextWrapping="Wrap" />
-                                </Border>
-                                <StackPanel
-                                    Margin="0,4,8,0"
-                                    HorizontalAlignment="Right"
-                                    Orientation="Horizontal">
-                                    <TextBlock
-                                        FontSize="10"
-                                        Foreground="#616161"
-                                        Text="12:34 PM" />
-                                    <materialDesign:PackIcon
-                                        Width="12"
-                                        Height="12"
-                                        Margin="4,0,0,0"
-                                        VerticalAlignment="Center"
-                                        Foreground="#BCD9B4"
-                                        Kind="CheckAll" />
-                                </StackPanel>
-                            </StackPanel>
-
-                            <Border
-                                Grid.Column="1"
-                                Width="32"
-                                Height="32"
-                                Margin="12,0,0,0"
-                                VerticalAlignment="Top"
-                                Background="#151515"
-                                CornerRadius="16">
-                                <TextBlock
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
-                                    FontSize="11"
-                                    Foreground="#BCD9B4"
-                                    Text="Me" />
-                            </Border>
-                        </Grid>
-
-                        <!--  Received Message  -->
-                        <Grid Margin="0,16" HorizontalAlignment="Left">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-
-                            <Border
-                                Width="32"
-                                Height="32"
-                                Margin="0,0,12,0"
-                                VerticalAlignment="Top"
-                                Background="#151515"
-                                CornerRadius="16">
-                                <TextBlock
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
-                                    FontSize="11"
-                                    Foreground="#B3B3B3"
-                                    Text="JD" />
-                            </Border>
-
-                            <StackPanel Grid.Column="1">
-                                <Border
-                                    MaxWidth="450"
-                                    Padding="14"
-                                    Background="#111111"
-                                    CornerRadius="0,4,4,4"
-                                    Effect="{DynamicResource MaterialDesignShadowDepth1}">
-                                    <TextBlock
-                                        FontSize="13"
-                                        Foreground="#F8F5FF"
-                                        Text="That sounds great! Can you share your progress sometime this week? I'd love to see what you've done."
-                                        TextWrapping="Wrap" />
-                                </Border>
-                                <TextBlock
-                                    Margin="8,4,0,0"
-                                    FontSize="10"
-                                    Foreground="#616161"
-                                    Text="12:36 PM" />
-                            </StackPanel>
-                        </Grid>
-
-                        <!--  Sent Message - Matte Black with Matcha Green Outline  -->
-                        <Grid Margin="0,16" HorizontalAlignment="Right">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-
-                            <StackPanel Grid.Column="0" HorizontalAlignment="Right">
-                                <Border
-                                    MaxWidth="450"
-                                    Padding="14"
-                                    Background="#111111"
-                                    BorderBrush="#BCD9B4"
-                                    BorderThickness="1"
-                                    CornerRadius="4,0,4,4"
-                                    Effect="{DynamicResource MaterialDesignShadowDepth1}">
-                                    <TextBlock
-                                        FontSize="13"
-                                        Foreground="#F8F5FF"
-                                        Text="Sure thing! I'll share the Figma designs tomorrow morning. Let me know what you think."
-                                        TextWrapping="Wrap" />
-                                </Border>
-                                <StackPanel
-                                    Margin="0,4,8,0"
-                                    HorizontalAlignment="Right"
-                                    Orientation="Horizontal">
-                                    <TextBlock
-                                        FontSize="10"
-                                        Foreground="#616161"
-                                        Text="12:38 PM" />
-                                    <materialDesign:PackIcon
-                                        Width="12"
-                                        Height="12"
-                                        Margin="4,0,0,0"
-                                        VerticalAlignment="Center"
-                                        Foreground="#BCD9B4"
-                                        Kind="CheckAll" />
-                                </StackPanel>
-                            </StackPanel>
-
-                            <Border
-                                Grid.Column="1"
-                                Width="32"
-                                Height="32"
-                                Margin="12,0,0,0"
-                                VerticalAlignment="Top"
-                                Background="#151515"
-                                CornerRadius="16">
-                                <TextBlock
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
-                                    FontSize="11"
-                                    Foreground="#BCD9B4"
-                                    Text="Me" />
-                            </Border>
-                        </Grid>
-
-                        <!--  Typing Indicator  -->
-                        <Grid Margin="0,16" HorizontalAlignment="Left">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-
-                            <Border
-                                Width="32"
-                                Height="32"
-                                Margin="0,0,12,0"
-                                VerticalAlignment="Top"
-                                Background="#151515"
-                                CornerRadius="16">
-                                <TextBlock
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
-                                    FontSize="11"
-                                    Foreground="#B3B3B3"
-                                    Text="JD" />
-                            </Border>
-
-                            <Border
-                                Grid.Column="1"
-                                Padding="14,10"
+                                MaxWidth="560"
+                                Margin="0,8"
+                                Padding="14"
+                                HorizontalAlignment="Center"
                                 Background="#111111"
-                                CornerRadius="0,4,4,4"
+                                BorderBrush="#1E1E1E"
+                                BorderThickness="1"
+                                CornerRadius="4"
                                 Effect="{DynamicResource MaterialDesignShadowDepth1}">
-                                <StackPanel Orientation="Horizontal">
-                                    <Ellipse
-                                        Width="7"
-                                        Height="7"
-                                        Margin="0,0,3,0"
-                                        Fill="#F8F5FF">
-                                        <Ellipse.Triggers>
-                                            <EventTrigger RoutedEvent="Ellipse.Loaded">
-                                                <BeginStoryboard>
-                                                    <Storyboard>
-                                                        <DoubleAnimation
-                                                            AutoReverse="True"
-                                                            RepeatBehavior="Forever"
-                                                            Storyboard.TargetProperty="Opacity"
-                                                            From="1.0"
-                                                            To="0.3"
-                                                            Duration="0:0:0.6" />
-                                                    </Storyboard>
-                                                </BeginStoryboard>
-                                            </EventTrigger>
-                                        </Ellipse.Triggers>
-                                    </Ellipse>
-                                    <Ellipse
-                                        Width="7"
-                                        Height="7"
-                                        Margin="0,0,3,0"
-                                        Fill="#F8F5FF">
-                                        <Ellipse.Triggers>
-                                            <EventTrigger RoutedEvent="Ellipse.Loaded">
-                                                <BeginStoryboard>
-                                                    <Storyboard BeginTime="0:0:0.2">
-                                                        <DoubleAnimation
-                                                            AutoReverse="True"
-                                                            RepeatBehavior="Forever"
-                                                            Storyboard.TargetProperty="Opacity"
-                                                            From="1.0"
-                                                            To="0.3"
-                                                            Duration="0:0:0.6" />
-                                                    </Storyboard>
-                                                </BeginStoryboard>
-                                            </EventTrigger>
-                                        </Ellipse.Triggers>
-                                    </Ellipse>
-                                    <Ellipse
-                                        Width="7"
-                                        Height="7"
-                                        Fill="#F8F5FF">
-                                        <Ellipse.Triggers>
-                                            <EventTrigger RoutedEvent="Ellipse.Loaded">
-                                                <BeginStoryboard>
-                                                    <Storyboard BeginTime="0:0:0.4">
-                                                        <DoubleAnimation
-                                                            AutoReverse="True"
-                                                            RepeatBehavior="Forever"
-                                                            Storyboard.TargetProperty="Opacity"
-                                                            From="1.0"
-                                                            To="0.3"
-                                                            Duration="0:0:0.6" />
-                                                    </Storyboard>
-                                                </BeginStoryboard>
-                                            </EventTrigger>
-                                        </Ellipse.Triggers>
-                                    </Ellipse>
-                                </StackPanel>
+                                <TextBlock
+                                    FontSize="12"
+                                    Foreground="#B3B3B3"
+                                    Text="This conversation is being monitored for inappropriate language. Please keep it civil."
+                                    TextWrapping="Wrap" />
                             </Border>
-                        </Grid>
-                    </StackPanel>
-                </ScrollViewer>
 
-                <!--  Message Input Area  -->
-                <Grid Grid.Row="2" Margin="24,8,24,16">
+                            <!--  Timestamp  -->
+                            <Border
+                                Margin="0,16"
+                                Padding="8,3"
+                                HorizontalAlignment="Center"
+                                Background="#111111"
+                                BorderBrush="#1E1E1E"
+                                BorderThickness="1"
+                                CornerRadius="4">
+                                <TextBlock
+                                    FontSize="10"
+                                    Foreground="#616161"
+                                    Text="Today, 12:30 PM" />
+                            </Border>
+
+                            <!--  Received Message - Matte Black  -->
+                            <Grid Margin="0,8" HorizontalAlignment="Left">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <Border
+                                    Width="32"
+                                    Height="32"
+                                    Margin="0,0,12,0"
+                                    VerticalAlignment="Top"
+                                    Background="#151515"
+                                    CornerRadius="16">
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="11"
+                                        Foreground="#B3B3B3"
+                                        Text="JD" />
+                                </Border>
+
+                                <StackPanel Grid.Column="1">
+                                    <Border
+                                        MaxWidth="450"
+                                        Padding="14"
+                                        Background="#111111"
+                                        CornerRadius="0,4,4,4"
+                                        Effect="{DynamicResource MaterialDesignShadowDepth1}">
+                                        <TextBlock
+                                            FontSize="13"
+                                            Foreground="#F8F5FF"
+                                            Text="Hi there! How are you doing today? I wanted to talk about our project."
+                                            TextWrapping="Wrap" />
+                                    </Border>
+                                    <TextBlock
+                                        Margin="8,4,0,0"
+                                        FontSize="10"
+                                        Foreground="#616161"
+                                        Text="12:32 PM" />
+                                </StackPanel>
+                            </Grid>
+
+                            <!--  Sent Message - Matte Black with Matcha Green Outline  -->
+                            <Grid Margin="0,16" HorizontalAlignment="Right">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0" HorizontalAlignment="Right">
+                                    <Border
+                                        MaxWidth="450"
+                                        Padding="14"
+                                        Background="#111111"
+                                        BorderBrush="#BCD9B4"
+                                        BorderThickness="1"
+                                        CornerRadius="4,0,4,4"
+                                        Effect="{DynamicResource MaterialDesignShadowDepth1}">
+                                        <TextBlock
+                                            FontSize="13"
+                                            Foreground="#F8F5FF"
+                                            Text="Hey, I'm doing great! I've been working on the project. I've made some progress with the UI design."
+                                            TextWrapping="Wrap" />
+                                    </Border>
+                                    <StackPanel
+                                        Margin="0,4,8,0"
+                                        HorizontalAlignment="Right"
+                                        Orientation="Horizontal">
+                                        <TextBlock
+                                            FontSize="10"
+                                            Foreground="#616161"
+                                            Text="12:34 PM" />
+                                        <materialDesign:PackIcon
+                                            Width="12"
+                                            Height="12"
+                                            Margin="4,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Foreground="#BCD9B4"
+                                            Kind="CheckAll" />
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <Border
+                                    Grid.Column="1"
+                                    Width="32"
+                                    Height="32"
+                                    Margin="12,0,0,0"
+                                    VerticalAlignment="Top"
+                                    Background="#151515"
+                                    CornerRadius="16">
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="11"
+                                        Foreground="#BCD9B4"
+                                        Text="Me" />
+                                </Border>
+                            </Grid>
+
+                            <!--  Received Message  -->
+                            <Grid Margin="0,16" HorizontalAlignment="Left">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <Border
+                                    Width="32"
+                                    Height="32"
+                                    Margin="0,0,12,0"
+                                    VerticalAlignment="Top"
+                                    Background="#151515"
+                                    CornerRadius="16">
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="11"
+                                        Foreground="#B3B3B3"
+                                        Text="JD" />
+                                </Border>
+
+                                <StackPanel Grid.Column="1">
+                                    <Border
+                                        MaxWidth="450"
+                                        Padding="14"
+                                        Background="#111111"
+                                        CornerRadius="0,4,4,4"
+                                        Effect="{DynamicResource MaterialDesignShadowDepth1}">
+                                        <TextBlock
+                                            FontSize="13"
+                                            Foreground="#F8F5FF"
+                                            Text="That sounds great! Can you share your progress sometime this week? I'd love to see what you've done."
+                                            TextWrapping="Wrap" />
+                                    </Border>
+                                    <TextBlock
+                                        Margin="8,4,0,0"
+                                        FontSize="10"
+                                        Foreground="#616161"
+                                        Text="12:36 PM" />
+                                </StackPanel>
+                            </Grid>
+
+                            <!--  Sent Message - Matte Black with Matcha Green Outline  -->
+                            <Grid Margin="0,16" HorizontalAlignment="Right">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0" HorizontalAlignment="Right">
+                                    <Border
+                                        MaxWidth="450"
+                                        Padding="14"
+                                        Background="#111111"
+                                        BorderBrush="#BCD9B4"
+                                        BorderThickness="1"
+                                        CornerRadius="4,0,4,4"
+                                        Effect="{DynamicResource MaterialDesignShadowDepth1}">
+                                        <TextBlock
+                                            FontSize="13"
+                                            Foreground="#F8F5FF"
+                                            Text="Sure thing! I'll share the Figma designs tomorrow morning. Let me know what you think."
+                                            TextWrapping="Wrap" />
+                                    </Border>
+                                    <StackPanel
+                                        Margin="0,4,8,0"
+                                        HorizontalAlignment="Right"
+                                        Orientation="Horizontal">
+                                        <TextBlock
+                                            FontSize="10"
+                                            Foreground="#616161"
+                                            Text="12:38 PM" />
+                                        <materialDesign:PackIcon
+                                            Width="12"
+                                            Height="12"
+                                            Margin="4,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Foreground="#BCD9B4"
+                                            Kind="CheckAll" />
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <Border
+                                    Grid.Column="1"
+                                    Width="32"
+                                    Height="32"
+                                    Margin="12,0,0,0"
+                                    VerticalAlignment="Top"
+                                    Background="#151515"
+                                    CornerRadius="16">
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="11"
+                                        Foreground="#BCD9B4"
+                                        Text="Me" />
+                                </Border>
+                            </Grid>
+
+                            <!--  Typing Indicator  -->
+                            <Grid Margin="0,16" HorizontalAlignment="Left">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <Border
+                                    Width="32"
+                                    Height="32"
+                                    Margin="0,0,12,0"
+                                    VerticalAlignment="Top"
+                                    Background="#151515"
+                                    CornerRadius="16">
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="11"
+                                        Foreground="#B3B3B3"
+                                        Text="JD" />
+                                </Border>
+
+                                <Border
+                                    Grid.Column="1"
+                                    Padding="14,10"
+                                    Background="#111111"
+                                    CornerRadius="0,4,4,4"
+                                    Effect="{DynamicResource MaterialDesignShadowDepth1}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Ellipse
+                                            Width="7"
+                                            Height="7"
+                                            Margin="0,0,3,0"
+                                            Fill="#F8F5FF">
+                                            <Ellipse.Triggers>
+                                                <EventTrigger RoutedEvent="Ellipse.Loaded">
+                                                    <BeginStoryboard>
+                                                        <Storyboard>
+                                                            <DoubleAnimation
+                                                                AutoReverse="True"
+                                                                RepeatBehavior="Forever"
+                                                                Storyboard.TargetProperty="Opacity"
+                                                                From="1.0"
+                                                                To="0.3"
+                                                                Duration="0:0:0.6" />
+                                                        </Storyboard>
+                                                    </BeginStoryboard>
+                                                </EventTrigger>
+                                            </Ellipse.Triggers>
+                                        </Ellipse>
+                                        <Ellipse
+                                            Width="7"
+                                            Height="7"
+                                            Margin="0,0,3,0"
+                                            Fill="#F8F5FF">
+                                            <Ellipse.Triggers>
+                                                <EventTrigger RoutedEvent="Ellipse.Loaded">
+                                                    <BeginStoryboard>
+                                                        <Storyboard BeginTime="0:0:0.2">
+                                                            <DoubleAnimation
+                                                                AutoReverse="True"
+                                                                RepeatBehavior="Forever"
+                                                                Storyboard.TargetProperty="Opacity"
+                                                                From="1.0"
+                                                                To="0.3"
+                                                                Duration="0:0:0.6" />
+                                                        </Storyboard>
+                                                    </BeginStoryboard>
+                                                </EventTrigger>
+                                            </Ellipse.Triggers>
+                                        </Ellipse>
+                                        <Ellipse
+                                            Width="7"
+                                            Height="7"
+                                            Fill="#F8F5FF">
+                                            <Ellipse.Triggers>
+                                                <EventTrigger RoutedEvent="Ellipse.Loaded">
+                                                    <BeginStoryboard>
+                                                        <Storyboard BeginTime="0:0:0.4">
+                                                            <DoubleAnimation
+                                                                AutoReverse="True"
+                                                                RepeatBehavior="Forever"
+                                                                Storyboard.TargetProperty="Opacity"
+                                                                From="1.0"
+                                                                To="0.3"
+                                                                Duration="0:0:0.6" />
+                                                        </Storyboard>
+                                                    </BeginStoryboard>
+                                                </EventTrigger>
+                                            </Ellipse.Triggers>
+                                        </Ellipse>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+
+                <!--  Message Input Area - Now at the bottom of chat area  -->
+                <Grid
+                    Grid.Row="1"
+                    Margin="24,8,24,16"
+                    VerticalAlignment="Bottom">
                     <Border
                         Padding="14"
                         Background="#111111"
@@ -936,6 +1133,1143 @@
                         </Grid>
                     </Border>
                 </Grid>
+            </Grid>
+        </Grid>
+
+        <!--  Admin Dashboard Panel (Initially Hidden)  -->
+        <Grid
+            x:Name="AdminDashboardPanel"
+            Grid.Row="1"
+            Visibility="Collapsed">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!--  Admin Header  -->
+            <Border
+                Grid.Row="0"
+                Background="#111111"
+                BorderBrush="#1E1E1E"
+                BorderThickness="0,0,0,1">
+                <Grid Margin="24,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon
+                            Width="22"
+                            Height="22"
+                            VerticalAlignment="Center"
+                            Foreground="#BCD9B4"
+                            Kind="ShieldAccount" />
+                        <TextBlock
+                            Margin="10,0,0,0"
+                            VerticalAlignment="Center"
+                            FontSize="16"
+                            FontWeight="SemiBold"
+                            Foreground="#F8F5FF"
+                            Text="ADMIN DASHBOARD" />
+                    </StackPanel>
+
+                    <Button
+                        x:Name="CloseAdminDashboardButton"
+                        Grid.Column="1"
+                        Style="{StaticResource WindowBarButtonStyle}">
+                        <materialDesign:PackIcon
+                            Width="16"
+                            Height="16"
+                            Foreground="#B3B3B3"
+                            Kind="Close" />
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!--  Admin Content  -->
+            <Grid Grid.Row="1" Background="#0A0A0A">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="240" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!--  Admin Menu  -->
+                <Border
+                    Grid.Column="0"
+                    Background="#0C0C0C"
+                    BorderBrush="#1E1E1E"
+                    BorderThickness="0,0,1,0">
+                    <StackPanel Margin="16">
+                        <TextBlock
+                            Margin="10,10,0,10"
+                            FontSize="11"
+                            Foreground="#616161"
+                            Text="MANAGEMENT" />
+
+                        <!--  Menu Items  -->
+                        <Button
+                            x:Name="DashboardButton"
+                            Height="40"
+                            Margin="0,0,0,8"
+                            HorizontalContentAlignment="Left"
+                            Background="#111111"
+                            BorderThickness="0"
+                            IsEnabled="False">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon
+                                    Width="18"
+                                    Height="18"
+                                    VerticalAlignment="Center"
+                                    Foreground="#BCD9B4"
+                                    Kind="ViewDashboard" />
+                                <TextBlock
+                                    Margin="10,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Foreground="#F8F5FF"
+                                    Text="Dashboard" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button
+                            Height="40"
+                            Margin="0,0,0,8"
+                            HorizontalContentAlignment="Left"
+                            Background="#0D0D0D"
+                            BorderThickness="0">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon
+                                    Width="18"
+                                    Height="18"
+                                    VerticalAlignment="Center"
+                                    Foreground="#B3B3B3"
+                                    Kind="AccountGroup" />
+                                <TextBlock
+                                    Margin="10,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Foreground="#F8F5FF"
+                                    Text="User Management" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button
+                            Height="40"
+                            Margin="0,0,0,8"
+                            HorizontalContentAlignment="Left"
+                            Background="#0D0D0D"
+                            BorderThickness="0">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon
+                                    Width="18"
+                                    Height="18"
+                                    VerticalAlignment="Center"
+                                    Foreground="#B3B3B3"
+                                    Kind="ShieldAlert" />
+                                <TextBlock
+                                    Margin="10,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Foreground="#F8F5FF"
+                                    Text="Content Moderation" />
+                            </StackPanel>
+                        </Button>
+
+                        <TextBlock
+                            Margin="10,20,0,10"
+                            FontSize="11"
+                            Foreground="#616161"
+                            Text="MONITORING" />
+
+                        <Button
+                            Height="40"
+                            Margin="0,0,0,8"
+                            HorizontalContentAlignment="Left"
+                            Background="#0D0D0D"
+                            BorderThickness="0">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon
+                                    Width="18"
+                                    Height="18"
+                                    VerticalAlignment="Center"
+                                    Foreground="#B3B3B3"
+                                    Kind="ChartLine" />
+                                <TextBlock
+                                    Margin="10,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Foreground="#F8F5FF"
+                                    Text="Statistics" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button
+                            Height="40"
+                            Margin="0,0,0,8"
+                            HorizontalContentAlignment="Left"
+                            Background="#0D0D0D"
+                            BorderThickness="0">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon
+                                    Width="18"
+                                    Height="18"
+                                    VerticalAlignment="Center"
+                                    Foreground="#B3B3B3"
+                                    Kind="TextBoxCheck" />
+                                <TextBlock
+                                    Margin="10,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Foreground="#F8F5FF"
+                                    Text="Language Filter" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button
+                            Height="40"
+                            Margin="0,0,0,8"
+                            HorizontalContentAlignment="Left"
+                            Background="#0D0D0D"
+                            BorderThickness="0">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon
+                                    Width="18"
+                                    Height="18"
+                                    VerticalAlignment="Center"
+                                    Foreground="#B3B3B3"
+                                    Kind="History" />
+                                <TextBlock
+                                    Margin="10,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Foreground="#F8F5FF"
+                                    Text="Logs" />
+                            </StackPanel>
+                        </Button>
+
+                        <TextBlock
+                            Margin="10,20,0,10"
+                            FontSize="11"
+                            Foreground="#616161"
+                            Text="SETTINGS" />
+
+                        <Button
+                            Height="40"
+                            Margin="0,0,0,8"
+                            HorizontalContentAlignment="Left"
+                            Background="#0D0D0D"
+                            BorderThickness="0">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon
+                                    Width="18"
+                                    Height="18"
+                                    VerticalAlignment="Center"
+                                    Foreground="#B3B3B3"
+                                    Kind="Cog" />
+                                <TextBlock
+                                    Margin="10,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Foreground="#F8F5FF"
+                                    Text="System Settings" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Border>
+
+                <!--  Admin Dashboard Content  -->
+                <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="24,20">
+                        <!--  Statistics Cards  -->
+                        <TextBlock
+                            Margin="0,0,0,20"
+                            FontSize="16"
+                            FontWeight="SemiBold"
+                            Foreground="#F8F5FF"
+                            Text="SYSTEM OVERVIEW" />
+
+                        <Grid Margin="0,0,0,24">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!--  Total Users Card  -->
+                            <Border
+                                Grid.Column="0"
+                                Margin="0,0,12,0"
+                                Padding="16"
+                                Background="#111111"
+                                CornerRadius="4">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <StackPanel
+                                        Grid.Row="0"
+                                        Margin="0,0,0,12"
+                                        Orientation="Horizontal">
+                                        <materialDesign:PackIcon
+                                            Width="22"
+                                            Height="22"
+                                            Foreground="#BCD9B4"
+                                            Kind="AccountMultiple" />
+                                        <TextBlock
+                                            Margin="8,0,0,0"
+                                            VerticalAlignment="Center"
+                                            FontSize="12"
+                                            Foreground="#B3B3B3"
+                                            Text="TOTAL USERS" />
+                                    </StackPanel>
+
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        FontSize="28"
+                                        FontWeight="SemiBold"
+                                        Foreground="#F8F5FF"
+                                        Text="1,245" />
+
+                                    <StackPanel
+                                        Grid.Row="2"
+                                        Margin="0,8,0,0"
+                                        Orientation="Horizontal">
+                                        <materialDesign:PackIcon
+                                            Width="14"
+                                            Height="14"
+                                            VerticalAlignment="Center"
+                                            Foreground="#BCD9B4"
+                                            Kind="TrendingUp" />
+                                        <TextBlock
+                                            Margin="4,0,0,0"
+                                            VerticalAlignment="Center"
+                                            FontSize="11"
+                                            Foreground="#BCD9B4"
+                                            Text="↑ 12% " />
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            FontSize="11"
+                                            Foreground="#616161"
+                                            Text="this month" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!--  Active Chats Card  -->
+                            <Border
+                                Grid.Column="1"
+                                Margin="12,0"
+                                Padding="16"
+                                Background="#111111"
+                                CornerRadius="4">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <StackPanel
+                                        Grid.Row="0"
+                                        Margin="0,0,0,12"
+                                        Orientation="Horizontal">
+                                        <materialDesign:PackIcon
+                                            Width="22"
+                                            Height="22"
+                                            Foreground="#BCD9B4"
+                                            Kind="Chat" />
+                                        <TextBlock
+                                            Margin="8,0,0,0"
+                                            VerticalAlignment="Center"
+                                            FontSize="12"
+                                            Foreground="#B3B3B3"
+                                            Text="ACTIVE CHATS" />
+                                    </StackPanel>
+
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        FontSize="28"
+                                        FontWeight="SemiBold"
+                                        Foreground="#F8F5FF"
+                                        Text="438" />
+
+                                    <StackPanel
+                                        Grid.Row="2"
+                                        Margin="0,8,0,0"
+                                        Orientation="Horizontal">
+                                        <materialDesign:PackIcon
+                                            Width="14"
+                                            Height="14"
+                                            VerticalAlignment="Center"
+                                            Foreground="#BCD9B4"
+                                            Kind="TrendingUp" />
+                                        <TextBlock
+                                            Margin="4,0,0,0"
+                                            VerticalAlignment="Center"
+                                            FontSize="11"
+                                            Foreground="#BCD9B4"
+                                            Text="↑ 8% " />
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            FontSize="11"
+                                            Foreground="#616161"
+                                            Text="today" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!--  Content Filtered Card  -->
+                            <Border
+                                Grid.Column="2"
+                                Margin="12,0"
+                                Padding="16"
+                                Background="#111111"
+                                CornerRadius="4">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <StackPanel
+                                        Grid.Row="0"
+                                        Margin="0,0,0,12"
+                                        Orientation="Horizontal">
+                                        <materialDesign:PackIcon
+                                            Width="22"
+                                            Height="22"
+                                            Foreground="#BCD9B4"
+                                            Kind="ShieldCheck" />
+                                        <TextBlock
+                                            Margin="8,0,0,0"
+                                            VerticalAlignment="Center"
+                                            FontSize="12"
+                                            Foreground="#B3B3B3"
+                                            Text="FILTERED CONTENT" />
+                                    </StackPanel>
+
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        FontSize="28"
+                                        FontWeight="SemiBold"
+                                        Foreground="#F8F5FF"
+                                        Text="892" />
+
+                                    <StackPanel
+                                        Grid.Row="2"
+                                        Margin="0,8,0,0"
+                                        Orientation="Horizontal">
+                                        <materialDesign:PackIcon
+                                            Width="14"
+                                            Height="14"
+                                            VerticalAlignment="Center"
+                                            Foreground="#BCD9B4"
+                                            Kind="TrendingDown" />
+                                        <TextBlock
+                                            Margin="4,0,0,0"
+                                            VerticalAlignment="Center"
+                                            FontSize="11"
+                                            Foreground="#BCD9B4"
+                                            Text="↓ 5% " />
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            FontSize="11"
+                                            Foreground="#616161"
+                                            Text="this week" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!--  System Health Card  -->
+                            <Border
+                                Grid.Column="3"
+                                Margin="12,0,0,0"
+                                Padding="16"
+                                Background="#111111"
+                                CornerRadius="4">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <StackPanel
+                                        Grid.Row="0"
+                                        Margin="0,0,0,12"
+                                        Orientation="Horizontal">
+                                        <materialDesign:PackIcon
+                                            Width="22"
+                                            Height="22"
+                                            Foreground="#BCD9B4"
+                                            Kind="ServerNetwork" />
+                                        <TextBlock
+                                            Margin="8,0,0,0"
+                                            VerticalAlignment="Center"
+                                            FontSize="12"
+                                            Foreground="#B3B3B3"
+                                            Text="SYSTEM HEALTH" />
+                                    </StackPanel>
+
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        FontSize="28"
+                                        FontWeight="SemiBold"
+                                        Foreground="#F8F5FF"
+                                        Text="99.8%" />
+
+                                    <StackPanel
+                                        Grid.Row="2"
+                                        Margin="0,8,0,0"
+                                        Orientation="Horizontal">
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            FontSize="11"
+                                            Foreground="#BCD9B4"
+                                            Text="Excellent" />
+                                        <TextBlock
+                                            Margin="4,0,0,0"
+                                            VerticalAlignment="Center"
+                                            FontSize="11"
+                                            Foreground="#616161"
+                                            Text=" status" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </Grid>
+
+                        <!--  Content Filtering  -->
+                        <Grid Margin="0,0,0,24">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*" />
+                                <ColumnDefinition Width="1*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!--  Content Filtering Metrics  -->
+                            <Border
+                                Grid.Column="0"
+                                Margin="0,0,12,0"
+                                Padding="20"
+                                Background="#111111"
+                                CornerRadius="4">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock
+                                        Grid.Row="0"
+                                        FontSize="14"
+                                        FontWeight="SemiBold"
+                                        Foreground="#F8F5FF"
+                                        Text="CONTENT FILTERING ACTIVITY" />
+
+                                    <!--  Activity Graph  -->
+                                    <Grid
+                                        Grid.Row="1"
+                                        Height="180"
+                                        Margin="0,16,0,0">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+
+                                        <!--  Graph Area  -->
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="*" />
+                                                <RowDefinition Height="*" />
+                                                <RowDefinition Height="*" />
+                                                <RowDefinition Height="*" />
+                                            </Grid.RowDefinitions>
+
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <!--  Horizontal Grid Lines  -->
+                                            <Border
+                                                Grid.Row="0"
+                                                Margin="0,0,0,0"
+                                                BorderBrush="#151515"
+                                                BorderThickness="0,0,0,1" />
+                                            <Border
+                                                Grid.Row="1"
+                                                Margin="0,0,0,0"
+                                                BorderBrush="#151515"
+                                                BorderThickness="0,0,0,1" />
+                                            <Border
+                                                Grid.Row="2"
+                                                Margin="0,0,0,0"
+                                                BorderBrush="#151515"
+                                                BorderThickness="0,0,0,1" />
+                                            <Border
+                                                Grid.Row="3"
+                                                Margin="0,0,0,0"
+                                                BorderBrush="#151515"
+                                                BorderThickness="0,0,0,1" />
+
+                                            <!--  Graph Path  -->
+                                            <Path
+                                                Grid.RowSpan="4"
+                                                Data="M0,75 L50,40 L100,60 L150,20 L200,45 L250,30 L300,10 L350,25 L400,15 L450,35 L500,5"
+                                                Stretch="Fill"
+                                                Stroke="#BCD9B4"
+                                                StrokeThickness="2" />
+
+                                            <!--  Vertical Markers  -->
+                                            <Border
+                                                Grid.RowSpan="4"
+                                                Grid.Column="0"
+                                                Margin="0,0,0,0"
+                                                BorderBrush="#151515"
+                                                BorderThickness="1,0,0,0" />
+                                        </Grid>
+
+                                        <!--  Graph Labels  -->
+                                        <StackPanel
+                                            Grid.Row="1"
+                                            Margin="0,10,0,0"
+                                            Orientation="Horizontal">
+                                            <TextBlock
+                                                Width="80"
+                                                HorizontalAlignment="Left"
+                                                FontSize="10"
+                                                Foreground="#616161"
+                                                Text="Oct 1" />
+                                            <TextBlock
+                                                Width="80"
+                                                HorizontalAlignment="Left"
+                                                FontSize="10"
+                                                Foreground="#616161"
+                                                Text="Oct 5" />
+                                            <TextBlock
+                                                Width="80"
+                                                HorizontalAlignment="Left"
+                                                FontSize="10"
+                                                Foreground="#616161"
+                                                Text="Oct 10" />
+                                            <TextBlock
+                                                Width="80"
+                                                HorizontalAlignment="Left"
+                                                FontSize="10"
+                                                Foreground="#616161"
+                                                Text="Oct 15" />
+                                            <TextBlock
+                                                Width="80"
+                                                HorizontalAlignment="Left"
+                                                FontSize="10"
+                                                Foreground="#616161"
+                                                Text="Oct 20" />
+                                            <TextBlock
+                                                Width="80"
+                                                HorizontalAlignment="Left"
+                                                FontSize="10"
+                                                Foreground="#616161"
+                                                Text="Oct 25" />
+                                            <TextBlock
+                                                Width="80"
+                                                HorizontalAlignment="Left"
+                                                FontSize="10"
+                                                Foreground="#616161"
+                                                Text="Oct 30" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Grid>
+                            </Border>
+
+                            <!--  Language Filter Stats  -->
+                            <Border
+                                Grid.Column="1"
+                                Margin="12,0,0,0"
+                                Padding="20"
+                                Background="#111111"
+                                CornerRadius="4">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock
+                                        Grid.Row="0"
+                                        FontSize="14"
+                                        FontWeight="SemiBold"
+                                        Foreground="#F8F5FF"
+                                        Text="TOP FILTERED WORDS" />
+
+                                    <StackPanel Grid.Row="1" Margin="0,16,0,0">
+                                        <!--  Top Filtered Word Item 1  -->
+                                        <Grid Margin="0,0,0,12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock
+                                                FontSize="13"
+                                                Foreground="#F8F5FF"
+                                                Text="****" />
+                                            <TextBlock
+                                                Grid.Column="1"
+                                                FontSize="13"
+                                                FontWeight="SemiBold"
+                                                Foreground="#BCD9B4"
+                                                Text="142" />
+                                        </Grid>
+
+                                        <!--  Top Filtered Word Item 2  -->
+                                        <Grid Margin="0,0,0,12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock
+                                                FontSize="13"
+                                                Foreground="#F8F5FF"
+                                                Text="****" />
+                                            <TextBlock
+                                                Grid.Column="1"
+                                                FontSize="13"
+                                                FontWeight="SemiBold"
+                                                Foreground="#BCD9B4"
+                                                Text="98" />
+                                        </Grid>
+
+                                        <!--  Top Filtered Word Item 3  -->
+                                        <Grid Margin="0,0,0,12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock
+                                                FontSize="13"
+                                                Foreground="#F8F5FF"
+                                                Text="****" />
+                                            <TextBlock
+                                                Grid.Column="1"
+                                                FontSize="13"
+                                                FontWeight="SemiBold"
+                                                Foreground="#BCD9B4"
+                                                Text="87" />
+                                        </Grid>
+
+                                        <!--  Top Filtered Word Item 4  -->
+                                        <Grid Margin="0,0,0,12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock
+                                                FontSize="13"
+                                                Foreground="#F8F5FF"
+                                                Text="****" />
+                                            <TextBlock
+                                                Grid.Column="1"
+                                                FontSize="13"
+                                                FontWeight="SemiBold"
+                                                Foreground="#BCD9B4"
+                                                Text="65" />
+                                        </Grid>
+
+                                        <!--  Top Filtered Word Item 5  -->
+                                        <Grid Margin="0,0,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock
+                                                FontSize="13"
+                                                Foreground="#F8F5FF"
+                                                Text="****" />
+                                            <TextBlock
+                                                Grid.Column="1"
+                                                FontSize="13"
+                                                FontWeight="SemiBold"
+                                                Foreground="#BCD9B4"
+                                                Text="43" />
+                                        </Grid>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </Grid>
+
+                        <!--  Recent Activity and Alerts  -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!--  Recent Activity  -->
+                            <Border
+                                Grid.Column="0"
+                                Margin="0,0,12,0"
+                                Padding="20"
+                                Background="#111111"
+                                CornerRadius="4">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+
+                                    <Grid>
+                                        <TextBlock
+                                            Grid.Row="0"
+                                            FontSize="14"
+                                            FontWeight="SemiBold"
+                                            Foreground="#F8F5FF"
+                                            Text="RECENT ACTIVITY" />
+                                        <Button
+                                            Height="24"
+                                            Padding="8,0"
+                                            HorizontalAlignment="Right"
+                                            Content="VIEW ALL"
+                                            Foreground="#BCD9B4"
+                                            Style="{StaticResource MaterialDesignFlatButton}" />
+                                    </Grid>
+
+                                    <StackPanel Grid.Row="1" Margin="0,16,0,0">
+                                        <!--  Activity Item 1  -->
+                                        <Border
+                                            Margin="0,0,0,8"
+                                            Padding="12,8"
+                                            Background="#151515"
+                                            CornerRadius="4">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <Border
+                                                    Width="32"
+                                                    Height="32"
+                                                    Background="#1A2C27"
+                                                    CornerRadius="16">
+                                                    <materialDesign:PackIcon
+                                                        Width="16"
+                                                        Height="16"
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        Foreground="#BCD9B4"
+                                                        Kind="ShieldAlert" />
+                                                </Border>
+
+                                                <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                                                    <TextBlock
+                                                        FontSize="13"
+                                                        Foreground="#F8F5FF"
+                                                        Text="Content filtered in Chat ID #4582" />
+                                                    <TextBlock
+                                                        FontSize="11"
+                                                        Foreground="#B3B3B3"
+                                                        Text="User attempted to use inappropriate language" />
+                                                </StackPanel>
+
+                                                <TextBlock
+                                                    Grid.Column="2"
+                                                    VerticalAlignment="Center"
+                                                    FontSize="11"
+                                                    Foreground="#616161"
+                                                    Text="12:42 PM" />
+                                            </Grid>
+                                        </Border>
+
+                                        <!--  Activity Item 2  -->
+                                        <Border
+                                            Margin="0,0,0,8"
+                                            Padding="12,8"
+                                            Background="#151515"
+                                            CornerRadius="4">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <Border
+                                                    Width="32"
+                                                    Height="32"
+                                                    Background="#151515"
+                                                    CornerRadius="16">
+                                                    <materialDesign:PackIcon
+                                                        Width="16"
+                                                        Height="16"
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        Foreground="#BCD9B4"
+                                                        Kind="AccountPlus" />
+                                                </Border>
+
+                                                <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                                                    <TextBlock
+                                                        FontSize="13"
+                                                        Foreground="#F8F5FF"
+                                                        Text="New user registered" />
+                                                    <TextBlock
+                                                        FontSize="11"
+                                                        Foreground="#B3B3B3"
+                                                        Text="User 'JaneSmith' has joined the platform" />
+                                                </StackPanel>
+
+                                                <TextBlock
+                                                    Grid.Column="2"
+                                                    VerticalAlignment="Center"
+                                                    FontSize="11"
+                                                    Foreground="#616161"
+                                                    Text="11:27 AM" />
+                                            </Grid>
+                                        </Border>
+
+                                        <!--  Activity Item 3  -->
+                                        <Border
+                                            Margin="0,0,0,0"
+                                            Padding="12,8"
+                                            Background="#151515"
+                                            CornerRadius="4">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <Border
+                                                    Width="32"
+                                                    Height="32"
+                                                    Background="#151515"
+                                                    CornerRadius="16">
+                                                    <materialDesign:PackIcon
+                                                        Width="16"
+                                                        Height="16"
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        Foreground="#BCD9B4"
+                                                        Kind="Cog" />
+                                                </Border>
+
+                                                <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                                                    <TextBlock
+                                                        FontSize="13"
+                                                        Foreground="#F8F5FF"
+                                                        Text="System settings updated" />
+                                                    <TextBlock
+                                                        FontSize="11"
+                                                        Foreground="#B3B3B3"
+                                                        Text="Admin 'SysAdmin' changed filter sensitivity" />
+                                                </StackPanel>
+
+                                                <TextBlock
+                                                    Grid.Column="2"
+                                                    VerticalAlignment="Center"
+                                                    FontSize="11"
+                                                    Foreground="#616161"
+                                                    Text="Yesterday" />
+                                            </Grid>
+                                        </Border>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!--  Alerts and Notifications  -->
+                            <Border
+                                Grid.Column="1"
+                                Margin="12,0,0,0"
+                                Padding="20"
+                                Background="#111111"
+                                CornerRadius="4">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+
+                                    <Grid>
+                                        <TextBlock
+                                            Grid.Row="0"
+                                            FontSize="14"
+                                            FontWeight="SemiBold"
+                                            Foreground="#F8F5FF"
+                                            Text="ALERTS" />
+                                        <Button
+                                            Height="24"
+                                            Padding="8,0"
+                                            HorizontalAlignment="Right"
+                                            Content="MANAGE"
+                                            Foreground="#BCD9B4"
+                                            Style="{StaticResource MaterialDesignFlatButton}" />
+                                    </Grid>
+
+                                    <StackPanel Grid.Row="1" Margin="0,16,0,0">
+                                        <!--  Alert Item 1 - High Priority  -->
+                                        <Border
+                                            Margin="0,0,0,8"
+                                            Padding="12,8"
+                                            Background="#1A1010"
+                                            BorderBrush="#ff6b6b"
+                                            BorderThickness="1"
+                                            CornerRadius="4">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <Border
+                                                    Width="32"
+                                                    Height="32"
+                                                    Background="#1A0A0A"
+                                                    CornerRadius="16">
+                                                    <materialDesign:PackIcon
+                                                        Width="16"
+                                                        Height="16"
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        Foreground="#ff6b6b"
+                                                        Kind="Alert" />
+                                                </Border>
+
+                                                <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                                                    <TextBlock
+                                                        FontSize="13"
+                                                        Foreground="#F8F5FF"
+                                                        Text="High repeated violations detected" />
+                                                    <TextBlock
+                                                        FontSize="11"
+                                                        Foreground="#B3B3B3"
+                                                        Text="User ID #4582 - Multiple attempts to bypass filter" />
+                                                </StackPanel>
+
+                                                <Button
+                                                    Grid.Column="2"
+                                                    Height="24"
+                                                    Padding="8,0"
+                                                    Content="REVIEW"
+                                                    Foreground="#ff6b6b"
+                                                    Style="{StaticResource MaterialDesignFlatButton}" />
+                                            </Grid>
+                                        </Border>
+
+                                        <!--  Alert Item 2 - Medium Priority  -->
+                                        <Border
+                                            Margin="0,0,0,8"
+                                            Padding="12,8"
+                                            Background="#1A1A10"
+                                            BorderBrush="#f9c74f"
+                                            BorderThickness="1"
+                                            CornerRadius="4">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <Border
+                                                    Width="32"
+                                                    Height="32"
+                                                    Background="#1A180A"
+                                                    CornerRadius="16">
+                                                    <materialDesign:PackIcon
+                                                        Width="16"
+                                                        Height="16"
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        Foreground="#f9c74f"
+                                                        Kind="AlertCircle" />
+                                                </Border>
+
+                                                <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                                                    <TextBlock
+                                                        FontSize="13"
+                                                        Foreground="#F8F5FF"
+                                                        Text="Unusual activity detected" />
+                                                    <TextBlock
+                                                        FontSize="11"
+                                                        Foreground="#B3B3B3"
+                                                        Text="Group chat #128 - Sudden increase in message volume" />
+                                                </StackPanel>
+
+                                                <Button
+                                                    Grid.Column="2"
+                                                    Height="24"
+                                                    Padding="8,0"
+                                                    Content="REVIEW"
+                                                    Foreground="#f9c74f"
+                                                    Style="{StaticResource MaterialDesignFlatButton}" />
+                                            </Grid>
+                                        </Border>
+
+                                        <!--  Alert Item 3 - Low Priority  -->
+                                        <Border
+                                            Margin="0,0,0,0"
+                                            Padding="12,8"
+                                            Background="#0A1A15"
+                                            BorderBrush="#BCD9B4"
+                                            BorderThickness="1"
+                                            CornerRadius="4">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <Border
+                                                    Width="32"
+                                                    Height="32"
+                                                    Background="#0A1510"
+                                                    CornerRadius="16">
+                                                    <materialDesign:PackIcon
+                                                        Width="16"
+                                                        Height="16"
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        Foreground="#BCD9B4"
+                                                        Kind="Information" />
+                                                </Border>
+
+                                                <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                                                    <TextBlock
+                                                        FontSize="13"
+                                                        Foreground="#F8F5FF"
+                                                        Text="Language filter update available" />
+                                                    <TextBlock
+                                                        FontSize="11"
+                                                        Foreground="#B3B3B3"
+                                                        Text="New dictionary updates ready to install" />
+                                                </StackPanel>
+
+                                                <Button
+                                                    Grid.Column="2"
+                                                    Height="24"
+                                                    Padding="8,0"
+                                                    Content="UPDATE"
+                                                    Foreground="#BCD9B4"
+                                                    Style="{StaticResource MaterialDesignFlatButton}" />
+                                            </Grid>
+                                        </Border>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
             </Grid>
         </Grid>
     </Grid>
