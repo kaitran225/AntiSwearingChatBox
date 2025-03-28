@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace AntiSwearingChatBox.Core.Moderation
+namespace AntiSwearingChatBox.AI.Moderation
 {
     public class ModelSettings
     {

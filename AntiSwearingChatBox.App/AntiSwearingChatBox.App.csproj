@@ -32,7 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AntiSwearingChatBox.Core\AntiSwearingChatBox.Core.csproj" />
+    <ProjectReference Include="..\AntiSwearingChatBox.AI\AntiSwearingChatBox.AI.csproj" />
     <ProjectReference Include="..\AntiSwearingChatBox.Service\AntiSwearingChatBox.Service.csproj" />
   </ItemGroup>
 

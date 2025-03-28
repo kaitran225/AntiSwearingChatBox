@@ -1,6 +1,6 @@
 using System;
 using System.Text.Json;
-using AntiSwearingChatBox.Core.Moderation;
+using AntiSwearingChatBox.AI.Moderation;
 
 namespace AntiSwearingChatBox.AI
 {

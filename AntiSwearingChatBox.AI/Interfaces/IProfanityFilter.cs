@@ -1,4 +1,4 @@
-namespace AntiSwearingChatBox.Core.Interfaces;
+namespace AntiSwearingChatBox.AI.Interfaces;
 
 /// <summary>
 /// Interface for profanity filtering services

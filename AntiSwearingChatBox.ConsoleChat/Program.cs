@@ -29,7 +29,7 @@ string GetLocalIPAddress()
         return endPoint?.Address.ToString() ?? "127.0.0.1";
     }
     catch
-    {
+        {
         return "127.0.0.1";
     }
 }
@@ -87,7 +87,7 @@ string? mainOption = Console.ReadLine();
 
 if (mainOption == "2")
 {
-    await RunSystemValidator();
+            await RunSystemValidator();
     return;
 }
 else if (mainOption == "3")
@@ -136,7 +136,7 @@ else
         
         server = serverInput;
     }
-}
+    }
 
 // Create hub connection
 var connection = new HubConnectionBuilder()
@@ -644,3 +644,4 @@ public class ChatHub : Hub
         await base.OnDisconnectedAsync(exception);
     }
 }
+

@@ -1,4 +1,4 @@
-using AntiSwearingChatBox.Core.Interfaces;
+using AntiSwearingChatBox.AI.Interfaces;
 using System.Text.RegularExpressions;
 
 namespace AntiSwearingChatBox.AI.Services;

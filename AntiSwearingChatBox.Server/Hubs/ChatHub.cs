@@ -1,4 +1,4 @@
-using AntiSwearingChatBox.Core.Interfaces;
+using AntiSwearingChatBox.AI.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 
 namespace AntiSwearingChatBox.Server.Hubs;

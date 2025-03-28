@@ -1,10 +1,10 @@
 ﻿using AntiSwearingChatBox.AI;
-using AntiSwearingChatBox.Core.Moderation;
+using AntiSwearingChatBox.AI.Moderation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 
-namespace AntiSwearingChatBox.ConsoleTest
+namespace AntiSwearingChatBox.ConsoleChat
 {
     class Program
     {
