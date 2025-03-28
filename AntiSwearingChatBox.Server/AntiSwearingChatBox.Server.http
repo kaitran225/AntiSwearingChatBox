@@ -1,0 +1,6 @@
+@AntiSwearingChatBox.Server_HostAddress = http://localhost:5122
+
+GET {{AntiSwearingChatBox.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
