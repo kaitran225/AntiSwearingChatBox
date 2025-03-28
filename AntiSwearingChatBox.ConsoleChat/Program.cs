@@ -44,6 +44,22 @@ bool IsPortAvailable(int port)
         listener.Stop();
         return true;
     }
+    catch (SocketException)
+    {
+        return false;
+    }
+}
+
+// Check if a server is already running on the port
+bool IsServerRunning(int port)
+{
+    try
+    {
+        using var client = new TcpClient();
+        client.Connect("localhost", port);
+        client.Close();
+        return true;
+    }
     catch
     {
         return false;
@@ -81,8 +97,7 @@ else if (mainOption == "3")
 
 // Default server configuration
 int defaultPort = 5122;
-int serverPort = FindAvailablePort(defaultPort);
-string server = $"http://localhost:{serverPort}";
+string server = $"http://localhost:{defaultPort}";
 
 // Show connection options
 Console.WriteLine("\nConnection mode:");
@@ -96,18 +111,13 @@ bool runAsServer = option == "2";
 // If running as server, start it in the background
 if (runAsServer)
 {
-    if (serverPort != defaultPort)
-    {
-        Console.WriteLine($"\nPort {defaultPort} is in use. Using port {serverPort} instead.");
-    }
-    
-    Console.WriteLine($"\nStarting server on port {serverPort}...");
-    Task.Run(async () => await RunServer(serverPort));
+    Console.WriteLine($"\nStarting server on port {defaultPort}...");
+    Task.Run(async () => await RunServer(defaultPort));
     // Wait a moment for the server to start
     await Task.Delay(2000);
     
     Console.WriteLine($"Server started. Your local IP: {GetLocalIPAddress()}");
-    Console.WriteLine($"Other computers can connect using: http://{GetLocalIPAddress()}:{serverPort}");
+    Console.WriteLine($"Other computers can connect using: http://{GetLocalIPAddress()}:{defaultPort}");
 }
 else
 {
