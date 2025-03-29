@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace AntiSwearingChatBox.App.Components
 {
@@ -16,13 +13,57 @@ namespace AntiSwearingChatBox.App.Components
         public WindowBar()
         {
             InitializeComponent();
+            
+            // Register event handlers
+            btnMinimize.Click += BtnMinimize_Click;
+            btnMaximize.Click += BtnMaximize_Click;
             btnClose.Click += BtnClose_Click;
         }
-        private void BtnClose_Click(object sender, RoutedEventArgs e)
+        
+        private void Border_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            // Close the application
-            Application.Current.Shutdown();
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                Window window = Window.GetWindow(this);
+                if (window != null)
+                {
+                    window.DragMove();
+                }
+            }
+        }
+        
+        private void BtnMinimize_Click(object sender, RoutedEventArgs e)
+        {
+            Window window = Window.GetWindow(this);
+            if (window != null)
+            {
+                window.WindowState = WindowState.Minimized;
+            }
+        }
+        
+        private void BtnMaximize_Click(object sender, RoutedEventArgs e)
+        {
+            Window window = Window.GetWindow(this);
+            if (window != null)
+            {
+                if (window.WindowState == WindowState.Maximized)
+                {
+                    window.WindowState = WindowState.Normal;
+                }
+                else
+                {
+                    window.WindowState = WindowState.Maximized;
+                }
+            }
         }
 
+        private void BtnClose_Click(object sender, RoutedEventArgs e)
+        {
+            Window window = Window.GetWindow(this);
+            if (window != null)
+            {
+                window.Close();
+            }
+        }
     }
 }

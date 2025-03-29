@@ -6,19 +6,18 @@
     xmlns:local="clr-namespace:AntiSwearingChatBox.App.Views"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Title="Dashboard
-    "
+    Title="Dashboard"
     Width="1600"
     Height="900"
     MinWidth="1280"
     MinHeight="720"
     MaxWidth="1920"
     MaxHeight="1080"
-    Background="#0A0A0A"
+    Background="{StaticResource PrimaryBackgroundColor}"
     FontFamily="Segoe UI"
     TextElement.FontSize="13"
     TextElement.FontWeight="Regular"
-    TextElement.Foreground="#F8F5FF"
+    TextElement.Foreground="{StaticResource TextPrimaryColor}"
     TextOptions.TextFormattingMode="Ideal"
     TextOptions.TextRenderingMode="Auto"
     mc:Ignorable="d">
@@ -56,7 +55,7 @@
                 Grid.Column="0"
                 Margin="0,0,10,0"
                 Padding="20"
-                Background="#111111"
+                Background="{StaticResource SecondaryBackgroundColor}"
                 CornerRadius="8">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -71,13 +70,13 @@
                     <StackPanel Grid.Row="0" Grid.Column="0">
                         <TextBlock
                             FontSize="12"
-                            Foreground="#B3B3B3"
+                            Foreground="{StaticResource TextSecondaryColor}"
                             Text="Total Messages" />
                         <TextBlock
                             Margin="0,4,0,0"
                             FontSize="22"
                             FontWeight="SemiBold"
-                            Foreground="#F8F5FF"
+                            Foreground="{StaticResource TextPrimaryColor}"
                             Text="1,248" />
                     </StackPanel>
 
@@ -86,14 +85,14 @@
                         Grid.Column="1"
                         Width="40"
                         Height="40"
-                        Background="#151515"
+                        Background="{StaticResource TertiaryBackgroundColor}"
                         CornerRadius="8">
                         <materialDesign:PackIcon
                             Width="20"
                             Height="20"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Foreground="#BCD9B4"
+                            Foreground="{StaticResource PrimaryAccentColor}"
                             Kind="MessageText" />
                     </Border>
 
@@ -107,18 +106,18 @@
                             Width="14"
                             Height="14"
                             VerticalAlignment="Center"
-                            Foreground="#BCD9B4"
+                            Foreground="{StaticResource PrimaryAccentColor}"
                             Kind="TrendingUp" />
                         <TextBlock
                             Margin="4,0,0,0"
                             VerticalAlignment="Center"
                             FontSize="11"
-                            Foreground="#BCD9B4"
+                            Foreground="{StaticResource PrimaryAccentColor}"
                             Text="+12% " />
                         <TextBlock
                             VerticalAlignment="Center"
                             FontSize="11"
-                            Foreground="#B3B3B3"
+                            Foreground="{StaticResource TextSecondaryColor}"
                             Text="from last week" />
                     </StackPanel>
                 </Grid>
@@ -129,7 +128,7 @@
                 Grid.Column="1"
                 Margin="10,0"
                 Padding="20"
-                Background="#111111"
+                Background="{StaticResource SecondaryBackgroundColor}"
                 CornerRadius="8">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -144,13 +143,13 @@
                     <StackPanel Grid.Row="0" Grid.Column="0">
                         <TextBlock
                             FontSize="12"
-                            Foreground="#B3B3B3"
+                            Foreground="{StaticResource TextSecondaryColor}"
                             Text="Active Users" />
                         <TextBlock
                             Margin="0,4,0,0"
                             FontSize="22"
                             FontWeight="SemiBold"
-                            Foreground="#F8F5FF"
+                            Foreground="{StaticResource TextPrimaryColor}"
                             Text="32" />
                     </StackPanel>
 
@@ -159,14 +158,14 @@
                         Grid.Column="1"
                         Width="40"
                         Height="40"
-                        Background="#151515"
+                        Background="{StaticResource TertiaryBackgroundColor}"
                         CornerRadius="8">
                         <materialDesign:PackIcon
                             Width="20"
                             Height="20"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Foreground="#BCD9B4"
+                            Foreground="{StaticResource PrimaryAccentColor}"
                             Kind="AccountGroup" />
                     </Border>
 
@@ -180,18 +179,18 @@
                             Width="14"
                             Height="14"
                             VerticalAlignment="Center"
-                            Foreground="#BCD9B4"
+                            Foreground="{StaticResource PrimaryAccentColor}"
                             Kind="TrendingUp" />
                         <TextBlock
                             Margin="4,0,0,0"
                             VerticalAlignment="Center"
                             FontSize="11"
-                            Foreground="#BCD9B4"
+                            Foreground="{StaticResource PrimaryAccentColor}"
                             Text="+5% " />
                         <TextBlock
                             VerticalAlignment="Center"
                             FontSize="11"
-                            Foreground="#B3B3B3"
+                            Foreground="{StaticResource TextSecondaryColor}"
                             Text="from last week" />
                     </StackPanel>
                 </Grid>
@@ -202,7 +201,7 @@
                 Grid.Column="2"
                 Margin="10,0"
                 Padding="20"
-                Background="#111111"
+                Background="{StaticResource SecondaryBackgroundColor}"
                 CornerRadius="8">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -217,13 +216,13 @@
                     <StackPanel Grid.Row="0" Grid.Column="0">
                         <TextBlock
                             FontSize="12"
-                            Foreground="#B3B3B3"
+                            Foreground="{StaticResource TextSecondaryColor}"
                             Text="Swear Words Blocked" />
                         <TextBlock
                             Margin="0,4,0,0"
                             FontSize="22"
                             FontWeight="SemiBold"
-                            Foreground="#F8F5FF"
+                            Foreground="{StaticResource TextPrimaryColor}"
                             Text="128" />
                     </StackPanel>
 
@@ -232,14 +231,14 @@
                         Grid.Column="1"
                         Width="40"
                         Height="40"
-                        Background="#151515"
+                        Background="{StaticResource TertiaryBackgroundColor}"
                         CornerRadius="8">
                         <materialDesign:PackIcon
                             Width="20"
                             Height="20"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Foreground="#BCD9B4"
+                            Foreground="{StaticResource PrimaryAccentColor}"
                             Kind="ShieldAlert" />
                     </Border>
 
@@ -253,18 +252,18 @@
                             Width="14"
                             Height="14"
                             VerticalAlignment="Center"
-                            Foreground="#BCD9B4"
+                            Foreground="{StaticResource PrimaryAccentColor}"
                             Kind="TrendingDown" />
                         <TextBlock
                             Margin="4,0,0,0"
                             VerticalAlignment="Center"
                             FontSize="11"
-                            Foreground="#BCD9B4"
+                            Foreground="{StaticResource PrimaryAccentColor}"
                             Text="-8% " />
                         <TextBlock
                             VerticalAlignment="Center"
                             FontSize="11"
-                            Foreground="#B3B3B3"
+                            Foreground="{StaticResource TextSecondaryColor}"
                             Text="from last week" />
                     </StackPanel>
                 </Grid>
@@ -275,7 +274,7 @@
                 Grid.Column="3"
                 Margin="10,0,0,0"
                 Padding="20"
-                Background="#111111"
+                Background="{StaticResource SecondaryBackgroundColor}"
                 CornerRadius="8">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -290,13 +289,13 @@
                     <StackPanel Grid.Row="0" Grid.Column="0">
                         <TextBlock
                             FontSize="12"
-                            Foreground="#B3B3B3"
+                            Foreground="{StaticResource TextSecondaryColor}"
                             Text="System Accuracy" />
                         <TextBlock
                             Margin="0,4,0,0"
                             FontSize="22"
                             FontWeight="SemiBold"
-                            Foreground="#F8F5FF"
+                            Foreground="{StaticResource TextPrimaryColor}"
                             Text="98.4%" />
                     </StackPanel>
 
@@ -305,14 +304,14 @@
                         Grid.Column="1"
                         Width="40"
                         Height="40"
-                        Background="#151515"
+                        Background="{StaticResource TertiaryBackgroundColor}"
                         CornerRadius="8">
                         <materialDesign:PackIcon
                             Width="20"
                             Height="20"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Foreground="#BCD9B4"
+                            Foreground="{StaticResource PrimaryAccentColor}"
                             Kind="ChartLineVariant" />
                     </Border>
 
@@ -326,18 +325,18 @@
                             Width="14"
                             Height="14"
                             VerticalAlignment="Center"
-                            Foreground="#BCD9B4"
+                            Foreground="{StaticResource PrimaryAccentColor}"
                             Kind="TrendingUp" />
                         <TextBlock
                             Margin="4,0,0,0"
                             VerticalAlignment="Center"
                             FontSize="11"
-                            Foreground="#BCD9B4"
+                            Foreground="{StaticResource PrimaryAccentColor}"
                             Text="+1.2% " />
                         <TextBlock
                             VerticalAlignment="Center"
                             FontSize="11"
-                            Foreground="#B3B3B3"
+                            Foreground="{StaticResource TextSecondaryColor}"
                             Text="from last week" />
                     </StackPanel>
                 </Grid>
@@ -356,7 +355,7 @@
                 Grid.Column="0"
                 Margin="0,0,10,0"
                 Padding="20"
-                Background="#111111"
+                Background="{StaticResource SecondaryBackgroundColor}"
                 CornerRadius="8">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -369,13 +368,13 @@
                         Grid.Row="0"
                         FontSize="14"
                         FontWeight="SemiBold"
-                        Foreground="#F8F5FF"
+                        Foreground="{StaticResource TextPrimaryColor}"
                         Text="Weekly Activity" />
                     <TextBlock
                         Grid.Row="1"
                         Margin="0,2,0,16"
                         FontSize="11"
-                        Foreground="#B3B3B3"
+                        Foreground="{StaticResource TextSecondaryColor}"
                         Text="Messages per day" />
 
                     <!--  Simplified Chart Visualization  -->
@@ -396,13 +395,13 @@
                             Height="60"
                             Margin="5,0"
                             VerticalAlignment="Bottom"
-                            Background="#1A2C27"
+                            Background="{StaticResource SecondaryBackgroundColor}"
                             CornerRadius="4">
                             <Border
                                 Height="60"
                                 Margin="0"
                                 VerticalAlignment="Bottom"
-                                Background="#BCD9B4"
+                                Background="{StaticResource PrimaryAccentColor}"
                                 CornerRadius="4" />
                         </Border>
                         <Border
@@ -410,13 +409,13 @@
                             Height="100"
                             Margin="5,0"
                             VerticalAlignment="Bottom"
-                            Background="#1A2C27"
+                            Background="{StaticResource SecondaryBackgroundColor}"
                             CornerRadius="4">
                             <Border
                                 Height="100"
                                 Margin="0"
                                 VerticalAlignment="Bottom"
-                                Background="#BCD9B4"
+                                Background="{StaticResource PrimaryAccentColor}"
                                 CornerRadius="4" />
                         </Border>
                         <Border
@@ -424,13 +423,13 @@
                             Height="75"
                             Margin="5,0"
                             VerticalAlignment="Bottom"
-                            Background="#1A2C27"
+                            Background="{StaticResource SecondaryBackgroundColor}"
                             CornerRadius="4">
                             <Border
                                 Height="75"
                                 Margin="0"
                                 VerticalAlignment="Bottom"
-                                Background="#BCD9B4"
+                                Background="{StaticResource PrimaryAccentColor}"
                                 CornerRadius="4" />
                         </Border>
                         <Border
@@ -438,13 +437,13 @@
                             Height="120"
                             Margin="5,0"
                             VerticalAlignment="Bottom"
-                            Background="#1A2C27"
+                            Background="{StaticResource SecondaryBackgroundColor}"
                             CornerRadius="4">
                             <Border
                                 Height="120"
                                 Margin="0"
                                 VerticalAlignment="Bottom"
-                                Background="#BCD9B4"
+                                Background="{StaticResource PrimaryAccentColor}"
                                 CornerRadius="4" />
                         </Border>
                         <Border
@@ -452,13 +451,13 @@
                             Height="80"
                             Margin="5,0"
                             VerticalAlignment="Bottom"
-                            Background="#1A2C27"
+                            Background="{StaticResource SecondaryBackgroundColor}"
                             CornerRadius="4">
                             <Border
                                 Height="80"
                                 Margin="0"
                                 VerticalAlignment="Bottom"
-                                Background="#BCD9B4"
+                                Background="{StaticResource PrimaryAccentColor}"
                                 CornerRadius="4" />
                         </Border>
                         <Border
@@ -466,13 +465,13 @@
                             Height="140"
                             Margin="5,0"
                             VerticalAlignment="Bottom"
-                            Background="#1A2C27"
+                            Background="{StaticResource SecondaryBackgroundColor}"
                             CornerRadius="4">
                             <Border
                                 Height="140"
                                 Margin="0"
                                 VerticalAlignment="Bottom"
-                                Background="#BCD9B4"
+                                Background="{StaticResource PrimaryAccentColor}"
                                 CornerRadius="4" />
                         </Border>
                         <Border
@@ -480,13 +479,13 @@
                             Height="90"
                             Margin="5,0"
                             VerticalAlignment="Bottom"
-                            Background="#1A2C27"
+                            Background="{StaticResource SecondaryBackgroundColor}"
                             CornerRadius="4">
                             <Border
                                 Height="90"
                                 Margin="0"
                                 VerticalAlignment="Bottom"
-                                Background="#BCD9B4"
+                                Background="{StaticResource PrimaryAccentColor}"
                                 CornerRadius="4" />
                         </Border>
 
@@ -497,7 +496,7 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="Bottom"
                             FontSize="10"
-                            Foreground="#616161"
+                            Foreground="{StaticResource TextSecondaryColor}"
                             Text="Mon" />
                         <TextBlock
                             Grid.Column="1"
@@ -505,7 +504,7 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="Bottom"
                             FontSize="10"
-                            Foreground="#616161"
+                            Foreground="{StaticResource TextSecondaryColor}"
                             Text="Tue" />
                         <TextBlock
                             Grid.Column="2"
@@ -513,7 +512,7 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="Bottom"
                             FontSize="10"
-                            Foreground="#616161"
+                            Foreground="{StaticResource TextSecondaryColor}"
                             Text="Wed" />
                         <TextBlock
                             Grid.Column="3"
@@ -521,7 +520,7 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="Bottom"
                             FontSize="10"
-                            Foreground="#616161"
+                            Foreground="{StaticResource TextSecondaryColor}"
                             Text="Thu" />
                         <TextBlock
                             Grid.Column="4"
@@ -529,7 +528,7 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="Bottom"
                             FontSize="10"
-                            Foreground="#616161"
+                            Foreground="{StaticResource TextSecondaryColor}"
                             Text="Fri" />
                         <TextBlock
                             Grid.Column="5"
@@ -537,7 +536,7 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="Bottom"
                             FontSize="10"
-                            Foreground="#616161"
+                            Foreground="{StaticResource TextSecondaryColor}"
                             Text="Sat" />
                         <TextBlock
                             Grid.Column="6"
@@ -545,7 +544,7 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="Bottom"
                             FontSize="10"
-                            Foreground="#616161"
+                            Foreground="{StaticResource TextSecondaryColor}"
                             Text="Sun" />
                     </Grid>
                 </Grid>
@@ -556,7 +555,7 @@
                 Grid.Column="1"
                 Margin="10,0,0,0"
                 Padding="20"
-                Background="#111111"
+                Background="{StaticResource SecondaryBackgroundColor}"
                 CornerRadius="8">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -569,13 +568,13 @@
                         Grid.Row="0"
                         FontSize="14"
                         FontWeight="SemiBold"
-                        Foreground="#F8F5FF"
+                        Foreground="{StaticResource TextPrimaryColor}"
                         Text="Top Active Users" />
                     <TextBlock
                         Grid.Row="1"
                         Margin="0,2,0,16"
                         FontSize="11"
-                        Foreground="#B3B3B3"
+                        Foreground="{StaticResource TextSecondaryColor}"
                         Text="This week" />
 
                     <StackPanel Grid.Row="2">
@@ -592,14 +591,14 @@
                                 Width="36"
                                 Height="36"
                                 Margin="0,0,12,0"
-                                Background="#151515"
+                                Background="{StaticResource TertiaryBackgroundColor}"
                                 CornerRadius="18">
                                 <TextBlock
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     FontSize="12"
                                     FontWeight="SemiBold"
-                                    Foreground="#BCD9B4"
+                                    Foreground="{StaticResource PrimaryAccentColor}"
                                     Text="JD" />
                             </Border>
 
@@ -607,11 +606,11 @@
                                 <TextBlock
                                     FontSize="13"
                                     FontWeight="SemiBold"
-                                    Foreground="#F8F5FF"
+                                    Foreground="{StaticResource TextPrimaryColor}"
                                     Text="John Doe" />
                                 <TextBlock
                                     FontSize="11"
-                                    Foreground="#B3B3B3"
+                                    Foreground="{StaticResource TextSecondaryColor}"
                                     Text="128 messages" />
                             </StackPanel>
 
@@ -619,13 +618,13 @@
                                 Grid.Column="2"
                                 Padding="8,4"
                                 VerticalAlignment="Center"
-                                Background="#1A2C27"
+                                Background="{StaticResource SecondaryBackgroundColor}"
                                 CornerRadius="4">
                                 <TextBlock
                                     HorizontalAlignment="Center"
                                     FontSize="11"
                                     FontWeight="SemiBold"
-                                    Foreground="#BCD9B4"
+                                    Foreground="{StaticResource PrimaryAccentColor}"
                                     Text="#1" />
                             </Border>
                         </Grid>
@@ -643,14 +642,14 @@
                                 Width="36"
                                 Height="36"
                                 Margin="0,0,12,0"
-                                Background="#151515"
+                                Background="{StaticResource TertiaryBackgroundColor}"
                                 CornerRadius="18">
                                 <TextBlock
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     FontSize="12"
                                     FontWeight="SemiBold"
-                                    Foreground="#B3B3B3"
+                                    Foreground="{StaticResource TextSecondaryColor}"
                                     Text="JS" />
                             </Border>
 
@@ -658,11 +657,11 @@
                                 <TextBlock
                                     FontSize="13"
                                     FontWeight="SemiBold"
-                                    Foreground="#F8F5FF"
+                                    Foreground="{StaticResource TextPrimaryColor}"
                                     Text="Jane Smith" />
                                 <TextBlock
                                     FontSize="11"
-                                    Foreground="#B3B3B3"
+                                    Foreground="{StaticResource TextSecondaryColor}"
                                     Text="103 messages" />
                             </StackPanel>
 
@@ -670,13 +669,13 @@
                                 Grid.Column="2"
                                 Padding="8,4"
                                 VerticalAlignment="Center"
-                                Background="#1A2C27"
+                                Background="{StaticResource SecondaryBackgroundColor}"
                                 CornerRadius="4">
                                 <TextBlock
                                     HorizontalAlignment="Center"
                                     FontSize="11"
                                     FontWeight="SemiBold"
-                                    Foreground="#BCD9B4"
+                                    Foreground="{StaticResource PrimaryAccentColor}"
                                     Text="#2" />
                             </Border>
                         </Grid>
@@ -694,14 +693,14 @@
                                 Width="36"
                                 Height="36"
                                 Margin="0,0,12,0"
-                                Background="#151515"
+                                Background="{StaticResource TertiaryBackgroundColor}"
                                 CornerRadius="18">
                                 <TextBlock
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     FontSize="12"
                                     FontWeight="SemiBold"
-                                    Foreground="#B3B3B3"
+                                    Foreground="{StaticResource TextSecondaryColor}"
                                     Text="GT" />
                             </Border>
 
@@ -709,11 +708,11 @@
                                 <TextBlock
                                     FontSize="13"
                                     FontWeight="SemiBold"
-                                    Foreground="#F8F5FF"
+                                    Foreground="{StaticResource TextPrimaryColor}"
                                     Text="Group Team" />
                                 <TextBlock
                                     FontSize="11"
-                                    Foreground="#B3B3B3"
+                                    Foreground="{StaticResource TextSecondaryColor}"
                                     Text="87 messages" />
                             </StackPanel>
 
@@ -721,13 +720,13 @@
                                 Grid.Column="2"
                                 Padding="8,4"
                                 VerticalAlignment="Center"
-                                Background="#1A2C27"
+                                Background="{StaticResource SecondaryBackgroundColor}"
                                 CornerRadius="4">
                                 <TextBlock
                                     HorizontalAlignment="Center"
                                     FontSize="11"
                                     FontWeight="SemiBold"
-                                    Foreground="#BCD9B4"
+                                    Foreground="{StaticResource PrimaryAccentColor}"
                                     Text="#3" />
                             </Border>
                         </Grid>
@@ -740,7 +739,7 @@
         <Border
             Grid.Row="2"
             Padding="20"
-            Background="#111111"
+            Background="{StaticResource SecondaryBackgroundColor}"
             CornerRadius="8">
             <Grid>
                 <Grid.RowDefinitions>
@@ -753,13 +752,13 @@
                     Grid.Row="0"
                     FontSize="14"
                     FontWeight="SemiBold"
-                    Foreground="#F8F5FF"
+                    Foreground="{StaticResource TextPrimaryColor}"
                     Text="Recent Messages" />
                 <TextBlock
                     Grid.Row="1"
                     Margin="0,2,0,16"
                     FontSize="11"
-                    Foreground="#B3B3B3"
+                    Foreground="{StaticResource TextSecondaryColor}"
                     Text="Latest activity from all chats" />
 
                 <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
@@ -777,39 +776,39 @@
                                 Width="36"
                                 Height="36"
                                 Margin="0,0,12,0"
-                                Background="#151515"
+                                Background="{StaticResource TertiaryBackgroundColor}"
                                 CornerRadius="18">
                                 <TextBlock
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     FontSize="12"
                                     FontWeight="SemiBold"
-                                    Foreground="#BCD9B4"
+                                    Foreground="{StaticResource PrimaryAccentColor}"
                                     Text="JD" />
                             </Border>
 
                             <Border
                                 Grid.Column="1"
                                 Padding="12,8"
-                                Background="#0A0A0A"
+                                Background="{StaticResource SecondaryBackgroundColor}"
                                 CornerRadius="4">
                                 <StackPanel>
                                     <Grid>
                                         <TextBlock
                                             FontSize="13"
                                             FontWeight="SemiBold"
-                                            Foreground="#F8F5FF"
+                                            Foreground="{StaticResource TextPrimaryColor}"
                                             Text="John Doe" />
                                         <TextBlock
                                             HorizontalAlignment="Right"
                                             FontSize="10"
-                                            Foreground="#616161"
+                                            Foreground="{StaticResource TextSecondaryColor}"
                                             Text="12:42 PM" />
                                     </Grid>
                                     <TextBlock
                                         Margin="0,4,0,0"
                                         FontSize="12"
-                                        Foreground="#B3B3B3"
+                                        Foreground="{StaticResource TextSecondaryColor}"
                                         Text="That sounds great! Can you share your progress sometime this week? I'd love to see what you've done."
                                         TextWrapping="Wrap" />
                                 </StackPanel>
@@ -821,7 +820,7 @@
                                 Height="16"
                                 Margin="8,0,0,0"
                                 VerticalAlignment="Top"
-                                Foreground="#BCD9B4"
+                                Foreground="{StaticResource PrimaryAccentColor}"
                                 Kind="CheckAll" />
                         </Grid>
 
@@ -838,39 +837,39 @@
                                 Width="36"
                                 Height="36"
                                 Margin="0,0,12,0"
-                                Background="#151515"
+                                Background="{StaticResource TertiaryBackgroundColor}"
                                 CornerRadius="18">
                                 <TextBlock
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     FontSize="12"
                                     FontWeight="SemiBold"
-                                    Foreground="#B3B3B3"
+                                    Foreground="{StaticResource TextSecondaryColor}"
                                     Text="JS" />
                             </Border>
 
                             <Border
                                 Grid.Column="1"
                                 Padding="12,8"
-                                Background="#0A0A0A"
+                                Background="{StaticResource SecondaryBackgroundColor}"
                                 CornerRadius="4">
                                 <StackPanel>
                                     <Grid>
                                         <TextBlock
                                             FontSize="13"
                                             FontWeight="SemiBold"
-                                            Foreground="#F8F5FF"
+                                            Foreground="{StaticResource TextPrimaryColor}"
                                             Text="Jane Smith" />
                                         <TextBlock
                                             HorizontalAlignment="Right"
                                             FontSize="10"
-                                            Foreground="#616161"
+                                            Foreground="{StaticResource TextSecondaryColor}"
                                             Text="10:22 AM" />
                                     </Grid>
                                     <TextBlock
                                         Margin="0,4,0,0"
                                         FontSize="12"
-                                        Foreground="#B3B3B3"
+                                        Foreground="{StaticResource TextSecondaryColor}"
                                         Text="Thanks for your help! I really appreciate it."
                                         TextWrapping="Wrap" />
                                 </StackPanel>
@@ -882,7 +881,7 @@
                                 Height="16"
                                 Margin="8,0,0,0"
                                 VerticalAlignment="Top"
-                                Foreground="#616161"
+                                Foreground="{StaticResource TextSecondaryColor}"
                                 Kind="Check" />
                         </Grid>
 
@@ -899,39 +898,39 @@
                                 Width="36"
                                 Height="36"
                                 Margin="0,0,12,0"
-                                Background="#151515"
+                                Background="{StaticResource TertiaryBackgroundColor}"
                                 CornerRadius="18">
                                 <TextBlock
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     FontSize="12"
                                     FontWeight="SemiBold"
-                                    Foreground="#B3B3B3"
+                                    Foreground="{StaticResource TextSecondaryColor}"
                                     Text="GT" />
                             </Border>
 
                             <Border
                                 Grid.Column="1"
                                 Padding="12,8"
-                                Background="#0A0A0A"
+                                Background="{StaticResource SecondaryBackgroundColor}"
                                 CornerRadius="4">
                                 <StackPanel>
                                     <Grid>
                                         <TextBlock
                                             FontSize="13"
                                             FontWeight="SemiBold"
-                                            Foreground="#F8F5FF"
+                                            Foreground="{StaticResource TextPrimaryColor}"
                                             Text="Group Team" />
                                         <TextBlock
                                             HorizontalAlignment="Right"
                                             FontSize="10"
-                                            Foreground="#616161"
+                                            Foreground="{StaticResource TextSecondaryColor}"
                                             Text="Yesterday" />
                                     </Grid>
                                     <TextBlock
                                         Margin="0,4,0,0"
                                         FontSize="12"
-                                        Foreground="#B3B3B3"
+                                        Foreground="{StaticResource TextSecondaryColor}"
                                         Text="Alice: I've sent the files for review. Let me know what you think about the latest features."
                                         TextWrapping="Wrap" />
                                 </StackPanel>
@@ -943,13 +942,13 @@
                                 Height="16"
                                 Margin="8,0,0,0"
                                 VerticalAlignment="Top"
-                                Background="#151515"
+                                Background="{StaticResource TertiaryBackgroundColor}"
                                 CornerRadius="8">
                                 <TextBlock
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     FontSize="9"
-                                    Foreground="#BCD9B4"
+                                    Foreground="{StaticResource PrimaryAccentColor}"
                                     Text="3" />
                             </Border>
                         </Grid>

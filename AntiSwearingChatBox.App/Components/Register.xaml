@@ -23,10 +23,7 @@
             <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,0,0,0" Padding="0,0,0,0" Grid.Row="1">
                 <StackPanel Width="320" Margin="0,40,0,40" HorizontalAlignment="Center">
                     <!-- Logo Placeholder -->
-                    <Border Width="60" Height="60" Background="{StaticResource PrimaryGreenBrush}" CornerRadius="8" HorizontalAlignment="Left" Margin="0,0,0,24">
-                        <TextBlock Text="ASC" FontWeight="Bold" FontSize="20" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    
+
                     <TextBlock Text="Create Account" Style="{StaticResource HeadingTextStyle}" FontSize="36" Margin="0,0,0,8"/>
                     <TextBlock Text="Join our community today! Please fill in your details below." Style="{StaticResource BodyTextStyle}" Margin="0,0,0,32" TextWrapping="Wrap"/>
 
@@ -90,27 +87,6 @@
                         <TextBlock x:Name="btnLogin" Text="Sign in" Style="{StaticResource LinkTextStyle}" 
                                FontSize="13" Margin="6,0,0,0"/>
                     </StackPanel>
-                    
-                    <!-- Colorful Cards Design Element (Inspired by Dribbble) -->
-                    <Grid Margin="0,48,0,0" Height="80">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        
-                        <Border Grid.Column="0" Margin="0,0,8,0" Background="{StaticResource SecondaryBackgroundBrush}" CornerRadius="8">
-                            <Border VerticalAlignment="Top" Height="6" CornerRadius="8,8,0,0" Background="{StaticResource PrimaryGreenBrush}"/>
-                        </Border>
-                        
-                        <Border Grid.Column="1" Margin="4,0" Background="{StaticResource SecondaryBackgroundBrush}" CornerRadius="8">
-                            <Border VerticalAlignment="Top" Height="6" CornerRadius="8,8,0,0" Background="{StaticResource AccentPurpleBrush}"/>
-                        </Border>
-                        
-                        <Border Grid.Column="2" Margin="8,0,0,0" Background="{StaticResource SecondaryBackgroundBrush}" CornerRadius="8">
-                            <Border VerticalAlignment="Top" Height="6" CornerRadius="8,8,0,0" Background="{StaticResource TertiaryBackgroundBrush}"/>
-                        </Border>
-                    </Grid>
                 </StackPanel>
             </ScrollViewer>
         </Grid>

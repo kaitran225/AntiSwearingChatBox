@@ -29,10 +29,10 @@
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,8,0">
-                <Button Style="{StaticResource WindowBarButtonStyle}" Margin="4,0">
+                <Button x:Name="btnMinimize" Style="{StaticResource WindowBarButtonStyle}" Margin="4,0">
                     <materialDesign:PackIcon Kind="Minus" Width="16" Height="16" Foreground="#B3B3B3"/>
                 </Button>
-                <Button Style="{StaticResource WindowBarButtonStyle}" Margin="4,0">
+                <Button x:Name="btnMaximize" Style="{StaticResource WindowBarButtonStyle}" Margin="4,0">
                     <materialDesign:PackIcon Kind="Fullscreen" Width="16" Height="16" Foreground="#B3B3B3"/>
                 </Button>
                 <Button x:Name="btnClose" Style="{StaticResource WindowBarButtonStyle}" Margin="4,0">
