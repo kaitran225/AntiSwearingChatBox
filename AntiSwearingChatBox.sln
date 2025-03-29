@@ -13,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AntiSwearingChatBox.App", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AntiSwearingChatBox.Server", "AntiSwearingChatBox.Server\AntiSwearingChatBox.Server.csproj", "{1460681B-423F-43E0-BC3F-75E81BBBDF9F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AntiSwearingChatBox.ConsoleChat", "AntiSwearingChatBox.ConsoleChat\AntiSwearingChatBox.ConsoleChat.csproj", "{51E86BDC-CAA5-484E-BE9C-F3FDD52ED3D4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AntiSwearingChatBox.Console", "AntiSwearingChatBox.ConsoleChat\AntiSwearingChatBox.Console.csproj", "{51E86BDC-CAA5-484E-BE9C-F3FDD52ED3D4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

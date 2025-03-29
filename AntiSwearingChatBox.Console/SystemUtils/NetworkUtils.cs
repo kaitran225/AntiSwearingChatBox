@@ -1,12 +1,18 @@
 using System;
 using System.Net;
+using System.Net.Http;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 
 namespace AntiSwearingChatBox.ConsoleChat.SystemUtils
 {
     public static class NetworkUtils
     {
-        // Get local IP address for display purposes
+        private static readonly HttpClient _httpClient = new HttpClient();
+        
+        /// <summary>
+        /// Gets the local IP address of the machine
+        /// </summary>
         public static string GetLocalIPAddress()
         {
             try
@@ -16,25 +22,35 @@ namespace AntiSwearingChatBox.ConsoleChat.SystemUtils
                 IPEndPoint? endPoint = socket.LocalEndPoint as IPEndPoint;
                 return endPoint?.Address.ToString() ?? "127.0.0.1";
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"Error getting local IP address: {ex.Message}");
                 return "127.0.0.1";
             }
         }
 
-        // Check if a port is available
+        /// <summary>
+        /// Checks if a port is available on the local machine
+        /// </summary>
         public static bool IsPortAvailable(int port)
         {
             try
             {
-                using TcpListener listener = new TcpListener(IPAddress.Any, port);
-                listener.Start();
-                listener.Stop();
-                return true;
+                using var tcpClient = new TcpClient();
+                var result = tcpClient.BeginConnect("127.0.0.1", port, null, null);
+                var success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(100));
+                
+                if (success)
+                {
+                    tcpClient.EndConnect(result);
+                    return false; // Port is in use
+                }
+                
+                return true; // Port is available
             }
-            catch (SocketException)
+            catch
             {
-                return false;
+                return true; // Error means port is most likely available
             }
         }
 
@@ -65,13 +81,15 @@ namespace AntiSwearingChatBox.ConsoleChat.SystemUtils
             return port;
         }
 
-        public static string GetPublicIpAddress()
+        /// <summary>
+        /// Gets the public IP address of the machine
+        /// </summary>
+        public static async Task<string> GetPublicIPAddressAsync()
         {
             try
             {
-                WebClient webClient = new();
-                using WebClient client = webClient;
-                return client.DownloadString("http://ifconfig.me/ip").Trim();
+                string result = await _httpClient.GetStringAsync("https://api.ipify.org");
+                return result.Trim();
             }
             catch
             {

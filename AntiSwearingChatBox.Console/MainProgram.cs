@@ -2,11 +2,17 @@ using AntiSwearingChatBox.AI;
 using AntiSwearingChatBox.AI.Moderation;
 using AntiSwearingChatBox.ConsoleChat.AITesting;
 using AntiSwearingChatBox.ConsoleChat.SystemUtils;
+using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace AntiSwearingChatBox.ConsoleChat
 {
-    class ConsoleChat
+    class MainProgram
     {
         static async Task Main(string[] args)
         {
