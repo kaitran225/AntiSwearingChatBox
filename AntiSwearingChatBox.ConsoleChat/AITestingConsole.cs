@@ -8,7 +8,7 @@ namespace AntiSwearingChatBox.ConsoleChat
 {
     class Program
     {
-        static async Task Main(string[] args)
+        static async Task AIConsoleTest()
         {
             Console.WriteLine("=== Anti-Swearing Chat Box API Test Console ===");
             Console.WriteLine("This application tests the Gemini AI integration directly.");
@@ -116,7 +116,6 @@ namespace AntiSwearingChatBox.ConsoleChat
             }
         }
 
-        // Display detailed model settings
         static void DisplayModelSettings()
         {
             var settings = ModelSettings.Instance;

@@ -1,6 +1,5 @@
 using System;
 using System.Windows;
-using AntiSwearingChatBox.App.Services;
 
 namespace AntiSwearingChatBox.App.Views
 {
@@ -9,71 +8,41 @@ namespace AntiSwearingChatBox.App.Views
     /// </summary>
     public partial class LoginWindow : Window
     {
-        private readonly AuthService _authService;
-
         public LoginWindow()
         {
             InitializeComponent();
-            _authService = new AuthService("https://localhost:7001"); // Update with your server URL
-            
             // Wire up button click events
-            LoginButton.Click += LoginButton_Click;
-            //btnRegister.Click += BtnRegister_Click;
+            btnLogin.Click += BtnLogin_Click;
+            btnRegister.MouseDown += BtnRegister_Click;
             btnClose.Click += BtnClose_Click;
         }
-        
-        private async void LoginButton_Click(object sender, RoutedEventArgs e)
+
+        private void BtnLogin_Click(object sender, RoutedEventArgs e)
         {
-            var username = UsernameTextBox.Text;
-            var password = PasswordBox.Password;
+            // TODO: Add proper authentication logic
 
-            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
-            {
-                ErrorMessage.Text = "Please enter both username and password.";
-                return;
-            }
+            // For now, just open the main window to showcase the UI
+            ChatWindow chatWindow = new ChatWindow();
+            chatWindow.Show();
 
-            try
-            {
-                LoginButton.IsEnabled = false;
-                RegisterButton.IsEnabled = false;
-                ErrorMessage.Text = "";
-
-                var (success, message, token, refreshToken) = await _authService.LoginAsync(username, password);
-
-                if (success)
-                {
-                    // Open main window and close login window
-                    var mainWindow = new MainWindow();
-                    mainWindow.Show();
-                    this.Close();
-                }
-                else
-                {
-                    ErrorMessage.Text = message;
-                }
-            }
-            catch (Exception ex)
-            {
-                ErrorMessage.Text = $"Error: {ex.Message}";
-            }
-            finally
-            {
-                LoginButton.IsEnabled = true;
-                RegisterButton.IsEnabled = true;
-            }
+            // Close the login window
+            this.Close();
         }
-        
-        private void RegisterButton_Click(object sender, RoutedEventArgs e)
+
+        private void BtnRegister_Click(object sender, RoutedEventArgs e)
         {
-            var registerWindow = new RegisterWindow();
-            registerWindow.ShowDialog();
+            // Open register window
+            RegisterWindow registerWindow = new RegisterWindow();
+            registerWindow.Show();
+
+            // Close the login window
+            this.Close();
         }
-        
+
         private void BtnClose_Click(object sender, RoutedEventArgs e)
         {
             // Close the application
             Application.Current.Shutdown();
         }
     }
-} 
+}
