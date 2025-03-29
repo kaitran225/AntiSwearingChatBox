@@ -59,8 +59,8 @@
             <Border
                 Grid.Column="0"
                 Background="{StaticResource PrimaryBackgroundBrush}"
-                BorderBrush="{StaticResource AccentPurpleBrush}"
-                BorderThickness="0,0,2,0">
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0,0,1,0">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -71,7 +71,7 @@
                     <!--  Search Bar  -->
                     <Border
                         Grid.Row="0"
-                        Padding="16,16,16,10"
+                        Padding="16,12"
                         Background="{StaticResource PrimaryBackgroundBrush}">
                         <Border
                             Padding="0"
@@ -92,10 +92,11 @@
                                 <TextBox
                                     Grid.Column="1"
                                     Margin="8,8,12,8"
-                                    materialDesign:HintAssist.Hint="Search"
+                                    materialDesign:HintAssist.Hint="Search conversations"
                                     materialDesign:TextFieldAssist.DecorationVisibility="Hidden"
                                     Background="Transparent"
                                     BorderThickness="0"
+                                    FontSize="13"
                                     CaretBrush="{StaticResource PrimaryGreenBrush}"
                                     Foreground="{StaticResource SecondaryTextBrush}" />
                             </Grid>
@@ -105,20 +106,34 @@
                     <!--  Conversation List  -->
                     <ScrollViewer
                         Grid.Row="1"
-                        Margin="16,0"
-                        Padding="16,0"
+                        Margin="16,12"
+                        Padding="16,0,16,0"
                         VerticalScrollBarVisibility="Auto">
                         <StackPanel>
-                            <TextBlock
-                                Margin="4,0,0,12"
-                                FontSize="11"
-                                Foreground="{StaticResource TertiaryTextBrush}"
-                                Text="CHATS" />
+                            <Grid Margin="0,12,0,8">
+                                <TextBlock
+                                    FontSize="11"
+                                    FontWeight="SemiBold"
+                                    Foreground="{StaticResource TertiaryTextBrush}"
+                                    Text="CONVERSATIONS" />
+                                <Button
+                                    HorizontalAlignment="Right"
+                                    Padding="4"
+                                    Background="Transparent" 
+                                    BorderThickness="0"
+                                    Style="{StaticResource MaterialDesignIconButton}">
+                                    <materialDesign:PackIcon
+                                        Width="14"
+                                        Height="14"
+                                        Foreground="{StaticResource TertiaryTextBrush}"
+                                        Kind="PlusCircleOutline" />
+                                </Button>
+                            </Grid>
 
                             <!--  Active Conversation  -->
                             <Border
                                 Margin="0,3"
-                                Padding="16"
+                                Padding="12,10"
                                 Background="{StaticResource SecondaryBackgroundBrush}"
                                 BorderBrush="{StaticResource PrimaryGreenBrush}"
                                 BorderThickness="1"
@@ -186,7 +201,7 @@
                             <!--  Regular Conversation  -->
                             <Border
                                 Margin="0,3"
-                                Padding="16"
+                                Padding="12,10"
                                 Background="{StaticResource SecondaryBackgroundBrush}"
                                 CornerRadius="4"
                                 Cursor="Hand">
@@ -266,7 +281,7 @@
                             <!--  Regular Conversation  -->
                             <Border
                                 Margin="0,3"
-                                Padding="16"
+                                Padding="12,10"
                                 Background="{StaticResource SecondaryBackgroundBrush}"
                                 CornerRadius="4"
                                 Cursor="Hand">
@@ -329,18 +344,91 @@
                                 </Grid>
                             </Border>
 
-                            <!--  More conversations (can be duplicated)  -->
+                            <TextBlock
+                                Margin="0,20,0,8"
+                                FontSize="11"
+                                FontWeight="SemiBold"
+                                Foreground="{StaticResource TertiaryTextBrush}"
+                                Text="GROUPS" />
+
+                            <!--  Group Conversation  -->
+                            <Border
+                                Margin="0,3"
+                                Padding="12,10"
+                                Background="{StaticResource SecondaryBackgroundBrush}"
+                                CornerRadius="4"
+                                Cursor="Hand">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border
+                                        Width="36"
+                                        Height="36"
+                                        Margin="0,0,10,0"
+                                        Background="{StaticResource TertiaryBackgroundBrush}"
+                                        CornerRadius="18">
+                                        <TextBlock
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            FontSize="12"
+                                            FontWeight="SemiBold"
+                                            Foreground="{StaticResource SecondaryTextBrush}"
+                                            Text="PT" />
+                                    </Border>
+
+                                    <Grid Grid.Column="1">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock
+                                            FontSize="13"
+                                            FontWeight="SemiBold"
+                                            Foreground="{StaticResource PrimaryTextBrush}"
+                                            Text="Project Team" />
+                                        <TextBlock
+                                            Grid.Row="1"
+                                            Margin="0,4,0,0"
+                                            FontSize="12"
+                                            Foreground="{StaticResource SecondaryTextBrush}"
+                                            Text="James: Meeting at 3pm tomorrow"
+                                            TextTrimming="CharacterEllipsis" />
+
+                                        <StackPanel
+                                            Grid.RowSpan="2"
+                                            Grid.Column="1"
+                                            Margin="6,0,0,0"
+                                            VerticalAlignment="Top">
+                                            <TextBlock
+                                                HorizontalAlignment="Right"
+                                                FontSize="10"
+                                                Foreground="{StaticResource TertiaryTextBrush}"
+                                                Text="Yesterday" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Grid>
+                            </Border>
                         </StackPanel>
                     </ScrollViewer>
 
                     <!--  Bottom Actions  -->
                     <Border
                         Grid.Row="2"
-                        Padding="16"
+                        Padding="16,12"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="0,1,0,0"
                         Background="{StaticResource PrimaryBackgroundBrush}">
                         <StackPanel>
                             <Button
-                                Padding="2"
+                                Padding="10,8"
                                 Margin="0,0,0,8"
                                 HorizontalAlignment="Stretch"
                                 materialDesign:ButtonAssist.CornerRadius="4"
@@ -367,11 +455,11 @@
                                         Text="New Chat" />
                                 </Grid>
                             </Button>
-                            
+
                             <!-- Admin Dashboard Button -->
                             <Button
                                 x:Name="AdminDashboardButton"
-                                Padding="2"
+                                Padding="10,8"
                                 HorizontalAlignment="Stretch"
                                 materialDesign:ButtonAssist.CornerRadius="4"
                                 Background="{StaticResource SecondaryBackgroundBrush}"
@@ -415,7 +503,7 @@
                 <!--  Chat Header  -->
                 <Border
                     Grid.Row="0"
-                    Padding="24,16"
+                    Padding="20,12"
                     Background="{StaticResource SecondaryBackgroundBrush}"
                     BorderBrush="{StaticResource BorderBrush}"
                     BorderThickness="0,0,0,1">
@@ -507,175 +595,213 @@
                 </Border>
 
                 <!--  Messages Area  -->
-                <ScrollViewer
-                    Grid.Row="1"
-                    Margin="24,16"
-                    Padding="24,16"
-                    Background="{StaticResource PrimaryBackgroundBrush}"
-                    VerticalScrollBarVisibility="Auto">
-                    <StackPanel>
-                        <!--  Received Message  -->
-                        <Grid Margin="0,16,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="40" />
-                            </Grid.ColumnDefinitions>
-                            <Border
-                                Grid.Column="0"
-                                Width="32"
-                                Height="32"
-                                Background="{StaticResource SecondaryBackgroundBrush}"
-                                CornerRadius="16">
-                                <TextBlock
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
-                                    FontSize="12"
-                                    FontWeight="SemiBold"
-                                    Foreground="{StaticResource PrimaryGreenBrush}"
-                                    Text="JD" />
-                            </Border>
-                            <Border
-                                Grid.Column="1"
-                                MaxWidth="600"
-                                Margin="8,0,0,0"
-                                Padding="16,10"
-                                HorizontalAlignment="Left"
-                                Background="{StaticResource SecondaryBackgroundBrush}"
-                                BorderBrush="{StaticResource BorderBrush}"
-                                BorderThickness="1"
-                                CornerRadius="4">
-                                <TextBlock
-                                    FontSize="13"
-                                    Foreground="{StaticResource PrimaryTextBrush}"
-                                    Text="Hey there! How's the project coming along? Would you be available for a meeting tomorrow to discuss the next steps?"
-                                    TextWrapping="Wrap" />
-                            </Border>
-                        </Grid>
+                <Grid Grid.Row="1">
+                    <Image Source="/Resources/LoginPage/bg.png" Height="Auto" Width="Auto" Stretch="UniformToFill" Opacity="0.05"/>
+                    <Border 
+                    Opacity="1"
+                    Margin="0,0,0,0">
+                        <ScrollViewer
+                        Margin="12"
+                        Padding="16"
+                        VerticalScrollBarVisibility="Auto">
+                            <StackPanel>
+                                <!--  Received Message  -->
+                                <Grid Margin="0,8,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="60" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border
+                                    Grid.Column="0"
+                                    Width="32"
+                                    Height="32"
+                                    Background="{StaticResource SecondaryBackgroundBrush}"
+                                    CornerRadius="16">
+                                        <TextBlock
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="12"
+                                        FontWeight="SemiBold"
+                                        Foreground="{StaticResource PrimaryGreenBrush}"
+                                        Text="JD" />
+                                    </Border>
+                                    <Border
+                                    Grid.Column="1"
+                                    MaxWidth="600"
+                                    Margin="8,0,0,0"
+                                    Padding="14,10"
+                                    HorizontalAlignment="Left"
+                                    Background="{StaticResource SecondaryBackgroundBrush}"
+                                    BorderBrush="{StaticResource BorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="4">
+                                        <StackPanel>
+                                            <TextBlock
+                                            FontSize="13"
+                                            Foreground="{StaticResource PrimaryTextBrush}"
+                                            Text="Hey there! How's the project coming along? Would you be available for a meeting tomorrow to discuss the next steps?"
+                                            TextWrapping="Wrap" />
+                                            <TextBlock
+                                            HorizontalAlignment="Right"
+                                            Margin="0,4,0,0"
+                                            FontSize="10"
+                                            Foreground="{StaticResource TertiaryTextBrush}"
+                                            Text="12:31 PM" />
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
 
-                        <!--  Sent Message  -->
-                        <Grid Margin="0,16,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="40" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <Border
-                                Grid.Column="1"
-                                MaxWidth="600"
-                                Margin="0,0,8,0"
-                                Padding="16,10"
-                                HorizontalAlignment="Right"
-                                Background="{StaticResource PrimaryBackgroundBrush}"
-                                BorderBrush="{StaticResource PrimaryGreenBrush}" 
-                                BorderThickness="1"
-                                CornerRadius="4">
-                                <TextBlock
-                                    FontSize="13"
-                                    Foreground="{StaticResource PrimaryTextBrush}"
-                                    Text="Hi John! The project is going well. I've completed most of the initial requirements. A meeting tomorrow sounds good. How about 2 PM?"
-                                    TextWrapping="Wrap" />
-                            </Border>
-                            <Border
-                                Grid.Column="2"
-                                Width="32"
-                                Height="32"
-                                Background="{StaticResource TertiaryBackgroundBrush}"
-                                CornerRadius="16">
-                                <TextBlock
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
-                                    FontSize="12"
-                                    FontWeight="SemiBold"
-                                    Foreground="{StaticResource PrimaryGreenBrush}"
-                                    Text="ME" />
-                            </Border>
-                        </Grid>
+                                <!--  Sent Message  -->
+                                <Grid Margin="0,16,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="60" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border
+                                    Grid.Column="1"
+                                    MaxWidth="600"
+                                    Margin="0,0,8,0"
+                                    Padding="14,10"
+                                    HorizontalAlignment="Right"
+                                    Background="{StaticResource PrimaryBackgroundBrush}"
+                                    BorderBrush="{StaticResource PrimaryGreenBrush}" 
+                                    BorderThickness="1"
+                                    CornerRadius="4">
+                                        <StackPanel>
+                                            <TextBlock
+                                            FontSize="13"
+                                            Foreground="{StaticResource PrimaryTextBrush}"
+                                            Text="Hi John! The project is going well. I've completed most of the initial requirements. A meeting tomorrow sounds good. How about 2 PM?"
+                                            TextWrapping="Wrap" />
+                                            <TextBlock
+                                            HorizontalAlignment="Right"
+                                            Margin="0,4,0,0"
+                                            FontSize="10"
+                                            Foreground="{StaticResource TertiaryTextBrush}"
+                                            Text="12:33 PM" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border
+                                    Grid.Column="2"
+                                    Width="32"
+                                    Height="32"
+                                    Background="{StaticResource TertiaryBackgroundBrush}"
+                                    CornerRadius="16">
+                                        <TextBlock
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="12"
+                                        FontWeight="SemiBold"
+                                        Foreground="{StaticResource PrimaryGreenBrush}"
+                                        Text="ME" />
+                                    </Border>
+                                </Grid>
 
-                        <!--  Received Message  -->
-                        <Grid Margin="0,16,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="40" />
-                            </Grid.ColumnDefinitions>
-                            <Border
-                                Grid.Column="0"
-                                Width="32"
-                                Height="32"
-                                Background="{StaticResource SecondaryBackgroundBrush}"
-                                CornerRadius="16">
-                                <TextBlock
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
-                                    FontSize="12"
-                                    FontWeight="SemiBold"
-                                    Foreground="{StaticResource PrimaryGreenBrush}"
-                                    Text="JD" />
-                            </Border>
-                            <Border
-                                Grid.Column="1"
-                                MaxWidth="600"
-                                Margin="8,0,0,0"
-                                Padding="16,10"
-                                HorizontalAlignment="Left"
-                                Background="{StaticResource SecondaryBackgroundBrush}"
-                                BorderBrush="{StaticResource BorderBrush}"
-                                BorderThickness="1"
-                                CornerRadius="4">
-                                <TextBlock
-                                    FontSize="13"
-                                    Foreground="{StaticResource PrimaryTextBrush}"
-                                    Text="Perfect! 2 PM works for me. I'll set up the meeting and send you the invite. Could you prepare a short summary of what you've done so far?"
-                                    TextWrapping="Wrap" />
-                            </Border>
-                        </Grid>
+                                <!--  Received Message  -->
+                                <Grid Margin="0,16,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="60" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border
+                                    Grid.Column="0"
+                                    Width="32"
+                                    Height="32"
+                                    Background="{StaticResource SecondaryBackgroundBrush}"
+                                    CornerRadius="16">
+                                        <TextBlock
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="12"
+                                        FontWeight="SemiBold"
+                                        Foreground="{StaticResource PrimaryGreenBrush}"
+                                        Text="JD" />
+                                    </Border>
+                                    <Border
+                                    Grid.Column="1"
+                                    MaxWidth="600"
+                                    Margin="8,0,0,0"
+                                    Padding="14,10"
+                                    HorizontalAlignment="Left"
+                                    Background="{StaticResource SecondaryBackgroundBrush}"
+                                    BorderBrush="{StaticResource BorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="4">
+                                        <StackPanel>
+                                            <TextBlock
+                                            FontSize="13"
+                                            Foreground="{StaticResource PrimaryTextBrush}"
+                                            Text="Perfect! 2 PM works for me. I'll set up the meeting and send you the invite. Could you prepare a short summary of what you've done so far?"
+                                            TextWrapping="Wrap" />
+                                            <TextBlock
+                                            HorizontalAlignment="Right"
+                                            Margin="0,4,0,0"
+                                            FontSize="10"
+                                            Foreground="{StaticResource TertiaryTextBrush}"
+                                            Text="12:35 PM" />
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
 
-                        <!--  Sent Message  -->
-                        <Grid Margin="0,16,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="40" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <Border
-                                Grid.Column="1"
-                                MaxWidth="600"
-                                Margin="0,0,8,0"
-                                Padding="16,10"
-                                HorizontalAlignment="Right"
-                                Background="{StaticResource PrimaryBackgroundBrush}"
-                                BorderBrush="{StaticResource PrimaryGreenBrush}"
-                                BorderThickness="1"
-                                CornerRadius="4">
-                                <TextBlock
-                                    FontSize="13"
-                                    Foreground="{StaticResource PrimaryTextBrush}"
-                                    Text="Sure thing! I'll have everything ready. See you tomorrow!"
-                                    TextWrapping="Wrap" />
-                            </Border>
-                            <Border
-                                Grid.Column="2"
-                                Width="32"
-                                Height="32"
-                                Background="{StaticResource TertiaryBackgroundBrush}"
-                                CornerRadius="16">
-                                <TextBlock
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
-                                    FontSize="12"
-                                    FontWeight="SemiBold"
-                                    Foreground="{StaticResource PrimaryGreenBrush}"
-                                    Text="ME" />
-                            </Border>
-                        </Grid>
-                    </StackPanel>
-                </ScrollViewer>
+                                <!--  Sent Message  -->
+                                <Grid Margin="0,16,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="60" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border
+                                    Grid.Column="1"
+                                    MaxWidth="600"
+                                    Margin="0,0,8,0"
+                                    Padding="14,10"
+                                    HorizontalAlignment="Right"
+                                    Background="{StaticResource PrimaryBackgroundBrush}"
+                                    BorderBrush="{StaticResource PrimaryGreenBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="4">
+                                        <StackPanel>
+                                            <TextBlock
+                                            FontSize="13"
+                                            Foreground="{StaticResource PrimaryTextBrush}"
+                                            Text="Sure thing! I'll have everything ready. See you tomorrow!"
+                                            TextWrapping="Wrap" />
+                                            <TextBlock
+                                            HorizontalAlignment="Right"
+                                            Margin="0,4,0,0"
+                                            FontSize="10"
+                                            Foreground="{StaticResource TertiaryTextBrush}"
+                                            Text="12:36 PM" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border
+                                    Grid.Column="2"
+                                    Width="32"
+                                    Height="32"
+                                    Background="{StaticResource TertiaryBackgroundBrush}"
+                                    CornerRadius="16">
+                                        <TextBlock
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="12"
+                                        FontWeight="SemiBold"
+                                        Foreground="{StaticResource PrimaryGreenBrush}"
+                                        Text="ME" />
+                                    </Border>
+                                </Grid>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Border>
+
+                </Grid>
 
                 <!--  Message Input Area  -->
                 <Border
                     Grid.Row="2"
-                    Padding="24,16"
+                    Padding="16,12"
                     Background="{StaticResource SecondaryBackgroundBrush}"
                     BorderBrush="{StaticResource BorderBrush}"
                     BorderThickness="0,1,0,0">
@@ -687,10 +813,10 @@
                         </Grid.ColumnDefinitions>
 
                         <Button
-                            Width="40"
-                            Height="40"
-                            Padding="8"
-                            materialDesign:ButtonAssist.CornerRadius="20"
+                            Width="38"
+                            Height="38"
+                            Padding="7"
+                            materialDesign:ButtonAssist.CornerRadius="19"
                             Background="Transparent"
                             BorderThickness="0">
                             <materialDesign:PackIcon
@@ -702,32 +828,35 @@
 
                         <Border
                             Grid.Column="1"
-                            Margin="8,0,0,0"
+                            Margin="8,0"
                             HorizontalAlignment="Stretch"
                             Background="Transparent"
                             BorderBrush="{StaticResource BorderBrush}"
                             BorderThickness="1"
-                            Cursor="IBeam">
+                            CornerRadius="4">
                             <TextBox
-                                Padding="12,0"
+                                Padding="12,8"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Center"
                                 Background="Transparent"
                                 BorderThickness="0"
                                 FontSize="13"
                                 Foreground="{StaticResource PrimaryTextBrush}"
-                                Text="Type your message here..."
+                                Text=""
+                                materialDesign:HintAssist.Hint="Type your message here..."
+                                materialDesign:TextFieldAssist.DecorationVisibility="Hidden"
                                 TextWrapping="Wrap" />
                         </Border>
 
                         <Button
                             Grid.Column="2"
-                            Width="40"
-                            Height="40"
-                            Padding="8"
-                            materialDesign:ButtonAssist.CornerRadius="20"
-                            Background="{StaticResource PrimaryGreenBrush}"
-                            BorderThickness="0">
+                            Width="58"
+                            Height="38"
+                            Padding="7"
+                            materialDesign:ButtonAssist.CornerRadius="4"
+                            Background="Transparent"
+                            BorderBrush="{StaticResource PrimaryGreenBrush}"
+                            BorderThickness="1">
                             <materialDesign:PackIcon
                                 Width="18"
                                 Height="18"
@@ -736,6 +865,7 @@
                         </Button>
                     </Grid>
                 </Border>
+
             </Grid>
         </Grid>
 
@@ -755,7 +885,7 @@
                 Background="{StaticResource SecondaryBackgroundBrush}"
                 BorderBrush="{StaticResource BorderBrush}"
                 BorderThickness="0,0,0,1">
-                <Grid Margin="24,16">
+                <Grid Margin="20,12">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
@@ -769,7 +899,7 @@
                             Foreground="{StaticResource PrimaryGreenBrush}"
                             Kind="ShieldAccount" />
                         <TextBlock
-                            Margin="10,0,0,0"
+                            Margin="12,0,0,0"
                             VerticalAlignment="Center"
                             FontSize="16"
                             FontWeight="SemiBold"
@@ -808,6 +938,7 @@
                         <TextBlock
                             Margin="10,10,0,10"
                             FontSize="11"
+                            FontWeight="SemiBold"
                             Foreground="{StaticResource TertiaryTextBrush}"
                             Text="MANAGEMENT" />
 
@@ -839,7 +970,7 @@
                             Height="40"
                             Margin="0,0,0,8"
                             HorizontalContentAlignment="Left"
-                            Background="{StaticResource PrimaryBackgroundBrush}"
+                            Background="Transparent"
                             BorderThickness="0">
                             <StackPanel Orientation="Horizontal">
                                 <materialDesign:PackIcon
@@ -860,7 +991,7 @@
                             Height="40"
                             Margin="0,0,0,8"
                             HorizontalContentAlignment="Left"
-                            Background="{StaticResource PrimaryBackgroundBrush}"
+                            Background="Transparent"
                             BorderThickness="0">
                             <StackPanel Orientation="Horizontal">
                                 <materialDesign:PackIcon
@@ -880,6 +1011,7 @@
                         <TextBlock
                             Margin="10,20,0,10"
                             FontSize="11"
+                            FontWeight="SemiBold"
                             Foreground="{StaticResource TertiaryTextBrush}"
                             Text="MONITORING" />
 
