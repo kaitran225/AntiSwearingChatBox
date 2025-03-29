@@ -85,9 +85,16 @@ namespace AntiSwearingChatBox.Repository.Repositories
                 return _userwarningRepository;
             }
         }
+
+
         public int Complete()
         {
             return _context.SaveChanges();
+        }
+
+        public async Task<int> CompleteAsync()
+        {
+            return await _context.SaveChangesAsync();
         }
 
         public void Dispose()
