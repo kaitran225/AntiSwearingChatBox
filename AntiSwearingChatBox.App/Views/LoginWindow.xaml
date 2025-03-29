@@ -18,7 +18,7 @@
         TextOptions.TextRenderingMode="Auto"
         FontFamily="Segoe UI"
         WindowStyle="None"
-        ResizeMode="NoResize"
+        ResizeMode="CanResizeWithGrip"
         AllowsTransparency="True"
         BorderThickness="0">
 
@@ -28,7 +28,7 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="58"/>
         </Grid.RowDefinitions>
-        
+
         <!-- Custom Window Bar -->
         <components:WindowBar Grid.Row="0"/>
 
@@ -36,22 +36,15 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="400"/>
-                
             </Grid.ColumnDefinitions>
-            
+
             <!-- Left Side - Illustration/Branding -->
-            <Grid Grid.Column="0" Background="#0A0A0A">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-            </Grid>
-            
+            <components:Branding Grid.Column="0"/>
+
             <!-- Right Side - Login Form -->
             <components:Login Grid.Column="1"/>
         </Grid>
-        
+
         <components:Footer Grid.Row="2" Loaded="Footer_Loaded"/>
     </Grid>
 </Window> 

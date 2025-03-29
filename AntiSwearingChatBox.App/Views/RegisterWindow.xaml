@@ -18,7 +18,7 @@
         TextOptions.TextRenderingMode="Auto"
         FontFamily="Segoe UI"
         WindowStyle="None"
-        ResizeMode="NoResize"
+        ResizeMode="CanResizeWithGrip"
         AllowsTransparency="True"
         BorderThickness="0">
 
@@ -39,9 +39,7 @@
             </Grid.ColumnDefinitions>
             
             <!-- Left Side - Illustration/Branding -->
-            <Grid Grid.Column="0" Background="#0A0A0A">
-            </Grid>
-            
+            <components:Branding Grid.Column="0"/>
             <!-- Right Side - Register Form -->
             <components:Register Grid.Column="1"/>
         </Grid>
