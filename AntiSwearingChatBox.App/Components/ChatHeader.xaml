@@ -1,0 +1,106 @@
+<UserControl
+    x:Class="AntiSwearingChatBox.App.Components.ChatHeader"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:local="clr-namespace:AntiSwearingChatBox.App.Components"
+    mc:Ignorable="d"
+    d:DesignHeight="80" d:DesignWidth="800">
+
+    <Border
+        Padding="20,12"
+        Background="{StaticResource SecondaryBackgroundBrush}"
+        BorderBrush="{StaticResource BorderBrush}"
+        BorderThickness="0,0,0,1">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <Border
+                Width="40"
+                Height="40"
+                Background="{StaticResource TertiaryBackgroundBrush}"
+                CornerRadius="20">
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontSize="14"
+                    FontWeight="SemiBold"
+                    Foreground="{StaticResource PrimaryGreenBrush}"
+                    Text="{Binding AvatarText}" />
+            </Border>
+
+            <StackPanel
+                Grid.Column="1"
+                Margin="16,0,0,0"
+                VerticalAlignment="Center">
+                <TextBlock
+                    FontSize="15"
+                    FontWeight="SemiBold"
+                    Foreground="{StaticResource PrimaryTextBrush}"
+                    Text="{Binding DisplayName}" />
+                <TextBlock
+                    Margin="0,2,0,0"
+                    FontSize="12"
+                    Foreground="{StaticResource TertiaryTextBrush}"
+                    Text="{Binding StatusText}" />
+            </StackPanel>
+
+            <StackPanel
+                Grid.Column="2"
+                Orientation="Horizontal"
+                Visibility="{Binding ShowActions, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Button
+                    Width="36"
+                    Height="36"
+                    Margin="4,0"
+                    Padding="8"
+                    materialDesign:ButtonAssist.CornerRadius="4"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Click="PhoneButton_Click">
+                    <materialDesign:PackIcon
+                        Width="18"
+                        Height="18"
+                        Foreground="{StaticResource TertiaryTextBrush}"
+                        Kind="Phone" />
+                </Button>
+                <Button
+                    Width="36"
+                    Height="36"
+                    Margin="4,0"
+                    Padding="8"
+                    materialDesign:ButtonAssist.CornerRadius="4"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Click="VideoButton_Click">
+                    <materialDesign:PackIcon
+                        Width="18"
+                        Height="18"
+                        Foreground="{StaticResource TertiaryTextBrush}"
+                        Kind="Video" />
+                </Button>
+                <Button
+                    Width="36"
+                    Height="36"
+                    Margin="4,0"
+                    Padding="8"
+                    materialDesign:ButtonAssist.CornerRadius="4"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Click="MenuButton_Click">
+                    <materialDesign:PackIcon
+                        Width="18"
+                        Height="18"
+                        Foreground="{StaticResource TertiaryTextBrush}"
+                        Kind="DotsVertical" />
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl> 

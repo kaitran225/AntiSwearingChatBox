@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Controls;
 using AntiSwearingChatBox.App.Views;
 
@@ -9,6 +10,9 @@ namespace AntiSwearingChatBox.App.Components
     /// </summary>
     public partial class Login : UserControl
     {
+        // Add event for login success
+        public event EventHandler LoginSuccessful;
+        
         public Login()
         {
             InitializeComponent();
@@ -20,18 +24,15 @@ namespace AntiSwearingChatBox.App.Components
         {
             // TODO: Add proper authentication logic
 
-            // For now, just open the main window to showcase the UI
-            ChatWindow chatWindow = new ChatWindow();
-            chatWindow.Show();
-
-            // Close the login window
-            Window parentWindow = Window.GetWindow(this); // Get the parent window
-            parentWindow?.Close();
+            // For now, simulate a successful login
+            // Raise the login successful event instead of directly creating window
+            LoginSuccessful?.Invoke(this, EventArgs.Empty);
         }
 
         private void BtnRegister_Click(object sender, RoutedEventArgs e)
         {
-            // Open register window
+            // Open register window - this would be replaced with an event as well
+            // in a more complete implementation
             RegisterWindow registerWindow = new RegisterWindow();
             registerWindow.Show();
 

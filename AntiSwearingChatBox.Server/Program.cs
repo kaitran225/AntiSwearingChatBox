@@ -1,8 +1,7 @@
 using System.Text;
 using AntiSwearingChatBox.AI.Services;
-using AntiSwearingChatBox.Core.Interfaces;
+using AntiSwearingChatBox.AI.Interfaces;
 using AntiSwearingChatBox.Server.Hubs;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);

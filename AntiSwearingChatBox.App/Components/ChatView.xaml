@@ -1,0 +1,65 @@
+<UserControl
+    x:Class="AntiSwearingChatBox.App.Components.ChatView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:local="clr-namespace:AntiSwearingChatBox.App.Components"
+    mc:Ignorable="d"
+    d:DesignHeight="800" d:DesignWidth="1000">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Chat Header -->
+        <local:ChatHeader
+            x:Name="Header"
+            Grid.Row="0"
+            AvatarText="{Binding CurrentContact.Initials}"
+            DisplayName="{Binding CurrentContact.Name}"
+            StatusText="Active now"
+            ShowActions="True"
+            PhoneCallRequested="Header_PhoneCallRequested"
+            VideoCallRequested="Header_VideoCallRequested"
+            MenuRequested="Header_MenuRequested" />
+
+        <!-- Messages Area -->
+        <Grid Grid.Row="1">
+            <Image Source="/Resources/LoginPage/bg.png" Height="Auto" Width="Auto" Stretch="UniformToFill" Opacity="0.05"/>
+            <Border Opacity="1">
+                <ScrollViewer
+                    x:Name="MessageScrollViewer"
+                    Margin="12"
+                    Padding="16"
+                    VerticalScrollBarVisibility="Auto">
+                    <ItemsControl x:Name="MessagesItemsControl" ItemsSource="{Binding Messages}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <local:ChatBubble
+                                    Margin="0,16,0,0"
+                                    Avatar="{Binding Avatar}"
+                                    IsSent="{Binding IsSent}"
+                                    MessageText="{Binding Text}"
+                                    Timestamp="{Binding Timestamp}"
+                                    BubbleBackground="{Binding Background}"
+                                    BubbleBorder="{Binding BorderBrush}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+
+        <!-- Message Input Area -->
+        <local:MessageInputBox
+            x:Name="MessageInput"
+            Grid.Row="2"
+            MessageSent="MessageInput_MessageSent"
+            AttachmentRequested="MessageInput_AttachmentRequested" />
+    </Grid>
+</UserControl> 

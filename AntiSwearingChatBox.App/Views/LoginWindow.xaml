@@ -42,7 +42,7 @@
           <components:Branding Grid.Column="0"/>
 
             <!-- Right Side - Login Form -->
-            <components:Login Grid.Column="1"/>
+            <components:Login x:Name="LoginComponent" Grid.Column="1"/>
         </Grid>
 
         <components:Footer Grid.Row="2" Loaded="Footer_Loaded"/>
