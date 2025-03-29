@@ -1,6 +1,4 @@
 using AntiSwearingChatBox.AI;
-using System;
-using System.Threading.Tasks;
 
 namespace AntiSwearingChatBox.ConsoleChat.AITesting
 {
@@ -26,7 +24,7 @@ namespace AntiSwearingChatBox.ConsoleChat.AITesting
             WaitForKeyPress();
         }
 
-        private void WaitForKeyPress()
+        private new void WaitForKeyPress()
         {
             Console.WriteLine("\nPress any key to continue...");
             Console.ReadKey();

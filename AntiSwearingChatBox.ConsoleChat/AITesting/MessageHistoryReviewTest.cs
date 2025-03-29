@@ -1,8 +1,4 @@
 using AntiSwearingChatBox.AI;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace AntiSwearingChatBox.ConsoleChat.AITesting
 {

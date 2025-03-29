@@ -1,19 +1,12 @@
 using AntiSwearingChatBox.AI;
 using AntiSwearingChatBox.AI.Moderation;
 using AntiSwearingChatBox.ConsoleChat.AITesting;
-using AntiSwearingChatBox.ConsoleChat.ChatClient;
-using AntiSwearingChatBox.ConsoleChat.ChatServer;
 using AntiSwearingChatBox.ConsoleChat.SystemUtils;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace AntiSwearingChatBox.ConsoleChat
 {
-    class Program
+    class ConsoleChat
     {
         static async Task Main(string[] args)
         {
@@ -84,7 +77,7 @@ namespace AntiSwearingChatBox.ConsoleChat
                 Console.WriteLine($"\nStarting server on port {defaultPort}...");
                 // Start the server in a background task
                 var chatServer = new ChatServer.ChatServer(defaultPort);
-                Task.Run(async () => await chatServer.StartAsync());
+                await Task.Run(async () => await chatServer.StartAsync());
                 
                 // Wait a moment for the server to start
                 await Task.Delay(2000);

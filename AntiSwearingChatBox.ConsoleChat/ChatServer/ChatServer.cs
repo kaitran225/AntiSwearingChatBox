@@ -1,7 +1,5 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Threading.Tasks;
+using AntiSwearingChatBox.AI.Interfaces;
+using AntiSwearingChatBox.AI.Services;
 
 namespace AntiSwearingChatBox.ConsoleChat.ChatServer
 {
@@ -26,7 +24,7 @@ namespace AntiSwearingChatBox.ConsoleChat.ChatServer
                 builder.Services.AddSignalR();
                 
                 // Register profanity filter service
-                builder.Services.AddSingleton<IProfanityFilter, SimpleProfanityFilter>();
+                builder.Services.AddSingleton<IProfanityFilter, ProfanityFilterService>();
                 
                 // Configure CORS for local network
                 builder.Services.AddCors(options =>

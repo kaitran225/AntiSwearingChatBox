@@ -1,12 +1,7 @@
 ﻿using AntiSwearingChatBox.AI.Interfaces;
 using Microsoft.AspNetCore.SignalR;
-using Mscc.GenerativeAI;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using AntiSwearingChatBox.ConsoleChat.ChatServer;
 
-namespace AntiSwearingChatBox.ConsoleChat
+namespace AntiSwearingChatBox.ConsoleChat.ChatServer
 {
     public class ChatHub : Hub
     {

@@ -69,7 +69,8 @@ namespace AntiSwearingChatBox.ConsoleChat.SystemUtils
         {
             try
             {
-                using var client = new WebClient();
+                WebClient webClient = new();
+                using WebClient client = webClient;
                 return client.DownloadString("http://ifconfig.me/ip").Trim();
             }
             catch

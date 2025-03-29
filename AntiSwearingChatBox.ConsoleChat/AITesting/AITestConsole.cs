@@ -1,9 +1,6 @@
 using AntiSwearingChatBox.AI;
 using AntiSwearingChatBox.AI.Moderation;
-using Microsoft.Extensions.Options;
-using System;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace AntiSwearingChatBox.ConsoleChat.AITesting
 {
