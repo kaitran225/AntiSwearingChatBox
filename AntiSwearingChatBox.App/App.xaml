@@ -57,6 +57,9 @@
             <SolidColorBrush x:Key="SubtlePurpleAccentBrush" Color="#8F66FF" Opacity="0.12"/>
             <SolidColorBrush x:Key="StrongPurpleOverlayBrush" Color="#8F66FF" Opacity="0.88"/>
             
+            <!-- Converters -->
+            <local:ReduceWidthConverter x:Key="ReduceWidthConverter"/>
+            
             <!-- Default Avatar -->
             <DrawingImage x:Key="DefaultAvatarImage">
                 <DrawingImage.Drawing>
