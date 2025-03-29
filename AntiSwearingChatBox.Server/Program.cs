@@ -7,6 +7,12 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using AntiSwearingChatBox.Service.Services;
+using Microsoft.EntityFrameworkCore;
+using AntiSwearingChatBox.Repository.Models;
+using AntiSwearingChatBox.Repository.Repositories;
+using AntiSwearingChatBox.Repository.IRepositories;
+using AntiSwearingChatBox.Service.Interfaces;
+using AntiSwearingChatBox.Service;
 
 // Helper method to find the Service project directory
 static string FindServiceProjectDirectory()
@@ -58,6 +64,24 @@ builder.Services.AddOpenApi();
 
 // Add SignalR services
 builder.Services.AddSignalR();
+
+// Register database context
+builder.Services.AddDbContext<AntiSwearingChatBoxContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("AntiSwearingChatBox"));
+});
+
+// Register repositories
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+// Register services
+builder.Services.AddScoped<IChatThreadService, ChatThreadService>();
+builder.Services.AddScoped<IMessageHistoryService, MessageHistoryService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IUserWarningService, UserWarningService>();
+builder.Services.AddScoped<IThreadParticipantService, ThreadParticipantService>();
+builder.Services.AddScoped<IFilteredWordService, FilteredWordService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 // Register profanity filter service
 builder.Services.AddSingleton<IProfanityFilter, ProfanityFilterService>();

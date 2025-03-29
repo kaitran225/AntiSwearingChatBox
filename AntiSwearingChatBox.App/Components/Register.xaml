@@ -28,17 +28,17 @@
                     <TextBlock Text="Join our community today! Please fill in your details below." Style="{StaticResource BodyTextStyle}" Margin="0,0,0,32" TextWrapping="Wrap"/>
 
                     <!-- Username Input -->
-                    <TextBox Style="{StaticResource StandardInputStyle}"
+                    <TextBox x:Name="txtUsername" Style="{StaticResource StandardInputStyle}"
                          materialDesign:HintAssist.Hint="Username"
                          materialDesign:TextFieldAssist.HasClearButton="True"/>
 
                     <!-- Email Input -->
-                    <TextBox Style="{StaticResource StandardInputStyle}"
+                    <TextBox x:Name="txtEmail" Style="{StaticResource StandardInputStyle}"
                          materialDesign:HintAssist.Hint="Email Address"
                          materialDesign:TextFieldAssist.HasClearButton="True"/>
 
                     <!-- Password Input -->
-                    <PasswordBox Style="{StaticResource StandardPasswordStyle}"
+                    <PasswordBox x:Name="txtPassword" Style="{StaticResource StandardPasswordStyle}"
                              materialDesign:HintAssist.Hint="Password"/>
 
                     <!-- Password Strength Indicator -->
@@ -71,7 +71,7 @@
                     </Grid>
 
                     <!-- Confirm Password -->
-                    <PasswordBox Style="{StaticResource StandardPasswordStyle}"
+                    <PasswordBox x:Name="txtConfirmPassword" Style="{StaticResource StandardPasswordStyle}"
                              materialDesign:HintAssist.Hint="Confirm Password"/>
 
                     <!-- Terms & Conditions -->
@@ -79,7 +79,7 @@
                           BorderBrush="{StaticResource PrimaryGreenBrush}" Background="Transparent" Margin="0,16,0,0"/>
 
                     <!-- Register Button -->
-                    <Button Content="Create Account" Style="{StaticResource PrimaryButtonStyle}"/>
+                    <Button x:Name="btnRegister" Content="Create Account" Style="{StaticResource PrimaryButtonStyle}"/>
 
                     <!-- Login Link -->
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,28,0,0">

@@ -25,18 +25,37 @@ namespace AntiSwearingChatBox.Service
         {
             return _unitOfWork.ThreadParticipant.GetById(id);
         }
+        
+        public IEnumerable<ThreadParticipant> GetByThreadId(int threadId)
+        {
+            return _unitOfWork.ThreadParticipant.Find(tp => tp.ThreadId == threadId);
+        }
+        
+        public IEnumerable<ThreadParticipant> GetByUserId(int userId)
+        {
+            return _unitOfWork.ThreadParticipant.Find(tp => tp.UserId == userId);
+        }
 
         public (bool success, string message) Add(ThreadParticipant entity)
         {
             try
             {
+                // Check if participant already exists in thread
+                var existingParticipant = _unitOfWork.ThreadParticipant.Find(
+                    tp => tp.ThreadId == entity.ThreadId && tp.UserId == entity.UserId).FirstOrDefault();
+                    
+                if (existingParticipant != null)
+                {
+                    return (true, "User is already a participant in this thread");
+                }
+                
                 _unitOfWork.ThreadParticipant.Add(entity);
                 _unitOfWork.Complete();
-                return (true, "ThreadParticipant added successfully");
+                return (true, "Thread participant added successfully");
             }
             catch (Exception ex)
             {
-                return (false, $"Error adding ThreadParticipant: {ex.Message}");
+                return (false, $"Error adding thread participant: {ex.Message}");
             }
         }
 
@@ -46,11 +65,11 @@ namespace AntiSwearingChatBox.Service
             {
                 _unitOfWork.ThreadParticipant.Update(entity);
                 _unitOfWork.Complete();
-                return (true, "ThreadParticipant updated successfully");
+                return (true, "Thread participant updated successfully");
             }
             catch (Exception ex)
             {
-                return (false, $"Error updating ThreadParticipant: {ex.Message}");
+                return (false, $"Error updating thread participant: {ex.Message}");
             }
         }
 
@@ -63,6 +82,28 @@ namespace AntiSwearingChatBox.Service
             _unitOfWork.ThreadParticipant.Delete(entity);
             _unitOfWork.Complete();
             return true;
+        }
+        
+        public bool RemoveUserFromThread(int userId, int threadId)
+        {
+            try
+            {
+                var participant = _unitOfWork.ThreadParticipant.Find(
+                    tp => tp.ThreadId == threadId && tp.UserId == userId).FirstOrDefault();
+                    
+                if (participant != null)
+                {
+                    _unitOfWork.ThreadParticipant.Delete(participant);
+                    _unitOfWork.Complete();
+                    return true;
+                }
+                
+                return false;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         public IEnumerable<ThreadParticipant> Search(string searchTerm)

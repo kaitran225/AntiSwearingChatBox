@@ -1,8 +1,9 @@
 using AntiSwearingChatBox.Repository.Models;
-using AntiSwearingChatBox.Service.IServices;
+using AntiSwearingChatBox.Service.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace AntiSwearingChatBox.Server.Controllers
 {

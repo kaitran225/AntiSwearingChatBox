@@ -41,7 +41,7 @@
             <!-- Left Side - Illustration/Branding with Background Image -->
             <components:Branding Grid.Column="0"/>
             <!-- Right Side - Register Form -->
-            <components:Register Grid.Column="1"/>
+            <components:Register x:Name="registerComponent" Grid.Column="1"/>
         </Grid>
         <components:Footer Grid.Row="2"/>
     </Grid>

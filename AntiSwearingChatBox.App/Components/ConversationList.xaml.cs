@@ -19,14 +19,14 @@ namespace AntiSwearingChatBox.App.Components
         {
             InitializeComponent();
             this.DataContext = this;
-            Conversations = new ObservableCollection<ContactViewModel>();
-            Groups = new ObservableCollection<ContactViewModel>();
+            Conversations = new ObservableCollection<ConversationItemViewModel>();
+            Groups = new ObservableCollection<ConversationItemViewModel>();
         }
 
         #region Properties
 
-        private ObservableCollection<ContactViewModel> _conversations;
-        public ObservableCollection<ContactViewModel> Conversations
+        private ObservableCollection<ConversationItemViewModel> _conversations;
+        public ObservableCollection<ConversationItemViewModel> Conversations
         {
             get { return _conversations; }
             set
@@ -36,8 +36,8 @@ namespace AntiSwearingChatBox.App.Components
             }
         }
 
-        private ObservableCollection<ContactViewModel> _groups;
-        public ObservableCollection<ContactViewModel> Groups
+        private ObservableCollection<ConversationItemViewModel> _groups;
+        public ObservableCollection<ConversationItemViewModel> Groups
         {
             get { return _groups; }
             set
@@ -81,12 +81,12 @@ namespace AntiSwearingChatBox.App.Components
                 // Update active states
                 foreach (var conv in Conversations)
                 {
-                    conv.IsActive = conv.Id == id;
+                    conv.IsSelected = conv.Id == id;
                 }
 
                 foreach (var group in Groups)
                 {
-                    group.IsActive = group.Id == id;
+                    group.IsSelected = group.Id == id;
                 }
 
                 // Reset unread count for selected conversation
@@ -94,14 +94,12 @@ namespace AntiSwearingChatBox.App.Components
                 if (selectedConv != null)
                 {
                     selectedConv.UnreadCount = 0;
-                    selectedConv.HasUnread = false;
                 }
 
                 var selectedGroup = Groups.FirstOrDefault(g => g.Id == id);
                 if (selectedGroup != null)
                 {
                     selectedGroup.UnreadCount = 0;
-                    selectedGroup.HasUnread = false;
                 }
 
                 ConversationSelected?.Invoke(this, id);
@@ -116,31 +114,25 @@ namespace AntiSwearingChatBox.App.Components
             if (string.IsNullOrWhiteSpace(searchText))
             {
                 // Show all conversations
-                foreach (var item in ConversationsItemsControl.Items)
+                foreach (var contact in Conversations)
                 {
-                    if (item is ContactViewModel contact)
-                    {
-                        // Show all items
-                        contact.Visibility = Visibility.Visible;
-                    }
+                    // Show all items by setting their visibility property if you have one
+                    // contact.IsVisible = true;
                 }
             }
             else
             {
                 // Filter conversations
-                foreach (var item in ConversationsItemsControl.Items)
+                foreach (var contact in Conversations)
                 {
-                    if (item is ContactViewModel contact)
+                    if (contact.Title.ToLower().Contains(searchText) || 
+                        contact.LastMessage.ToLower().Contains(searchText))
                     {
-                        if (contact.Name.ToLower().Contains(searchText) || 
-                            contact.LastMessage.ToLower().Contains(searchText))
-                        {
-                            contact.Visibility = Visibility.Visible;
-                        }
-                        else
-                        {
-                            contact.Visibility = Visibility.Collapsed;
-                        }
+                        // contact.IsVisible = true;
+                    }
+                    else
+                    {
+                        // contact.IsVisible = false;
                     }
                 }
             }
@@ -165,12 +157,27 @@ namespace AntiSwearingChatBox.App.Components
 
         #region Methods
 
-        public void AddConversation(ContactViewModel contact)
+        public void AddConversation(ConversationItemViewModel conversation)
         {
-            Conversations.Add(contact);
+            Conversations.Add(conversation);
+        }
+        
+        public void AddConversation(string id, string title, string lastMessage, string lastMessageTime)
+        {
+            var conversation = new ConversationItemViewModel
+            {
+                Id = id,
+                Title = title,
+                LastMessage = lastMessage,
+                LastMessageTime = lastMessageTime,
+                UnreadCount = 0,
+                IsSelected = false
+            };
+            
+            Conversations.Add(conversation);
         }
 
-        public void AddGroup(ContactViewModel group)
+        public void AddGroup(ConversationItemViewModel group)
         {
             Groups.Add(group);
             OnPropertyChanged(nameof(HasGroups));
@@ -184,10 +191,9 @@ namespace AntiSwearingChatBox.App.Components
                 conversation.LastMessage = lastMessage;
                 conversation.LastMessageTime = timestamp;
 
-                if (increaseUnread && !conversation.IsActive)
+                if (increaseUnread && !conversation.IsSelected)
                 {
                     conversation.UnreadCount++;
-                    conversation.HasUnread = conversation.UnreadCount > 0;
                 }
             }
 
@@ -197,10 +203,9 @@ namespace AntiSwearingChatBox.App.Components
                 group.LastMessage = lastMessage;
                 group.LastMessageTime = timestamp;
 
-                if (increaseUnread && !group.IsActive)
+                if (increaseUnread && !group.IsSelected)
                 {
                     group.UnreadCount++;
-                    group.HasUnread = group.UnreadCount > 0;
                 }
             }
         }

@@ -21,9 +21,22 @@ namespace AntiSwearingChatBox.Service
             return _unitOfWork.MessageHistory.GetAll();
         }
 
-        public MessageHistory GetById(string id)
+        public MessageHistory GetById(int id)
         {
-            return _unitOfWork.MessageHistory.GetById(id);
+            return _unitOfWork.MessageHistory.GetById(id.ToString());
+        }
+
+        public IEnumerable<MessageHistory> GetByThreadId(int threadId)
+        {
+            return _unitOfWork.MessageHistory.Find(m => m.ThreadId == threadId)
+                .OrderBy(m => m.CreatedAt);
+        }
+
+        public IEnumerable<MessageHistory> GetLatestMessages(int count = 20)
+        {
+            return _unitOfWork.MessageHistory.GetAll()
+                .OrderByDescending(m => m.CreatedAt)
+                .Take(count);
         }
 
         public (bool success, string message) Add(MessageHistory entity)
@@ -54,9 +67,9 @@ namespace AntiSwearingChatBox.Service
             }
         }
 
-        public bool Delete(string id)
+        public bool Delete(int id)
         {
-            var entity = _unitOfWork.MessageHistory.GetById(id);
+            var entity = _unitOfWork.MessageHistory.GetById(id.ToString());
             if (entity == null)
                 return false;
 
@@ -71,7 +84,8 @@ namespace AntiSwearingChatBox.Service
                 return GetAll();
 
             return _unitOfWork.MessageHistory.Find(x => 
-                x.ToString()!.ToLower().Contains(searchTerm.ToLower()));
+                (x.OriginalMessage != null && x.OriginalMessage.ToLower().Contains(searchTerm.ToLower())) ||
+                (x.ModeratedMessage != null && x.ModeratedMessage.ToLower().Contains(searchTerm.ToLower())));
         }
     }
 }

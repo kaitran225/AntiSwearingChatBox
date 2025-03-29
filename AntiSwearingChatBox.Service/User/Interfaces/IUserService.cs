@@ -6,10 +6,11 @@ namespace AntiSwearingChatBox.Service.Interfaces
     public interface IUserService
     {
         IEnumerable<User> GetAll();
-        User GetById(string id);
-        (bool success, string message) Add(User entity);
+        User GetById(int id);
+        User GetByUsername(string username);
+        (bool success, string message, User? user) Authenticate(string username, string password);
+        (bool success, string message) Register(User user, string password);
         (bool success, string message) Update(User entity);
-        bool Delete(string id);
-        IEnumerable<User> Search(string searchTerm);
+        bool Delete(int id);
     }
 }

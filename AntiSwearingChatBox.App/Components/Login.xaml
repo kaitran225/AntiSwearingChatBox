@@ -27,12 +27,12 @@
                 <TextBlock Text="Enter your account details to continue" Style="{StaticResource BodyTextStyle}" Margin="0,0,0,32" TextWrapping="Wrap"/>
 
                 <!-- Email Input -->
-                <TextBox Style="{StaticResource StandardInputStyle}"
+                <TextBox x:Name="txtUsername" Style="{StaticResource StandardInputStyle}"
                      materialDesign:HintAssist.Hint="Email or Username"
                      materialDesign:TextFieldAssist.HasClearButton="True"/>
 
                 <!-- Password Input -->
-                <PasswordBox Style="{StaticResource StandardPasswordStyle}"
+                <PasswordBox x:Name="txtPassword" Style="{StaticResource StandardPasswordStyle}"
                          materialDesign:HintAssist.Hint="Password"/>
 
                 <!-- Remember Me & Forgot Password -->

@@ -86,12 +86,12 @@
                         <DataTemplate>
                             <local:ConversationItem
                                 Margin="0,3"
-                                AvatarText="{Binding Initials}"
-                                DisplayName="{Binding Name}"
+                                AvatarText="{Binding Avatar}"
+                                DisplayName="{Binding Title}"
                                 LastMessage="{Binding LastMessage}"
                                 Timestamp="{Binding LastMessageTime}"
-                                IsActive="{Binding IsActive}"
-                                HasUnread="{Binding HasUnread}"
+                                IsActive="{Binding IsSelected}"
+                                HasUnread="{Binding UnreadCount, Converter={StaticResource IntToBoolConverter}}"
                                 UnreadCount="{Binding UnreadCount}" 
                                 MouseLeftButtonDown="ConversationItem_MouseLeftButtonDown"
                                 Tag="{Binding Id}" />
@@ -113,12 +113,12 @@
                         <DataTemplate>
                             <local:ConversationItem
                                 Margin="0,3"
-                                AvatarText="{Binding Initials}"
-                                DisplayName="{Binding Name}"
+                                AvatarText="{Binding Avatar}"
+                                DisplayName="{Binding Title}"
                                 LastMessage="{Binding LastMessage}"
                                 Timestamp="{Binding LastMessageTime}"
-                                IsActive="{Binding IsActive}"
-                                HasUnread="{Binding HasUnread}"
+                                IsActive="{Binding IsSelected}"
+                                HasUnread="{Binding UnreadCount, Converter={StaticResource IntToBoolConverter}}"
                                 UnreadCount="{Binding UnreadCount}" 
                                 MouseLeftButtonDown="ConversationItem_MouseLeftButtonDown"
                                 Tag="{Binding Id}" />

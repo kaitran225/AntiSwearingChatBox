@@ -13,6 +13,17 @@ namespace AntiSwearingChatBox.App.Components
         // Add event for login success
         public event EventHandler LoginSuccessful;
         
+        // Properties to expose username and password
+        public string Username 
+        { 
+            get { return txtUsername.Text; }
+        }
+        
+        public string Password 
+        {
+            get { return txtPassword.Password; }
+        }
+        
         public Login()
         {
             InitializeComponent();
@@ -22,23 +33,34 @@ namespace AntiSwearingChatBox.App.Components
 
         private void BtnLogin_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Add proper authentication logic
-
-            // For now, simulate a successful login
-            // Raise the login successful event instead of directly creating window
+            // Validate inputs
+            if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password))
+            {
+                MessageBox.Show("Please enter both username and password.", "Login Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            
+            // Raise the login successful event
             LoginSuccessful?.Invoke(this, EventArgs.Empty);
         }
 
         private void BtnRegister_Click(object sender, RoutedEventArgs e)
         {
-            // Open register window - this would be replaced with an event as well
-            // in a more complete implementation
-            RegisterWindow registerWindow = new RegisterWindow();
-            registerWindow.Show();
-
-            // Close the login window
-            Window parentWindow = Window.GetWindow(this); // Get the parent window
-            parentWindow?.Close();
+            // Get parent window
+            Window parentWindow = Window.GetWindow(this);
+            
+            // Notify parent to show registration panel if available
+            if (parentWindow is LoginWindow loginWindow)
+            {
+                loginWindow.ShowRegisterPanel();
+            }
+            else
+            {
+                // Fallback to opening a separate registration window if parent is not LoginWindow
+                RegisterWindow registerWindow = new RegisterWindow();
+                registerWindow.Show();
+                parentWindow?.Close();
+            }
         }
     }
 }

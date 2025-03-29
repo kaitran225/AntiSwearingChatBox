@@ -145,19 +145,4 @@ namespace AntiSwearingChatBox.App.Components
         public Brush Background { get; set; }
         public Brush BorderBrush { get; set; }
     }
-
-    public class ContactViewModel
-    {
-        public string Id { get; set; }
-        public string Name { get; set; }
-        public string Initials { get; set; }
-        public string Status { get; set; }
-        public string LastMessage { get; set; }
-        public string LastMessageTime { get; set; }
-        public bool IsOnline { get; set; }
-        public bool IsActive { get; set; }
-        public bool HasUnread { get; set; }
-        public int UnreadCount { get; set; }
-        public Visibility Visibility { get; set; } = Visibility.Visible;
-    }
 } 
