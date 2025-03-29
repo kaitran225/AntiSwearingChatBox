@@ -1,5 +1,10 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using AntiSwearingChatBox.AI.Interfaces;
+using Microsoft.AspNetCore.SignalR;
 using Mscc.GenerativeAI;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using AntiSwearingChatBox.ConsoleChat.ChatServer;
 
 namespace AntiSwearingChatBox.ConsoleChat
 {
@@ -47,7 +52,7 @@ namespace AntiSwearingChatBox.ConsoleChat
             await Clients.Caller.SendAsync("JoinConfirmed", username);
 
             // Send the list of connected users to the new client
-            await Clients.Caller.SendAsync("UserList", _connectedUsers.Values.ToList());
+            await Clients.Caller.SendAsync("UserList", _connectedUsers.Values);
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)

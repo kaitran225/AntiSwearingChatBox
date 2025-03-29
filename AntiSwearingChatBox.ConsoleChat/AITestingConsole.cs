@@ -1,6 +1,5 @@
 ﻿using AntiSwearingChatBox.AI;
 using AntiSwearingChatBox.AI.Moderation;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 
