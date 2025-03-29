@@ -3,114 +3,86 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-                     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:local="clr-namespace:AntiSwearingChatBox.App.Components"
-          Height="Auto"
+             Height="Auto"
              Width="400">
-    <UserControl.Resources>
-        <Style x:Key="InputBoxStyle" TargetType="TextBox" BasedOn="{StaticResource MaterialDesignTextBox}">
-            <Setter Property="Foreground" Value="#F8F5FF"/>
-            <Setter Property="Margin" Value="0,6"/>
-            <Setter Property="Padding" Value="12,14"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="Background" Value="#121212"/>
-            <Setter Property="CaretBrush" Value="#BCD9B4"/>
-            <Setter Property="Height" Value="50"/>
-            <Setter Property="BorderBrush" Value="#1E1E1E"/>
-            <Setter Property="BorderThickness" Value="1"/>
-        </Style>
-
-        <Style x:Key="PasswordBoxStyle" TargetType="PasswordBox" BasedOn="{StaticResource MaterialDesignPasswordBox}">
-            <Setter Property="Foreground" Value="#F8F5FF"/>
-            <Setter Property="Margin" Value="0,6"/>
-            <Setter Property="Padding" Value="12,14"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="Background" Value="#121212"/>
-            <Setter Property="CaretBrush" Value="#BCD9B4"/>
-            <Setter Property="Height" Value="50"/>
-            <Setter Property="BorderBrush" Value="#1E1E1E"/>
-            <Setter Property="BorderThickness" Value="1"/>
-        </Style>
-
-        <Style x:Key="PrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource MaterialDesignRaisedButton}">
-            <Setter Property="Background" Value="#151515"/>
-            <Setter Property="BorderBrush" Value="#BCD9B4"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Foreground" Value="#F8F5FF"/>
-            <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="4"/>
-            <Setter Property="Height" Value="50"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Margin" Value="0,16,0,0"/>
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <DropShadowEffect ShadowDepth="1" Direction="270" BlurRadius="3" Opacity="0.2" Color="#000000"/>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="SocialButtonStyle" TargetType="Button" BasedOn="{StaticResource MaterialDesignOutlinedButton}">
-            <Setter Property="Height" Value="44"/>
-            <Setter Property="Background" Value="#111111"/>
-            <Setter Property="BorderBrush" Value="#1E1E1E"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Foreground" Value="#F8F5FF"/>
-            <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="4"/>
-        </Style>
-    </UserControl.Resources>
-    <Border Grid.Column="1" Background="#0D0D0D" BorderThickness="1,0,0,0" BorderBrush="#1E1E1E">
+    
+    <Border Background="{StaticResource PrimaryBackgroundBrush}" CornerRadius="0">
         <!-- Form Content -->
-        <StackPanel Width="300" VerticalAlignment="Center">
-            <TextBlock Text="Login" FontSize="32" FontWeight="SemiBold" Foreground="#F8F5FF" Margin="0,0,0,8"/>
-            <TextBlock Text="Welcome back! Please enter your details." FontSize="14" Foreground="#B3B3B3" Margin="0,0,0,32"/>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            
+            <!-- Green Accent Bar -->
+            <Border Height="4" Background="{StaticResource PrimaryGreenBrush}" VerticalAlignment="Top"/>
+            
+            <!-- Form Content -->
+            <StackPanel Grid.Row="1" Width="320" VerticalAlignment="Center" Margin="0,40,0,40">
+                <!-- Logo Placeholder -->
+                <Border Width="60" Height="60" Background="{StaticResource PrimaryGreenBrush}" CornerRadius="8" HorizontalAlignment="Left" Margin="0,0,0,24">
+                    <TextBlock Text="ASC" FontWeight="Bold" FontSize="20" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                
+                <TextBlock Text="Welcome back" Style="{StaticResource HeadingTextStyle}" FontSize="36" Margin="0,0,0,8"/>
+                <TextBlock Text="Enter your account details to continue" Style="{StaticResource BodyTextStyle}" Margin="0,0,0,32" TextWrapping="Wrap"/>
 
-            <!-- Email Input -->
-            <TextBox Style="{StaticResource InputBoxStyle}"
-                 materialDesign:HintAssist.Hint="Email or Username"
-                 materialDesign:TextFieldAssist.HasClearButton="True">
-                <TextBox.Resources>
-                    <Style TargetType="{x:Type Border}">
-                        <Setter Property="CornerRadius" Value="4"/>
-                    </Style>
-                </TextBox.Resources>
-            </TextBox>
+                <!-- Email Input -->
+                <TextBox Style="{StaticResource StandardInputStyle}"
+                     materialDesign:HintAssist.Hint="Email or Username"
+                     materialDesign:TextFieldAssist.HasClearButton="True"/>
 
-            <!-- Password Input -->
-            <PasswordBox Style="{StaticResource PasswordBoxStyle}"
-                     materialDesign:HintAssist.Hint="Password">
-                <PasswordBox.Resources>
-                    <Style TargetType="{x:Type Border}">
-                        <Setter Property="CornerRadius" Value="4"/>
-                    </Style>
-                </PasswordBox.Resources>
-            </PasswordBox>
+                <!-- Password Input -->
+                <PasswordBox Style="{StaticResource StandardPasswordStyle}"
+                         materialDesign:HintAssist.Hint="Password"/>
 
-            <!-- Remember Me & Forgot Password -->
-            <Grid Margin="0,6">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+                <!-- Remember Me & Forgot Password -->
+                <Grid Margin="0,8,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-                <CheckBox Content="Remember me" Foreground="#B3B3B3" Margin="0,0,0,0" FontSize="12"
-                      BorderBrush="#BCD9B4" Background="Transparent"/>
+                    <CheckBox Content="Remember me" Foreground="{StaticResource TertiaryTextBrush}" Margin="0,0,0,0" FontSize="13"
+                          BorderBrush="{StaticResource PrimaryGreenBrush}" Background="Transparent"/>
 
-                <TextBlock Grid.Column="1" Text="Forgot password?" Foreground="#BCD9B4" FontSize="12"
-                       VerticalAlignment="Center" Cursor="Hand"/>
-            </Grid>
+                    <TextBlock Grid.Column="1" Text="Forgot password?" Style="{StaticResource LinkTextStyle}"
+                           VerticalAlignment="Center"/>
+                </Grid>
 
-            <!-- Login Button -->
-            <Button x:Name="btnLogin" Content="Log in" Style="{StaticResource PrimaryButtonStyle}"/>
+                <!-- Login Button with Green Color -->
+                <Button x:Name="btnLogin" Content="Sign In" Style="{StaticResource PrimaryButtonStyle}"/>
 
-            <!-- Register Link -->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,24,0,0">
-                <TextBlock Text="Don't have an account?" Foreground="#B3B3B3" FontSize="12"/>
-                <TextBlock x:Name="btnRegister" Text="Register" Foreground="#BCD9B4" FontWeight="SemiBold" 
-                       FontSize="12" Cursor="Hand" Margin="6,0,0,0"/>
+                <!-- Register Link -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,28,0,0">
+                    <TextBlock Text="Don't have an account?" Foreground="{StaticResource TertiaryTextBrush}" FontSize="13"/>
+                    <TextBlock x:Name="btnRegister" Text="Create account" Style="{StaticResource LinkTextStyle}" 
+                           FontSize="13" Margin="6,0,0,0"/>
+                </StackPanel>
+                
+                <!-- Colorful Cards Design Element (Inspired by Dribbble) -->
+                <Grid Margin="0,48,0,0" Height="80">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <Border Grid.Column="0" Margin="0,0,8,0" Background="{StaticResource SecondaryBackgroundBrush}" CornerRadius="8">
+                        <Border VerticalAlignment="Top" Height="6" CornerRadius="8,8,0,0" Background="{StaticResource PrimaryGreenBrush}"/>
+                    </Border>
+                    
+                    <Border Grid.Column="1" Margin="4,0" Background="{StaticResource SecondaryBackgroundBrush}" CornerRadius="8">
+                        <Border VerticalAlignment="Top" Height="6" CornerRadius="8,8,0,0" Background="{StaticResource AccentPurpleBrush}"/>
+                    </Border>
+                    
+                    <Border Grid.Column="2" Margin="8,0,0,0" Background="{StaticResource SecondaryBackgroundBrush}" CornerRadius="8">
+                        <Border VerticalAlignment="Top" Height="6" CornerRadius="8,8,0,0" Background="{StaticResource TertiaryBackgroundBrush}"/>
+                    </Border>
+                </Grid>
             </StackPanel>
-        </StackPanel>
+        </Grid>
     </Border>
 </UserControl>

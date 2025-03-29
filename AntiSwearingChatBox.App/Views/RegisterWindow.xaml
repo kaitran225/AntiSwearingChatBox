@@ -11,7 +11,7 @@
         MinHeight="720" MinWidth="1280" MaxHeight="1080" MaxWidth="1920"
         WindowStartupLocation="CenterScreen"
         Background="#0A0A0A"
-        TextElement.Foreground="#F8F5FF"
+        TextElement.Foreground="{StaticResource PrimaryTextBrush}"
         TextElement.FontWeight="Regular"
         TextElement.FontSize="13"
         TextOptions.TextFormattingMode="Ideal"
@@ -38,8 +38,92 @@
                 <ColumnDefinition Width="400"/>
             </Grid.ColumnDefinitions>
             
-            <!-- Left Side - Illustration/Branding -->
-            <components:Branding Grid.Column="0"/>
+            <!-- Left Side - Illustration/Branding with Background Image -->
+            <Grid Grid.Column="0">
+                <Image Source="/Resources/LoginPage/bg.png" Stretch="UniformToFill" Opacity="0.4"/>
+                <Border Background="#121212" Opacity="0.85"/>
+                
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Top Logo Section -->
+                    <StackPanel Grid.Row="0" Margin="60,60,0,0" HorizontalAlignment="Left">
+                        <TextBlock Text="Anti-Swearing" Style="{StaticResource LogoTextStyle}"/>
+                        <TextBlock Text="ChatBox" Style="{StaticResource LogoAccentTextStyle}"/>
+                    </StackPanel>
+                    
+                    <!-- Center Decorative Elements -->
+                    <Grid Grid.Row="1" Margin="60,0,60,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        
+                        <!-- Main Heading -->
+                        <StackPanel Grid.Row="0" VerticalAlignment="Center">
+                            <TextBlock Text="Join Our" Style="{StaticResource HeadingTextStyle}"/>
+                            <TextBlock Text="Community" Style="{StaticResource HeadingTextStyle}"/>
+                            <TextBlock Text="Today." FontSize="52" FontWeight="Bold" Foreground="{StaticResource PrimaryGreenBrush}" Margin="0,0,0,24"/>
+                            
+                            <TextBlock Text="Create your account and start chatting with confidence in a clean, moderated environment." 
+                                       Style="{StaticResource BodyTextStyle}" MaxWidth="520" LineHeight="24"/>
+                        </StackPanel>
+                        
+                        <!-- Decorative Cards -->
+                        <Grid Grid.Row="1" Margin="0,40,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- Card 1 -->
+                            <Border Grid.Column="0" Style="{StaticResource FeatureCardStyle}" Margin="0,0,16,0">
+                                <Grid>
+                                    <Border Height="8" Background="{StaticResource PrimaryGreenBrush}" VerticalAlignment="Top" CornerRadius="12,12,0,0"/>
+                                    <StackPanel Margin="24,32,24,24">
+                                        <Border Width="48" Height="48" Background="{StaticResource PrimaryGreenBrush}" CornerRadius="24" Opacity="0.2" HorizontalAlignment="Left"/>
+                                        <TextBlock Text="Clean Chat" Style="{StaticResource SubheadingTextStyle}"/>
+                                        <TextBlock Text="Enjoy harassment-free conversations with our advanced filtering system." 
+                                                  Style="{StaticResource BodyTextStyle}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                            
+                            <!-- Card 2 -->
+                            <Border Grid.Column="1" Style="{StaticResource FeatureCardStyle}" Margin="8,0,8,0">
+                                <Grid>
+                                    <Border Height="8" Background="{StaticResource AccentPurpleBrush}" VerticalAlignment="Top" CornerRadius="12,12,0,0"/>
+                                    <StackPanel Margin="24,32,24,24">
+                                        <Border Width="48" Height="48" Background="{StaticResource AccentPurpleBrush}" CornerRadius="24" Opacity="0.2" HorizontalAlignment="Left"/>
+                                        <TextBlock Text="Smart Moderation" Style="{StaticResource SubheadingTextStyle}"/>
+                                        <TextBlock Text="Our intelligent system filters out inappropriate language while preserving message meaning." 
+                                                  Style="{StaticResource BodyTextStyle}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                            
+                            <!-- Card 3 -->
+                            <Border Grid.Column="2" Style="{StaticResource FeatureCardStyle}" Margin="16,0,0,0">
+                                <Grid>
+                                    <Border Height="8" Background="{StaticResource TertiaryBackgroundBrush}" VerticalAlignment="Top" CornerRadius="12,12,0,0"/>
+                                    <StackPanel Margin="24,32,24,24">
+                                        <Border Width="48" Height="48" Background="{StaticResource TertiaryBackgroundBrush}" CornerRadius="24" Opacity="0.2" HorizontalAlignment="Left"/>
+                                        <TextBlock Text="Community Standards" Style="{StaticResource SubheadingTextStyle}"/>
+                                        <TextBlock Text="Join a community that values respectful communication and positive interactions." 
+                                                  Style="{StaticResource BodyTextStyle}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Grid>
+            
             <!-- Right Side - Register Form -->
             <components:Register Grid.Column="1"/>
         </Grid>

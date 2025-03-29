@@ -11,7 +11,7 @@
         MinHeight="720" MinWidth="1280" MaxHeight="1080" MaxWidth="1920"
         WindowStartupLocation="CenterScreen"
         Background="#0A0A0A"
-        TextElement.Foreground="#F8F5FF"
+        TextElement.Foreground="{StaticResource PrimaryTextBrush}"
         TextElement.FontWeight="Regular"
         TextElement.FontSize="13"
         TextOptions.TextFormattingMode="Ideal"
@@ -38,11 +38,12 @@
                 <ColumnDefinition Width="400"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Left Side - Illustration/Branding -->
+            <!-- Left Side - Illustration -->
             <components:Branding Grid.Column="0"/>
 
             <!-- Right Side - Login Form -->
             <components:Login Grid.Column="1"/>
+            <Image Source="/Resources/LoginPage/bg.png" Stretch="UniformToFill" Opacity="0.05"/>
         </Grid>
 
         <components:Footer Grid.Row="2" Loaded="Footer_Loaded"/>
