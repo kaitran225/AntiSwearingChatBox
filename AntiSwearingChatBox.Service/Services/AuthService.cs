@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 using AntiSwearingChatBox.Repository.IRepositories;
 using AntiSwearingChatBox.Repository.Models;
 using AntiSwearingChatBox.Service.IServices;
