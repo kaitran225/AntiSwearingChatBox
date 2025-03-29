@@ -39,11 +39,7 @@ namespace AntiSwearingChatBox.App.Views
             _authService = app.ServiceProvider.GetRequiredService<IAuthService>();
             
             // Initialize events
-            ChatView.MessageSent += ChatView_MessageSent;
-            ConversationList.ConversationSelected += ConversationList_ConversationSelected;
-            ConversationList.NewChatRequested += ConversationList_NewChatRequested;
-            ConversationList.AddConversationRequested += ConversationList_AddConversationRequested;
-            ConversationList.AdminDashboardRequested += ConversationList_AdminDashboardRequested;
+            InitializeEvents();
         }
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
@@ -496,8 +492,6 @@ namespace AntiSwearingChatBox.App.Views
 
         private void ConversationList_NewChatRequested(object? sender, EventArgs e)
         {
-            // Show UI for creating a new chat
-            // For example, show a dialog with list of users to chat with
             try
             {
                 // Get all users except current user
@@ -505,14 +499,26 @@ namespace AntiSwearingChatBox.App.Views
                 
                 if (users.Any())
                 {
-                    // In a real app, show a nice dialog with user selection
-                    // For now, just show a message with the first user
-                    var selectedUser = users.First();
+                    // Show user selection dialog
+                    var dialog = new UserSelectionDialog(users, _currentUserId);
+                    dialog.Owner = this;
                     
-                    // Create a direct chat with the selected user
-                    CreateDirectChatForUser(selectedUser.UserId, selectedUser.Username);
+                    bool? result = dialog.ShowDialog();
                     
-                    MessageBox.Show($"Started a new chat with {selectedUser.Username}", "New Chat", MessageBoxButton.OK, MessageBoxImage.Information);
+                    if (result == true)
+                    {
+                        if (dialog.SelectedUsers.Count == 1)
+                        {
+                            // Create a direct chat with the selected user
+                            var selectedUser = dialog.SelectedUsers.First();
+                            CreateDirectChatForUser(selectedUser.UserId, selectedUser.Username);
+                        }
+                        else if (dialog.SelectedUsers.Count > 1 && dialog.IsGroupChat)
+                        {
+                            // Create group chat
+                            CreateGroupChat(dialog.SelectedUsers, dialog.GroupName);
+                        }
+                    }
                 }
                 else
                 {
@@ -527,10 +533,105 @@ namespace AntiSwearingChatBox.App.Views
         
         private void ConversationList_AddConversationRequested(object? sender, EventArgs e)
         {
-            // Show UI for adding a new conversation (e.g., creating a group chat)
-            MessageBox.Show("Add conversation feature not yet implemented.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+            try
+            {
+                // Get all users except current user
+                var users = _userService.GetAll().Where(u => u.UserId != _currentUserId).ToList();
+                
+                if (users.Any())
+                {
+                    // Show user selection dialog with group chat option pre-selected
+                    var dialog = new UserSelectionDialog(users, _currentUserId);
+                    dialog.Owner = this;
+                    
+                    // The dialog will be shown with group creation UI
+                    CheckBox? groupCheckBox = dialog.FindName("CreateGroupCheckBox") as CheckBox;
+                    if (groupCheckBox != null)
+                    {
+                        groupCheckBox.IsChecked = true;
+                    }
+                    
+                    bool? result = dialog.ShowDialog();
+                    
+                    if (result == true && dialog.SelectedUsers.Count > 0 && !string.IsNullOrEmpty(dialog.GroupName))
+                    {
+                        // Create group chat
+                        CreateGroupChat(dialog.SelectedUsers, dialog.GroupName);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("No other users available to add to a conversation.", "Add Conversation", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error adding conversation: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
         
+        private void CreateGroupChat(List<User> participants, string groupName)
+        {
+            try
+            {
+                // Create a new group thread
+                var newThread = new ChatThread
+                {
+                    Title = groupName,
+                    CreatedAt = DateTime.Now,
+                    LastMessageAt = DateTime.Now,
+                    IsActive = true,
+                    IsPrivate = false,  // Group chats are not private
+                    ModerationEnabled = true
+                };
+                
+                var result = _chatThreadService.Add(newThread);
+                if (result.success)
+                {
+                    int threadId = newThread.ThreadId;
+                    
+                    // Add current user as participant
+                    var currentUserParticipant = new ThreadParticipant
+                    {
+                        ThreadId = threadId,
+                        UserId = _currentUserId,
+                        JoinedAt = DateTime.Now
+                    };
+                    _threadParticipantService.Add(currentUserParticipant);
+                    
+                    // Add selected users as participants
+                    foreach (var user in participants)
+                    {
+                        var participant = new ThreadParticipant
+                        {
+                            ThreadId = threadId,
+                            UserId = user.UserId,
+                            JoinedAt = DateTime.Now
+                        };
+                        _threadParticipantService.Add(participant);
+                    }
+                    
+                    // Add to conversation list
+                    ConversationList.AddConversation(
+                        threadId.ToString(),
+                        groupName,
+                        $"Group created with {participants.Count} members",
+                        DateTime.Now.ToString("h:mm tt")
+                    );
+                    
+                    MessageBox.Show($"Group '{groupName}' created successfully!", "Group Chat Created", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show($"Failed to create group: {result.message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error creating group chat: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         private void ConversationList_AdminDashboardRequested(object? sender, EventArgs e)
         {
             // Show admin dashboard
@@ -541,32 +642,26 @@ namespace AntiSwearingChatBox.App.Views
             }
         }
 
-        private void ChatView_PhoneCallRequested(object sender, EventArgs e)
-        {
-            // Since this is a text-only chat application, display a message that this feature is not available
-            MessageBox.Show("Phone call feature is not available in this text-only chat application.", 
-                "Feature Not Available", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void ChatView_VideoCallRequested(object sender, EventArgs e)
-        {
-            // Since this is a text-only chat application, display a message that this feature is not available
-            MessageBox.Show("Video call feature is not available in this text-only chat application.", 
-                "Feature Not Available", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
         private void ChatView_MenuRequested(object sender, EventArgs e)
         {
-            // Since this is a text-only chat application, display a message that this feature is not available
-            MessageBox.Show("Additional menu options are not available in this text-only chat application.", 
-                "Feature Not Available", MessageBoxButton.OK, MessageBoxImage.Information);
+            // Show message menu options
+            MessageBox.Show("Chat menu options not implemented in text-only version.", "Menu", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void ChatView_AttachmentRequested(object sender, EventArgs e)
         {
-            // Since this is a text-only chat application, display a message that this feature is not available
-            MessageBox.Show("File attachment feature is not available in this text-only chat application.", 
-                "Feature Not Available", MessageBoxButton.OK, MessageBoxImage.Information);
+            // Show attachment options
+            MessageBox.Show("Attachments not supported in text-only version.", "Attachments", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void InitializeEvents()
+        {
+            // Initialize events
+            ChatView.MessageSent += ChatView_MessageSent;
+            ChatView.MenuRequested += ChatView_MenuRequested;
+            ChatView.AttachmentRequested += ChatView_AttachmentRequested;
+            ConversationList.ConversationSelected += ConversationList_ConversationSelected;
+            ConversationList.NewChatRequested += ConversationList_NewChatRequested;
         }
     }
 } 

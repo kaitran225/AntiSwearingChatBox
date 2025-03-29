@@ -61,21 +61,9 @@ namespace AntiSwearingChatBox.App.Components
 
         #region Events
 
-        public event EventHandler PhoneCallRequested;
-        public event EventHandler VideoCallRequested;
         public event EventHandler MenuRequested;
 
         #endregion
-
-        private void PhoneButton_Click(object sender, RoutedEventArgs e)
-        {
-            PhoneCallRequested?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void VideoButton_Click(object sender, RoutedEventArgs e)
-        {
-            VideoCallRequested?.Invoke(this, EventArgs.Empty);
-        }
 
         private void MenuButton_Click(object sender, RoutedEventArgs e)
         {

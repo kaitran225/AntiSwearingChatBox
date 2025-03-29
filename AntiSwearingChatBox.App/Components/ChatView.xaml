@@ -24,8 +24,6 @@
             DisplayName="{Binding CurrentContact.Name}"
             StatusText="Active now"
             ShowActions="True"
-            PhoneCallRequested="Header_PhoneCallRequested"
-            VideoCallRequested="Header_VideoCallRequested"
             MenuRequested="Header_MenuRequested" />
 
         <!-- Messages Area -->

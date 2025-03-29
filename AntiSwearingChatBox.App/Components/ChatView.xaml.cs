@@ -50,8 +50,6 @@ namespace AntiSwearingChatBox.App.Components
         #region Events
 
         public event EventHandler<string> MessageSent;
-        public event EventHandler PhoneCallRequested;
-        public event EventHandler VideoCallRequested;
         public event EventHandler MenuRequested;
         public event EventHandler AttachmentRequested;
 
@@ -82,16 +80,6 @@ namespace AntiSwearingChatBox.App.Components
         private void MessageInput_AttachmentRequested(object sender, EventArgs e)
         {
             AttachmentRequested?.Invoke(this, e);
-        }
-
-        private void Header_PhoneCallRequested(object sender, EventArgs e)
-        {
-            PhoneCallRequested?.Invoke(this, e);
-        }
-
-        private void Header_VideoCallRequested(object sender, EventArgs e)
-        {
-            VideoCallRequested?.Invoke(this, e);
         }
 
         private void Header_MenuRequested(object sender, EventArgs e)

@@ -75,8 +75,6 @@
                 x:Name="ChatView"
                 Grid.Column="1"
                 MessageSent="ChatView_MessageSent"
-                PhoneCallRequested="ChatView_PhoneCallRequested"
-                VideoCallRequested="ChatView_VideoCallRequested"
                 MenuRequested="ChatView_MenuRequested"
                 AttachmentRequested="ChatView_AttachmentRequested" />
 

@@ -1,0 +1,150 @@
+<Window x:Class="AntiSwearingChatBox.App.Views.UserSelectionDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        mc:Ignorable="d"
+        Title="Select Users" 
+        Height="400" 
+        Width="500"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Background="{StaticResource PrimaryBackgroundBrush}">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock 
+            Grid.Row="0" 
+            Text="Select Users for Chat" 
+            FontSize="18" 
+            FontWeight="SemiBold" 
+            Margin="0,0,0,16"/>
+
+        <TextBox 
+            Grid.Row="1" 
+            x:Name="SearchBox" 
+            Margin="0,0,0,8"
+            materialDesign:HintAssist.Hint="Search users..."
+            materialDesign:TextFieldAssist.HasClearButton="True"
+            TextChanged="SearchBox_TextChanged"/>
+
+        <ListView 
+            Grid.Row="2" 
+            x:Name="UsersListView" 
+            Margin="0,8"
+            SelectionMode="Multiple"
+            BorderThickness="1"
+            BorderBrush="{StaticResource BorderBrush}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Margin="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <Border 
+                            Grid.Column="0"
+                            Width="36" 
+                            Height="36" 
+                            CornerRadius="18" 
+                            Background="{StaticResource PrimaryGreenBrush}" 
+                            Margin="0,0,12,0">
+                            <TextBlock 
+                                Text="{Binding Initials}" 
+                                HorizontalAlignment="Center" 
+                                VerticalAlignment="Center" 
+                                Foreground="White" 
+                                FontWeight="SemiBold"/>
+                        </Border>
+                        
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock 
+                                Text="{Binding Username}" 
+                                FontWeight="Medium"/>
+                            <TextBlock 
+                                Text="{Binding Email}" 
+                                Foreground="{StaticResource SecondaryTextBrush}" 
+                                FontSize="12"/>
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <Grid Grid.Row="3" Margin="0,8,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <CheckBox 
+                x:Name="CreateGroupCheckBox" 
+                Grid.Column="0" 
+                Content="Create as Group Chat" 
+                VerticalAlignment="Center"
+                Checked="CreateGroupCheckBox_Checked"
+                Unchecked="CreateGroupCheckBox_Unchecked"/>
+
+            <Button 
+                Grid.Column="1" 
+                Content="Cancel" 
+                Style="{StaticResource MaterialDesignOutlinedButton}" 
+                Margin="0,0,8,0" 
+                Width="100"
+                Click="CancelButton_Click"/>
+
+            <Button 
+                Grid.Column="2" 
+                Content="Start Chat" 
+                Style="{StaticResource MaterialDesignRaisedButton}" 
+                Background="{StaticResource PrimaryGreenBrush}"
+                BorderBrush="{StaticResource PrimaryGreenBrush}"
+                Width="100"
+                Click="StartChatButton_Click"/>
+        </Grid>
+
+        <!-- Group name input (hidden by default) -->
+        <Grid 
+            x:Name="GroupNameGrid" 
+            Grid.Row="3" 
+            Visibility="Collapsed" 
+            Margin="0,8,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBox 
+                x:Name="GroupNameTextBox" 
+                Grid.Column="0" 
+                materialDesign:HintAssist.Hint="Group name"
+                Margin="0,0,8,0"/>
+
+            <Button 
+                Grid.Column="1" 
+                Content="Cancel" 
+                Style="{StaticResource MaterialDesignOutlinedButton}" 
+                Margin="0,0,8,0" 
+                Width="100"
+                Click="CancelButton_Click"/>
+
+            <Button 
+                Grid.Column="2" 
+                Content="Create Group" 
+                Style="{StaticResource MaterialDesignRaisedButton}" 
+                Background="{StaticResource PrimaryGreenBrush}"
+                BorderBrush="{StaticResource PrimaryGreenBrush}"
+                Width="120"
+                Click="CreateGroupButton_Click"/>
+        </Grid>
+    </Grid>
+</Window> 

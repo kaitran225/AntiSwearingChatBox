@@ -63,36 +63,6 @@
                     materialDesign:ButtonAssist.CornerRadius="4"
                     Background="Transparent"
                     BorderThickness="0"
-                    Click="PhoneButton_Click">
-                    <materialDesign:PackIcon
-                        Width="18"
-                        Height="18"
-                        Foreground="{StaticResource TertiaryTextBrush}"
-                        Kind="Phone" />
-                </Button>
-                <Button
-                    Width="36"
-                    Height="36"
-                    Margin="4,0"
-                    Padding="8"
-                    materialDesign:ButtonAssist.CornerRadius="4"
-                    Background="Transparent"
-                    BorderThickness="0"
-                    Click="VideoButton_Click">
-                    <materialDesign:PackIcon
-                        Width="18"
-                        Height="18"
-                        Foreground="{StaticResource TertiaryTextBrush}"
-                        Kind="Video" />
-                </Button>
-                <Button
-                    Width="36"
-                    Height="36"
-                    Margin="4,0"
-                    Padding="8"
-                    materialDesign:ButtonAssist.CornerRadius="4"
-                    Background="Transparent"
-                    BorderThickness="0"
                     Click="MenuButton_Click">
                     <materialDesign:PackIcon
                         Width="18"
