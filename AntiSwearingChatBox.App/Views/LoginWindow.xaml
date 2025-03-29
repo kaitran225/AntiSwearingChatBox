@@ -6,259 +6,68 @@
         xmlns:local="clr-namespace:AntiSwearingChatBox.App.Views"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
-        Title="Login - Anti-Swearing Chat Box" Height="720" Width="1280"
-        MinHeight="720" MinWidth="1280" MaxHeight="1080" MaxWidth="1920"
+        Title="Login - AntiSwearingChatBox" Height="450" Width="400"
         WindowStartupLocation="CenterScreen"
-        Background="#0A0A0A"
-        TextElement.Foreground="#F8F5FF"
-        TextElement.FontWeight="Regular"
-        TextElement.FontSize="13"
-        TextOptions.TextFormattingMode="Ideal"
-        TextOptions.TextRenderingMode="Auto"
-        FontFamily="Segoe UI"
-        WindowStyle="None"
-        ResizeMode="NoResize"
-        AllowsTransparency="True"
-        BorderThickness="0">
-
-    <Window.Resources>
-        <Style x:Key="InputBoxStyle" TargetType="TextBox" BasedOn="{StaticResource MaterialDesignTextBox}">
-            <Setter Property="Foreground" Value="#F8F5FF"/>
-            <Setter Property="Margin" Value="0,6"/>
-            <Setter Property="Padding" Value="12,14"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="Background" Value="#121212"/>
-            <Setter Property="CaretBrush" Value="#BCD9B4"/>
-            <Setter Property="Height" Value="50"/>
-            <Setter Property="BorderBrush" Value="#1E1E1E"/>
-            <Setter Property="BorderThickness" Value="1"/>
-        </Style>
-        
-        <Style x:Key="PasswordBoxStyle" TargetType="PasswordBox" BasedOn="{StaticResource MaterialDesignPasswordBox}">
-            <Setter Property="Foreground" Value="#F8F5FF"/>
-            <Setter Property="Margin" Value="0,6"/>
-            <Setter Property="Padding" Value="12,14"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="Background" Value="#121212"/>
-            <Setter Property="CaretBrush" Value="#BCD9B4"/>
-            <Setter Property="Height" Value="50"/>
-            <Setter Property="BorderBrush" Value="#1E1E1E"/>
-            <Setter Property="BorderThickness" Value="1"/>
-        </Style>
-        
-        <Style x:Key="PrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource MaterialDesignRaisedButton}">
-            <Setter Property="Background" Value="#151515"/>
-            <Setter Property="BorderBrush" Value="#BCD9B4"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Foreground" Value="#F8F5FF"/>
-            <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="4"/>
-            <Setter Property="Height" Value="50"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Margin" Value="0,16,0,0"/>
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <DropShadowEffect ShadowDepth="1" Direction="270" BlurRadius="3" Opacity="0.2" Color="#000000"/>
-                </Setter.Value>
-            </Setter>
-        </Style>
-        
-        <Style x:Key="SocialButtonStyle" TargetType="Button" BasedOn="{StaticResource MaterialDesignOutlinedButton}">
-            <Setter Property="Height" Value="44"/>
-            <Setter Property="Background" Value="#111111"/>
-            <Setter Property="BorderBrush" Value="#1E1E1E"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Foreground" Value="#F8F5FF"/>
-            <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="4"/>
-        </Style>
-        
-        <Style x:Key="WindowBarButtonStyle" TargetType="Button" BasedOn="{StaticResource MaterialDesignIconButton}">
-            <Setter Property="Width" Value="30"/>
-            <Setter Property="Height" Value="30"/>
-            <Setter Property="Padding" Value="0"/>
-            <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="4"/>
-        </Style>
-    </Window.Resources>
-
+        ResizeMode="NoResize">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="38"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        
-        <!-- Custom Window Bar -->
-        <Border Grid.Row="0" Background="#111111" BorderThickness="0,0,0,1" BorderBrush="#1E1E1E">
-            <Grid>
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
-                    <Border Width="16" Height="16" Background="#121212" CornerRadius="8" Margin="0,0,8,0">
-                        <TextBlock Text="A" Foreground="#BCD9B4" FontSize="10" FontWeight="SemiBold" 
-                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <TextBlock Text="Anti-Swearing Chat - Login" FontSize="11" Foreground="#B3B3B3" 
-                              VerticalAlignment="Center"/>
-                </StackPanel>
-                
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,8,0">
-                    <Button Style="{StaticResource WindowBarButtonStyle}" Margin="4,0">
-                        <materialDesign:PackIcon Kind="Minus" Width="16" Height="16" Foreground="#B3B3B3"/>
-                    </Button>
-                    <Button Style="{StaticResource WindowBarButtonStyle}" Margin="4,0">
-                        <materialDesign:PackIcon Kind="Fullscreen" Width="16" Height="16" Foreground="#B3B3B3"/>
-                    </Button>
-                    <Button x:Name="btnClose" Style="{StaticResource WindowBarButtonStyle}" Margin="4,0">
-                        <materialDesign:PackIcon Kind="Close" Width="16" Height="16" Foreground="#B3B3B3"/>
-                    </Button>
-                </StackPanel>
-            </Grid>
+
+        <!-- Header -->
+        <Border Background="#2196F3" Padding="20">
+            <TextBlock Text="Welcome Back!" 
+                       Foreground="White" 
+                       FontSize="24" 
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"/>
         </Border>
-        
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="400"/>
-            </Grid.ColumnDefinitions>
-            
-            <!-- Left Side - Illustration/Branding -->
-            <Grid Grid.Column="0" Background="#0A0A0A">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                
-                <!-- Illustration and Welcome Message -->
-                <StackPanel Grid.Row="1" VerticalAlignment="Center" Margin="40,0">
-                    <TextBlock Text="Welcome to a" FontSize="28" FontWeight="Regular" Foreground="#F8F5FF"/>
-                    <TextBlock Text="Safe Chat Experience" FontSize="36" FontWeight="Bold" Foreground="#BCD9B4" Margin="0,8,0,16"/>
-                    <TextBlock Text="Connect with friends and colleagues in a positive environment free from inappropriate language." 
-                               FontSize="16" Foreground="#B3B3B3" TextWrapping="Wrap" MaxWidth="360" LineHeight="24"/>
-                    
-                    <!-- Visual Element -->
-                    <Border Width="320" Height="200" Background="#111111" CornerRadius="8" Margin="0,32,0,0" 
-                            BorderBrush="#1E1E1E" BorderThickness="1" 
-                            Effect="{DynamicResource MaterialDesignShadowDepth1}">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="*"/>
-                            </Grid.RowDefinitions>
-                            
-                            <TextBlock Text="Your Conversations, Moderated" FontSize="16" FontWeight="SemiBold" 
-                                       Foreground="#F8F5FF" Margin="16,16,16,0"/>
-                            
-                            <StackPanel Grid.Row="1" Margin="16">
-                                <Border Background="#151515" CornerRadius="4" Padding="12,6" Margin="0,0,0,8">
-                                    <TextBlock Text="Hello, how are you doing today?" Foreground="#F8F5FF" FontSize="12"/>
-                                </Border>
-                                
-                                <Border Background="#121212" CornerRadius="4" Padding="12,6" HorizontalAlignment="Right" 
-                                        Margin="40,0,0,8" BorderBrush="#BCD9B4" BorderThickness="1">
-                                    <TextBlock Text="I'm doing great! Thanks for asking." Foreground="#F8F5FF" FontSize="12"/>
-                                </Border>
-                                
-                                <Border Background="#111111" BorderBrush="#1E1E1E" BorderThickness="1" 
-                                        CornerRadius="4" Padding="8" HorizontalAlignment="Center" Margin="0,8,0,0">
-                                    <StackPanel Orientation="Horizontal">
-                                        <materialDesign:PackIcon Kind="ShieldCheck" Width="14" Height="14" Foreground="#BCD9B4" 
-                                                                 VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                        <TextBlock Text="Protected by AI Moderation" Foreground="#F8F5FF" FontSize="11"/>
-                                    </StackPanel>
-                                </Border>
-                            </StackPanel>
-                        </Grid>
-                    </Border>
-                </StackPanel>
-                
-                <!-- Footer -->
-                <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="40,0,0,32">
-                    <TextBlock Text="© 2023 Anti-Swearing Chat Box" Foreground="#616161" FontSize="11"/>
-                </StackPanel>
-            </Grid>
-            
-            <!-- Right Side - Login Form -->
-            <Border Grid.Column="1" Background="#0D0D0D" BorderThickness="1,0,0,0" BorderBrush="#1E1E1E">
-                <!-- Form Content -->
-                <StackPanel Width="300" VerticalAlignment="Center">
-                    <TextBlock Text="Login" FontSize="32" FontWeight="SemiBold" Foreground="#F8F5FF" Margin="0,0,0,8"/>
-                    <TextBlock Text="Welcome back! Please enter your details." FontSize="14" Foreground="#B3B3B3" Margin="0,0,0,32"/>
-                    
-                    <!-- Email Input -->
-                    <TextBox Style="{StaticResource InputBoxStyle}"
-                             materialDesign:HintAssist.Hint="Email or Username"
-                             materialDesign:TextFieldAssist.HasClearButton="True">
-                        <TextBox.Resources>
-                            <Style TargetType="{x:Type Border}">
-                                <Setter Property="CornerRadius" Value="4"/>
-                            </Style>
-                        </TextBox.Resources>
-                    </TextBox>
-                    
-                    <!-- Password Input -->
-                    <PasswordBox Style="{StaticResource PasswordBoxStyle}"
-                                 materialDesign:HintAssist.Hint="Password">
-                        <PasswordBox.Resources>
-                            <Style TargetType="{x:Type Border}">
-                                <Setter Property="CornerRadius" Value="4"/>
-                            </Style>
-                        </PasswordBox.Resources>
-                    </PasswordBox>
-                    
-                    <!-- Remember Me & Forgot Password -->
-                    <Grid Margin="0,6">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        
-                        <CheckBox Content="Remember me" Foreground="#B3B3B3" Margin="0,0,0,0" FontSize="12"
-                                  BorderBrush="#BCD9B4" Background="Transparent"/>
-                        
-                        <TextBlock Grid.Column="1" Text="Forgot password?" Foreground="#BCD9B4" FontSize="12"
-                                   VerticalAlignment="Center" Cursor="Hand"/>
-                    </Grid>
-                    
-                    <!-- Login Button -->
-                    <Button x:Name="btnLogin" Content="Log in" Style="{StaticResource PrimaryButtonStyle}"/>
-                    
-                    <!-- Register Link -->
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,24,0,0">
-                        <TextBlock Text="Don't have an account?" Foreground="#B3B3B3" FontSize="12"/>
-                        <TextBlock x:Name="btnRegister" Text="Register" Foreground="#BCD9B4" FontWeight="SemiBold" 
-                                   FontSize="12" Cursor="Hand" Margin="6,0,0,0"/>
-                    </StackPanel>
-                    
-                    <!-- Social Login -->
-                    <StackPanel Margin="0,32,0,0">
-                        <Border BorderThickness="0,0,0,1" BorderBrush="#1E1E1E" Margin="0,0,0,24">
-                            <TextBlock Text="OR CONTINUE WITH" Foreground="#616161" FontSize="10" 
-                                      HorizontalAlignment="Center" Margin="0,0,0,8"/>
-                        </Border>
-                        
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            
-                            <Button Grid.Column="0" Style="{StaticResource SocialButtonStyle}" Margin="0,0,4,0">
-                                <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="Google" Width="16" Height="16" VerticalAlignment="Center"/>
-                                    <TextBlock Text="Google" Margin="6,0,0,0" VerticalAlignment="Center" FontSize="12"/>
-                                </StackPanel>
-                            </Button>
-                            
-                            <Button Grid.Column="1" Style="{StaticResource SocialButtonStyle}" Margin="4,0,0,0">
-                                <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="Microsoft" Width="16" Height="16" VerticalAlignment="Center"/>
-                                    <TextBlock Text="Microsoft" Margin="6,0,0,0" VerticalAlignment="Center" FontSize="12"/>
-                                </StackPanel>
-                            </Button>
-                        </Grid>
-                    </StackPanel>
-                </StackPanel>
-            </Border>
-        </Grid>
+
+        <!-- Login Form -->
+        <StackPanel Grid.Row="1" 
+                    Margin="40" 
+                    VerticalAlignment="Center">
+            <TextBlock Text="Username" 
+                       Margin="0,0,0,5" 
+                       FontWeight="SemiBold"/>
+            <TextBox x:Name="UsernameTextBox" 
+                     Margin="0,0,0,15" 
+                     Padding="10"
+                     BorderThickness="1"
+                     BorderBrush="#DDDDDD"/>
+
+            <TextBlock Text="Password" 
+                       Margin="0,0,0,5" 
+                       FontWeight="SemiBold"/>
+            <PasswordBox x:Name="PasswordBox" 
+                        Margin="0,0,0,20" 
+                        Padding="10"
+                        BorderThickness="1"
+                        BorderBrush="#DDDDDD"/>
+
+            <Button x:Name="LoginButton" 
+                    Content="Login" 
+                    Background="#2196F3" 
+                    Foreground="White" 
+                    Padding="15" 
+                    Margin="0,0,0,10"
+                    Click="LoginButton_Click"/>
+
+            <Button x:Name="RegisterButton" 
+                    Content="Register" 
+                    Background="Transparent" 
+                    Foreground="#2196F3" 
+                    Padding="15" 
+                    BorderThickness="1"
+                    BorderBrush="#2196F3"
+                    Click="RegisterButton_Click"/>
+
+            <TextBlock x:Name="ErrorMessage" 
+                       Foreground="Red" 
+                       TextWrapping="Wrap"
+                       Margin="0,20,0,0"
+                       HorizontalAlignment="Center"/>
+        </StackPanel>
     </Grid>
 </Window> 
