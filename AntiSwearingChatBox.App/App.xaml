@@ -9,7 +9,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <materialDesign:BundledTheme BaseTheme="Dark" PrimaryColor="Green" SecondaryColor="Purple" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
-                <ResourceDictionary Source="Resources/GlobalStyles.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/AntiSwearingChatBox.App;component/Resources/GlobalStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
             
             <!-- Custom Colors -->
