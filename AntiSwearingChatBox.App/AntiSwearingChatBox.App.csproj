@@ -36,4 +36,13 @@
     <ProjectReference Include="..\AntiSwearingChatBox.Service\AntiSwearingChatBox.Service.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Components\Register.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Components\Login.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+
 </Project>
