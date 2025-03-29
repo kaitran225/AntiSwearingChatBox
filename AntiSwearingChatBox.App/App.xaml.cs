@@ -56,20 +56,55 @@ namespace AntiSwearingChatBox.App
         {
             try
             {
-                // Try to get connection string from app settings
+                // Find the Service project directory
+                string serviceDirectory = FindServiceProjectDirectory();
+                
+                // Load connection string from Service project's appsettings.json
                 var config = new ConfigurationBuilder()
-                    .SetBasePath(Directory.GetCurrentDirectory())
+                    .SetBasePath(serviceDirectory)
                     .AddJsonFile("appsettings.json", optional: true)
                     .Build();
-
-                return config["ConnectionStrings:AntiSwearingChatBox"] 
-                    ?? "Server=(localdb)\\MSSQLLocalDB;Database=AntiSwearingChatBox;Trusted_Connection=True;";
+                
+                string? connString = config["ConnectionStrings:AntiSwearingChatBox"];
+                
+                if (!string.IsNullOrEmpty(connString))
+                {
+                    return connString;
+                }
+                
+                // Fallback connection string if not found
+                return "Server=localhost\\SQLEXPRESS;Database=AntiSwearingChatBox;Trusted_Connection=True;TrustServerCertificate=True;";
             }
             catch
             {
                 // Fallback connection string if config file not found
-                return "Server=(localdb)\\MSSQLLocalDB;Database=AntiSwearingChatBox;Trusted_Connection=True;";
+                return "Server=localhost\\SQLEXPRESS;Database=AntiSwearingChatBox;Trusted_Connection=True;TrustServerCertificate=True;";
             }
+        }
+        
+        private string FindServiceProjectDirectory()
+        {
+            // Start from current directory
+            string? currentDir = Directory.GetCurrentDirectory();
+            
+            // Try to find solution root by traversing up
+            while (currentDir != null && !File.Exists(Path.Combine(currentDir, "AntiSwearingChatBox.sln")))
+            {
+                currentDir = Directory.GetParent(currentDir)?.FullName;
+            }
+            
+            // If found solution root, look for Service project
+            if (currentDir != null)
+            {
+                string serviceDir = Path.Combine(currentDir, "AntiSwearingChatBox.Service");
+                if (Directory.Exists(serviceDir))
+                {
+                    return serviceDir;
+                }
+            }
+            
+            // Fallback to current directory
+            return Directory.GetCurrentDirectory();
         }
 
         protected override void OnStartup(StartupEventArgs e)

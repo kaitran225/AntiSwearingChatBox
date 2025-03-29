@@ -1,10 +1,56 @@
 using System.Text;
+using System.IO;
 using AntiSwearingChatBox.AI.Services;
 using AntiSwearingChatBox.AI.Interfaces;
 using AntiSwearingChatBox.Server.Hubs;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using AntiSwearingChatBox.Service.Services;
 
-var builder = WebApplication.CreateBuilder(args);
+// Helper method to find the Service project directory
+static string FindServiceProjectDirectory()
+{
+    // Start from current directory
+    string? currentDir = Directory.GetCurrentDirectory();
+    
+    // Try to find solution root by traversing up
+    while (currentDir != null && !File.Exists(Path.Combine(currentDir, "AntiSwearingChatBox.sln")))
+    {
+        currentDir = Directory.GetParent(currentDir)?.FullName;
+    }
+    
+    // If found solution root, look for Service project
+    if (currentDir != null)
+    {
+        string serviceDir = Path.Combine(currentDir, "AntiSwearingChatBox.Service");
+        if (Directory.Exists(serviceDir))
+        {
+            return serviceDir;
+        }
+    }
+    
+    // Fallback to current directory
+    return Directory.GetCurrentDirectory();
+}
+
+// Find the path to the Service project's appsettings.json
+string serviceDirectory = FindServiceProjectDirectory();
+
+// Create a new WebApplicationBuilder with configuration from Service project
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+    ApplicationName = typeof(Program).Assembly.GetName().Name,
+    ContentRootPath = Directory.GetCurrentDirectory(),
+    Args = args
+});
+
+// Add Service project's appsettings.json as first configuration source
+builder.Configuration.AddJsonFile(Path.Combine(serviceDirectory, "appsettings.json"), optional: true, reloadOnChange: true);
+
+// Then add local appsettings.json files for any environment-specific overrides
+builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

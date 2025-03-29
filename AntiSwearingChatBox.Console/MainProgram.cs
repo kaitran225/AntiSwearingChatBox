@@ -174,11 +174,13 @@ namespace AntiSwearingChatBox.ConsoleChat
         {
             try
             {
-                // Load configuration from appsettings.json
-                string projectDir = Directory.GetCurrentDirectory();
+                // Find Service project's appsettings.json
+                string serviceDirectory = FindServiceProjectDirectory();
+                
+                // Load configuration
                 IConfiguration configuration = new ConfigurationBuilder()
-                    .SetBasePath(projectDir)
-                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                    .SetBasePath(serviceDirectory)
+                    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                     .Build();
 
                 // Initialize Gemini Service with settings from configuration
@@ -206,6 +208,32 @@ namespace AntiSwearingChatBox.ConsoleChat
                 Console.WriteLine("Press any key to return to main menu...");
                 Console.ReadKey();
             }
+        }
+
+        // Helper method to find the Service project directory
+        private static string FindServiceProjectDirectory()
+        {
+            // Start from current directory
+            string? currentDir = Directory.GetCurrentDirectory();
+            
+            // Try to find solution root by traversing up
+            while (currentDir != null && !File.Exists(Path.Combine(currentDir, "AntiSwearingChatBox.sln")))
+            {
+                currentDir = Directory.GetParent(currentDir)?.FullName;
+            }
+            
+            // If found solution root, look for Service project
+            if (currentDir != null)
+            {
+                string serviceDir = Path.Combine(currentDir, "AntiSwearingChatBox.Service");
+                if (Directory.Exists(serviceDir))
+                {
+                    return serviceDir;
+                }
+            }
+            
+            // Fallback to current directory
+            return Directory.GetCurrentDirectory();
         }
     }
 } 

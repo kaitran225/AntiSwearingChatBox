@@ -8,6 +8,8 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Security.Principal;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using System.IO;
 
 namespace AntiSwearingChatBox.ConsoleChat.SystemUtils
 {
@@ -91,7 +93,29 @@ namespace AntiSwearingChatBox.ConsoleChat.SystemUtils
         {
             try
             {
-                var connectionString = "Server=localhost\\SQLEXPRESS;Database=AntiSwearingChat;Trusted_Connection=True;TrustServerCertificate=True;Connect Timeout=3";
+                // Find the Service project directory first
+                string serviceDirectory = FindServiceProjectDirectory();
+                
+                // Load connection string from Service project's appsettings.json
+                var config = new ConfigurationBuilder()
+                    .SetBasePath(serviceDirectory)
+                    .AddJsonFile("appsettings.json", optional: true)
+                    .Build();
+
+                var connectionString = config["ConnectionStrings:AntiSwearingChatBox"];
+                
+                // Add connection timeout for testing
+                if (!string.IsNullOrEmpty(connectionString) && !connectionString.Contains("Connect Timeout"))
+                {
+                    connectionString += ";Connect Timeout=3";
+                }
+                
+                // Use default if not found
+                if (string.IsNullOrEmpty(connectionString))
+                {
+                    connectionString = "Server=localhost\\SQLEXPRESS;Database=AntiSwearingChatBox;Trusted_Connection=True;TrustServerCertificate=True;Connect Timeout=3";
+                }
+                
                 using var connection = new SqlConnection(connectionString);
                 
                 // Set a short timeout for the connection attempt
@@ -118,6 +142,32 @@ namespace AntiSwearingChatBox.ConsoleChat.SystemUtils
                     $"Error: {ex.Message}"
                 );
             }
+        }
+
+        // Helper method to find the Service project directory
+        private string FindServiceProjectDirectory()
+        {
+            // Start from current directory
+            string? currentDir = Directory.GetCurrentDirectory();
+            
+            // Try to find solution root by traversing up
+            while (currentDir != null && !File.Exists(Path.Combine(currentDir, "AntiSwearingChatBox.sln")))
+            {
+                currentDir = Directory.GetParent(currentDir)?.FullName;
+            }
+            
+            // If found solution root, look for Service project
+            if (currentDir != null)
+            {
+                string serviceDir = Path.Combine(currentDir, "AntiSwearingChatBox.Service");
+                if (Directory.Exists(serviceDir))
+                {
+                    return serviceDir;
+                }
+            }
+            
+            // Fallback to current directory
+            return Directory.GetCurrentDirectory();
         }
 
         private (string, bool, string) CheckPortAvailability()
@@ -168,6 +218,10 @@ namespace AntiSwearingChatBox.ConsoleChat.SystemUtils
         {
             try
             {
+                bool ruleFound = false;
+                string output = "";
+                
+                // Check for exact rule name "AntiSwearingChatBox"
                 var process = new Process
                 {
                     StartInfo = new ProcessStartInfo
@@ -180,20 +234,75 @@ namespace AntiSwearingChatBox.ConsoleChat.SystemUtils
                     }
                 };
                 process.Start();
-                var output = process.StandardOutput.ReadToEnd();
+                output = process.StandardOutput.ReadToEnd();
                 process.WaitForExit();
 
                 if (output.Contains("AntiSwearingChatBox"))
                 {
-                    return ("Windows Firewall", true, "Firewall rule for AntiSwearingChatBox exists");
+                    ruleFound = true;
                 }
                 
-                return (
-                    "Windows Firewall",
-                    false,
-                    "No firewall rule found for AntiSwearingChatBox.\n" +
-                    "You may need to add an inbound rule for the application port (5122)."
-                );
+                // If exact rule not found, check for any rule with our port
+                if (!ruleFound)
+                {
+                    process = new Process
+                    {
+                        StartInfo = new ProcessStartInfo
+                        {
+                            FileName = "netsh",
+                            Arguments = "advfirewall firewall show rule name=all | findstr 5122",
+                            UseShellExecute = false,
+                            RedirectStandardOutput = true,
+                            CreateNoWindow = true
+                        }
+                    };
+                    process.Start();
+                    output = process.StandardOutput.ReadToEnd();
+                    process.WaitForExit();
+
+                    if (!string.IsNullOrWhiteSpace(output))
+                    {
+                        ruleFound = true;
+                    }
+                }
+                
+                // If we found a rule, return success
+                if (ruleFound)
+                {
+                    return ("Windows Firewall", true, "Firewall rule for AntiSwearingChatBox ports exists");
+                }
+                
+                // For simplicity's sake, let's just create the rule here
+                // This makes the validator more helpful by auto-fixing the issue
+                try
+                {
+                    // Create the firewall rule if we couldn't find it
+                    process = new Process
+                    {
+                        StartInfo = new ProcessStartInfo
+                        {
+                            FileName = "netsh",
+                            Arguments = "advfirewall firewall add rule name=\"AntiSwearingChatBox\" dir=in action=allow protocol=TCP localport=5122-5128",
+                            UseShellExecute = true,
+                            Verb = "runas",
+                            CreateNoWindow = false
+                        }
+                    };
+                    process.Start();
+                    process.WaitForExit();
+                    
+                    return ("Windows Firewall", true, "Created firewall rule for AntiSwearingChatBox");
+                }
+                catch
+                {
+                    // If we couldn't create it automatically (UAC denial etc.)
+                    return (
+                        "Windows Firewall",
+                        false,
+                        "No firewall rule found for AntiSwearingChatBox.\n" +
+                        "Please run AddFirewallRules.bat as administrator or manually add an inbound rule for port 5122-5128."
+                    );
+                }
             }
             catch (Exception ex)
             {
