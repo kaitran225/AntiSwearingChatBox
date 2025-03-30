@@ -50,7 +50,7 @@ namespace AntiSwearingChatBox.App.Views
                 // User authenticated successfully
                 User user = result.user;
                 
-                // Store the user in application state or pass to the next page
+                // Store user in app state
                 var app = (App)Application.Current;
                 app.CurrentUser = user;
                 

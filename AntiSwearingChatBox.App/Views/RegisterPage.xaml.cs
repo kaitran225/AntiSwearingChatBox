@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace AntiSwearingChatBox.App.Views
 {
     /// <summary>
-    /// Interaction logic for RegisterPage.xaml
+    /// Interaction logic for RegisterPage2.xaml
     /// </summary>
     public partial class RegisterPage : Page
     {
@@ -82,7 +82,7 @@ namespace AntiSwearingChatBox.App.Views
                 // Registration successful
                 MessageBox.Show("Registration successful! You can now log in.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                 
-                // Navigate back to login page
+                // Navigate to login page
                 if (Window.GetWindow(this) is MainWindow mainWindow)
                 {
                     mainWindow.NavigateToLogin();
@@ -96,7 +96,7 @@ namespace AntiSwearingChatBox.App.Views
 
         private void BackToLoginButton_Click(object sender, RoutedEventArgs e)
         {
-            // Navigate back to login page
+            // Navigate to login page
             if (Window.GetWindow(this) is MainWindow mainWindow)
             {
                 mainWindow.NavigateToLogin();

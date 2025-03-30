@@ -210,6 +210,26 @@ namespace AntiSwearingChatBox.App.Components
             }
         }
 
+        public void SelectConversation(ConversationItemViewModel conversation)
+        {
+            if (conversation != null)
+            {
+                // Update active states
+                foreach (var conv in Conversations)
+                {
+                    conv.IsSelected = conv.Id == conversation.Id;
+                }
+
+                foreach (var group in Groups)
+                {
+                    group.IsSelected = group.Id == conversation.Id;
+                }
+
+                // Reset unread count for selected conversation
+                conversation.UnreadCount = 0;
+            }
+        }
+
         protected void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
