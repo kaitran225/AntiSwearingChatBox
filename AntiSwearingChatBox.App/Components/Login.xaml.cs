@@ -49,7 +49,32 @@ namespace AntiSwearingChatBox.App.Components
             // Get parent window
             Window parentWindow = Window.GetWindow(this);
             
-            // Notify parent to show registration panel if available
+            // Check if we're in the new Page-based navigation
+            if (parentWindow is MainWindow && this.Parent != null)
+            {
+                // Find containing page
+                var parent = this.Parent;
+                while (parent != null && !(parent is Page))
+                {
+                    if (parent is FrameworkElement fe)
+                    {
+                        parent = fe.Parent;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                
+                // If parent is LoginPage2, call its ShowRegisterPanel method
+                if (parent is LoginPage2 loginPage)
+                {
+                    loginPage.ShowRegisterPanel();
+                    return;
+                }
+            }
+            
+            // Notify parent to show registration panel if available (legacy window approach)
             if (parentWindow is LoginWindow loginWindow)
             {
                 loginWindow.ShowRegisterPanel();

@@ -55,6 +55,38 @@ namespace AntiSwearingChatBox.App.Components
         
         private void BtnLogin_Click(object sender, RoutedEventArgs e)
         {
+            // Get parent window
+            Window parentWindow = Window.GetWindow(this);
+            
+            // Check if we're in the new Page-based navigation
+            if (parentWindow is MainWindow && this.Parent != null)
+            {
+                // Find containing page
+                var parent = this.Parent;
+                while (parent != null && !(parent is Page))
+                {
+                    if (parent is FrameworkElement fe)
+                    {
+                        parent = fe.Parent;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                
+                // If parent is RegisterPage2, navigate back to login
+                if (parent is RegisterPage2 registerPage)
+                {
+                    if (parentWindow is MainWindow mainWindow)
+                    {
+                        mainWindow.NavigateToLogin();
+                        return;
+                    }
+                }
+            }
+            
+            // Legacy window-based approach
             // Get the service provider from the application
             var app = Application.Current as App;
             if (app != null)
@@ -65,7 +97,6 @@ namespace AntiSwearingChatBox.App.Components
                 {
                     loginWindow.Show();
                     
-                    Window parentWindow = Window.GetWindow(this); // Get the parent window
                     parentWindow?.Close();
                 }
                 else

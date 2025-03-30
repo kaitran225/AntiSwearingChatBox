@@ -108,10 +108,10 @@ namespace AntiSwearingChatBox.App
 
             // Register views (windows and pages)
             services.AddTransient<Views.MainWindow>();
-            services.AddTransient<Views.LoginPage>();
-            services.AddTransient<Views.RegisterPage>();
-            services.AddTransient<Views.ChatPage>();
-            services.AddTransient<Views.DashboardPage>();
+            services.AddTransient<Views.LoginPage2>();
+            services.AddTransient<Views.RegisterPage2>();
+            services.AddTransient<Views.ChatPage2>();
+            services.AddTransient<Views.DashboardPage2>();
             
             // Register legacy windows for backward compatibility
             services.AddTransient<Views.ChatWindow>();

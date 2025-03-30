@@ -53,22 +53,22 @@ namespace AntiSwearingChatBox.App.Views
         // Navigation methods
         public void NavigateToLogin()
         {
-            MainFrame.Navigate(new LoginPage());
+            MainFrame.Navigate(new LoginPage2());
         }
         
         public void NavigateToRegister()
         {
-            MainFrame.Navigate(new RegisterPage());
+            MainFrame.Navigate(new RegisterPage2());
         }
         
         public void NavigateToDashboard()
         {
-            MainFrame.Navigate(new DashboardPage());
+            MainFrame.Navigate(new DashboardPage2());
         }
         
         public void NavigateToChat()
         {
-            MainFrame.Navigate(new ChatPage());
+            MainFrame.Navigate(new ChatPage2());
         }
     }
 } 
