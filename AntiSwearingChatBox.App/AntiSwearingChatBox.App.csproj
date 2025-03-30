@@ -46,10 +46,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AntiSwearingChatBox.AI\AntiSwearingChatBox.AI.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Compile Update="Components\Register.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
