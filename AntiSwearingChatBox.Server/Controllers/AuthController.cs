@@ -1,48 +1,117 @@
-using AntiSwearingChatBox.Repository.Models;
-using AntiSwearingChatBox.Service.Interface;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
+using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using AntiSwearingChatBox.Service.Interface;
+using AntiSwearingChatBox.Repository.Models;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace AntiSwearingChatBox.Server.Controllers
 {
     [ApiController]
-    [Route("api/auth")]
+    [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly IUserService _userService;
 
-        public AuthController(IAuthService authService)
+        public AuthController(IAuthService authService, IUserService userService)
         {
             _authService = authService;
-        }
-
-        [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
-        {
-            var user = new User
-            {
-                Username = request.Username,
-                Email = request.Email,
-                Gender = request.Gender
-            };
-
-            var (success, message, token, refreshToken) = await _authService.RegisterAsync(user, request.Password);
-            if (!success)
-                return BadRequest(new { message });
-
-            return Ok(new { message, token, refreshToken });
+            _userService = userService;
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
-            var (success, message, token, refreshToken) = await _authService.LoginAsync(request.Username, request.Password);
-            if (!success)
-                return BadRequest(new { message });
+            try
+            {
+                var (success, message, token, _) = await _authService.LoginAsync(model.Username, model.Password);
+                
+                if (success)
+                {
+                    // Get full user details
+                    var user = _userService.GetByUsername(model.Username);
+                    
+                    return Ok(new 
+                    {
+                        Success = true,
+                        Message = "Login successful",
+                        Token = token,
+                        User = user
+                    });
+                }
+                
+                return BadRequest(new { Success = false, Message = message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Success = false, Message = $"An error occurred: {ex.Message}" });
+            }
+        }
 
-            return Ok(new { message, token, refreshToken });
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterModel model)
+        {
+            try
+            {
+                var user = new User
+                {
+                    Username = model.Username,
+                    Email = model.Email,
+                    IsActive = true,
+                    IsVerified = true,
+                    CreatedAt = DateTime.UtcNow,
+                    Role = "User"
+                };
+
+                var (success, message, _, _) = await _authService.RegisterAsync(user, model.Password);
+
+                if (success)
+                {
+                    return Ok(new { Success = true, Message = "Registration successful" });
+                }
+
+                return BadRequest(new { Success = false, Message = message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Success = false, Message = $"An error occurred: {ex.Message}" });
+            }
+        }
+
+        [HttpGet("users")]
+        public IActionResult GetAllUsers()
+        {
+            try
+            {
+                var users = _userService.GetAll();
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Success = false, Message = $"An error occurred: {ex.Message}" });
+            }
+        }
+
+        [HttpGet("users/{id}")]
+        public IActionResult GetUserById(int id)
+        {
+            try
+            {
+                var user = _userService.GetById(id);
+                
+                if (user == null)
+                {
+                    return NotFound(new { Success = false, Message = "User not found" });
+                }
+                
+                return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Success = false, Message = $"An error occurred: {ex.Message}" });
+            }
         }
 
         [HttpPost("refresh-token")]
@@ -100,18 +169,17 @@ namespace AntiSwearingChatBox.Server.Controllers
         }
     }
 
-    public class RegisterRequest
+    public class LoginModel
     {
-        public string Username { get; set; } = null!;
-        public string Email { get; set; } = null!;
-        public string Password { get; set; } = null!;
-        public string? Gender { get; set; }
+        public string Username { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
     }
 
-    public class LoginRequest
+    public class RegisterModel
     {
-        public string Username { get; set; } = null!;
-        public string Password { get; set; } = null!;
+        public string Username { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
     }
 
     public class RefreshTokenRequest
