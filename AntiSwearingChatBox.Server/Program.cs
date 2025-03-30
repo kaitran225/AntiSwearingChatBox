@@ -14,6 +14,7 @@ using AntiSwearingChatBox.Service.Interface;
 using AntiSwearingChatBox.AI.Interfaces;
 using AntiSwearingChatBox.AI.Services;
 using AntiSwearingChatBox.Server.Service;
+using System.Threading;
 
 namespace AntiSwearingChatBox.Server
 {
@@ -143,6 +144,15 @@ namespace AntiSwearingChatBox.Server
                     await RemoveMemberAsync(parts);
                     break;
                     
+                case "chat":
+                    if (parts.Length < 2 || !int.TryParse(parts[1], out int chatGroupId))
+                    {
+                        Console.WriteLine("Usage: chat <groupId>");
+                        return;
+                    }
+                    await EnterChatSessionAsync(chatGroupId);
+                    break;
+                    
                 default:
                     Console.WriteLine($"Unknown command: {cmd}. Type 'help' for a list of commands.");
                     break;
@@ -163,6 +173,7 @@ namespace AntiSwearingChatBox.Server
             Console.WriteLine("  create group <name>                 - Create a new group");
             Console.WriteLine("  join <groupId>                      - Join a group");
             Console.WriteLine("  msg <groupId> <message>             - Send a message to a group");
+            Console.WriteLine("  chat <groupId>                      - Enter real-time chat session");
             Console.WriteLine("  add <groupId> <userId>              - Add a user to a group");
             Console.WriteLine("  remove <groupId> <userId>           - Remove a user from a group");
             Console.WriteLine();
@@ -802,6 +813,212 @@ namespace AntiSwearingChatBox.Server
             catch (Exception ex)
             {
                 Console.WriteLine($"Error removing member from group: {ex.Message}");
+            }
+        }
+        
+        private static async Task EnterChatSessionAsync(int groupId)
+        {
+            if (_currentUser == null)
+            {
+                Console.WriteLine("You must be logged in to use this command.");
+                return;
+            }
+            
+            try
+            {
+                var chatThreadService = _serviceProvider.GetRequiredService<IChatThreadService>();
+                var threadParticipantService = _serviceProvider.GetRequiredService<IThreadParticipantService>();
+                var messageHistoryService = _serviceProvider.GetRequiredService<IMessageHistoryService>();
+                var userService = _serviceProvider.GetRequiredService<IUserService>();
+                
+                // Verify thread exists
+                var thread = chatThreadService.GetById(groupId);
+                if (thread == null)
+                {
+                    Console.WriteLine("Group not found.");
+                    return;
+                }
+                
+                // Verify user is a participant
+                var participants = threadParticipantService.GetByThreadId(groupId);
+                if (!participants.Any(p => p.UserId == _currentUser.UserId))
+                {
+                    Console.WriteLine("You are not a member of this group.");
+                    return;
+                }
+                
+                // Clear the console for a clean chat interface
+                Console.Clear();
+                Console.WriteLine($"=== Real-time chat: {thread.Title} ===");
+                Console.WriteLine("Type your message and press Enter to send. Type /exit to leave the chat.");
+                Console.WriteLine("-------------------------------------------");
+                
+                // Display most recent messages first
+                await DisplayRecentMessagesAsync(groupId);
+                
+                // Start chat session
+                bool inChatSession = true;
+                DateTime lastCheck = DateTime.UtcNow;
+                
+                // Use a cancellation token to handle the background polling task
+                using var cts = new CancellationTokenSource();
+                var pollingTask = StartMessagePollingAsync(groupId, lastCheck, cts.Token);
+                
+                while (inChatSession)
+                {
+                    // Display prompt
+                    Console.Write($"{_currentUser.Username}> ");
+                    string userInput = Console.ReadLine() ?? string.Empty;
+                    
+                    // Check if user wants to exit
+                    if (userInput.Trim().ToLower() == "/exit")
+                    {
+                        inChatSession = false;
+                        cts.Cancel();
+                        Console.WriteLine("Exiting chat session...");
+                        continue;
+                    }
+                    
+                    // Send the message if not empty
+                    if (!string.IsNullOrWhiteSpace(userInput))
+                    {
+                        // Create message
+                        var messageHistory = new MessageHistory
+                        {
+                            ThreadId = groupId,
+                            UserId = _currentUser.UserId,
+                            OriginalMessage = userInput,
+                            ModeratedMessage = userInput,
+                            WasModified = false,
+                            CreatedAt = DateTime.UtcNow
+                        };
+                        
+                        // Send message
+                        var result = messageHistoryService.Add(messageHistory);
+                        if (result.success)
+                        {
+                            // Update thread's LastMessageAt
+                            thread.LastMessageAt = DateTime.UtcNow;
+                            chatThreadService.Update(thread);
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Error sending message: {result.message}");
+                        }
+                    }
+                }
+                
+                // Wait for the polling task to complete
+                try
+                {
+                    await pollingTask;
+                }
+                catch (OperationCanceledException)
+                {
+                    // This is expected when we cancel the task
+                }
+                
+                Console.WriteLine("Returned to command mode. Type 'help' for available commands.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in chat session: {ex.Message}");
+            }
+        }
+        
+        private static async Task DisplayRecentMessagesAsync(int groupId)
+        {
+            var messageHistoryService = _serviceProvider.GetRequiredService<IMessageHistoryService>();
+            var userService = _serviceProvider.GetRequiredService<IUserService>();
+            
+            // Get recent messages (last 20)
+            var messages = messageHistoryService.GetByThreadId(groupId)
+                .OrderByDescending(m => m.CreatedAt)
+                .Take(20)
+                .OrderBy(m => m.CreatedAt)
+                .ToList();
+            
+            foreach (var msg in messages)
+            {
+                var sender = userService.GetById(msg.UserId)?.Username ?? "Unknown";
+                string displayMessage = msg.WasModified ? msg.ModeratedMessage! : msg.OriginalMessage;
+                Console.WriteLine($"[{msg.CreatedAt:HH:mm:ss}] {sender}: {displayMessage}");
+            }
+        }
+        
+        private static async Task StartMessagePollingAsync(int groupId, DateTime lastCheck, CancellationToken cancellationToken)
+        {
+            var messageHistoryService = _serviceProvider.GetRequiredService<IMessageHistoryService>();
+            var userService = _serviceProvider.GetRequiredService<IUserService>();
+            
+            // Get the configuration for polling interval
+            int pollingIntervalMs = 2000; // Default to 2 seconds
+            
+            try
+            {
+                var config = _serviceProvider.GetRequiredService<IConfiguration>();
+                if (int.TryParse(config["CLISettings:MessagePollingIntervalMs"], out int configInterval))
+                {
+                    pollingIntervalMs = configInterval;
+                }
+            }
+            catch
+            {
+                // Use default if configuration is not available
+            }
+            
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    // Wait for the polling interval
+                    await Task.Delay(pollingIntervalMs, cancellationToken);
+                    
+                    // Get new messages since last check
+                    var messages = messageHistoryService.GetByThreadId(groupId)
+                        .Where(m => m.CreatedAt > lastCheck && m.UserId != _currentUser!.UserId)
+                        .OrderBy(m => m.CreatedAt)
+                        .ToList();
+                    
+                    if (messages.Any())
+                    {
+                        // Get current cursor position to restore it after displaying messages
+                        int currentLeft = Console.CursorLeft;
+                        int currentTop = Console.CursorTop;
+                        
+                        // Clear the current line if the user was typing
+                        if (currentLeft > 0)
+                        {
+                            Console.SetCursorPosition(0, currentTop);
+                            Console.Write(new string(' ', Console.WindowWidth - 1));
+                            Console.SetCursorPosition(0, currentTop);
+                        }
+                        
+                        // Display new messages
+                        foreach (var msg in messages)
+                        {
+                            var sender = userService.GetById(msg.UserId)?.Username ?? "Unknown";
+                            string displayMessage = msg.WasModified ? msg.ModeratedMessage! : msg.OriginalMessage;
+                            Console.WriteLine($"[{msg.CreatedAt:HH:mm:ss}] {sender}: {displayMessage}");
+                        }
+                        
+                        // Redisplay the prompt and whatever the user was typing
+                        Console.Write($"{_currentUser.Username}> ");
+                    }
+                    
+                    // Update the last check time
+                    lastCheck = DateTime.UtcNow;
+                }
+                catch (OperationCanceledException)
+                {
+                    // This is expected when cancellation is requested
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    // Log the error but continue polling
+                    Console.WriteLine($"Error checking for messages: {ex.Message}");
+                }
             }
         }
     }
