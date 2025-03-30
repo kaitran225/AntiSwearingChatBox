@@ -67,24 +67,11 @@ namespace AntiSwearingChatBox.App.Components
                 }
                 
                 // If parent is LoginPage2, call its ShowRegisterPanel method
-                if (parent is LoginPage2 loginPage)
+                if (parent is LoginPage loginPage)
                 {
                     loginPage.ShowRegisterPanel();
                     return;
                 }
-            }
-            
-            // Notify parent to show registration panel if available (legacy window approach)
-            if (parentWindow is LoginWindow loginWindow)
-            {
-                loginWindow.ShowRegisterPanel();
-            }
-            else
-            {
-                // Fallback to opening a separate registration window if parent is not LoginWindow
-                RegisterWindow registerWindow = new RegisterWindow();
-                registerWindow.Show();
-                parentWindow?.Close();
             }
         }
     }

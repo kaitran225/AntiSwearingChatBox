@@ -6,13 +6,12 @@ using AntiSwearingChatBox.Server.Hubs;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using AntiSwearingChatBox.Service.Services;
 using Microsoft.EntityFrameworkCore;
 using AntiSwearingChatBox.Repository.Models;
-using AntiSwearingChatBox.Repository.Repositories;
-using AntiSwearingChatBox.Repository.IRepositories;
-using AntiSwearingChatBox.Service.Interfaces;
 using AntiSwearingChatBox.Service;
+using AntiSwearingChatBox.Service.Interface;
+using AntiSwearingChatBox.Repository;
+using AntiSwearingChatBox.Repository.Interfaces;
 
 // Helper method to find the Service project directory
 static string FindServiceProjectDirectory()

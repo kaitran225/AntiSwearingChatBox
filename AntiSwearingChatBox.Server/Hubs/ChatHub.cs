@@ -1,6 +1,6 @@
 using AntiSwearingChatBox.AI.Interfaces;
 using AntiSwearingChatBox.Repository.Models;
-using AntiSwearingChatBox.Service.Interfaces;
+using AntiSwearingChatBox.Service.Interface;
 using Microsoft.AspNetCore.SignalR;
 
 namespace AntiSwearingChatBox.Server.Hubs;

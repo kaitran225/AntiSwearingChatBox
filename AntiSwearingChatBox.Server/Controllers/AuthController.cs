@@ -1,5 +1,5 @@
 using AntiSwearingChatBox.Repository.Models;
-using AntiSwearingChatBox.Service.Interfaces;
+using AntiSwearingChatBox.Service.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;

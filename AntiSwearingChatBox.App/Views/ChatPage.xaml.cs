@@ -6,15 +6,12 @@ using System.Windows.Media;
 using Microsoft.AspNetCore.SignalR.Client;
 using System.Threading.Tasks;
 using AntiSwearingChatBox.Repository.Models;
-using AntiSwearingChatBox.Service.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using System.Linq;
+using AntiSwearingChatBox.Service.Interface;
 
 namespace AntiSwearingChatBox.App.Views
 {
-    /// <summary>
-    /// Interaction logic for ChatPage2.xaml
-    /// </summary>
     public partial class ChatPage : Page
     {
         private HubConnection? _connection;

@@ -1,6 +1,6 @@
 using System.Windows;
 using System.Windows.Input;
-using AntiSwearingChatBox.Service.Interfaces;
+using AntiSwearingChatBox.Service.Interface;
 
 namespace AntiSwearingChatBox.App.Views
 {
@@ -9,7 +9,6 @@ namespace AntiSwearingChatBox.App.Views
         // Store page instances for better state management
         private LoginPage _loginPage;
         private RegisterPage _registerPage;
-        private DashboardPage _dashboardPage;
         private ChatPage _chatPage;
         
         public MainWindow()
@@ -36,20 +35,10 @@ namespace AntiSwearingChatBox.App.Views
         {
             WindowState = WindowState.Minimized;
         }
-
-        //private void MaximizeButton_Click(object sender, RoutedEventArgs e)
-        //{
-        //    if (WindowState == WindowState.Maximized)
-        //    {
-        //        WindowState = WindowState.Normal;
-        //        MaximizeIcon.Kind = PackIconKind.WindowMaximize;
-        //    }
-        //    else
-        //    {
-        //        WindowState = WindowState.Maximized;
-        //        MaximizeIcon.Kind = PackIconKind.WindowRestore;
-        //    }
-        //}
+        private void MaximizeButton_Click(object sender, RoutedEventArgs e)
+        {
+            WindowState = WindowState.Maximized;
+        }
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
@@ -62,7 +51,7 @@ namespace AntiSwearingChatBox.App.Views
             // Create a new login page or reuse the existing one
             if (_loginPage == null)
             {
-                _loginPage = new LoginPage2();
+                _loginPage = new LoginPage();
             }
             
             MainFrame.Navigate(_loginPage);
@@ -74,23 +63,11 @@ namespace AntiSwearingChatBox.App.Views
             // Create a new register page or reuse the existing one
             if (_registerPage == null)
             {
-                _registerPage = new RegisterPage2();
+                _registerPage = new RegisterPage();
             }
             
             MainFrame.Navigate(_registerPage);
             UpdateTitle("Register");
-        }
-        
-        public void NavigateToDashboard()
-        {
-            // Create a new dashboard page or reuse the existing one
-            if (_dashboardPage == null)
-            {
-                _dashboardPage = new DashboardPage2();
-            }
-            
-            MainFrame.Navigate(_dashboardPage);
-            UpdateTitle("Dashboard");
         }
         
         public void NavigateToChat()
@@ -98,7 +75,7 @@ namespace AntiSwearingChatBox.App.Views
             // Create a new chat page or reuse the existing one
             if (_chatPage == null)
             {
-                _chatPage = new ChatPage2();
+                _chatPage = new ChatPage();
             }
             
             MainFrame.Navigate(_chatPage);

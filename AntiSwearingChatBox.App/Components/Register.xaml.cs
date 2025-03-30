@@ -75,8 +75,7 @@ namespace AntiSwearingChatBox.App.Components
                     }
                 }
                 
-                // If parent is RegisterPage2, navigate back to login
-                if (parent is RegisterPage2 registerPage)
+                if (parent is RegisterPage registerPage)
                 {
                     if (parentWindow is MainWindow mainWindow)
                     {
@@ -84,29 +83,6 @@ namespace AntiSwearingChatBox.App.Components
                         return;
                     }
                 }
-            }
-            
-            // Legacy window-based approach
-            // Get the service provider from the application
-            var app = Application.Current as App;
-            if (app != null)
-            {
-                // Get the login window from the service provider
-                var loginWindow = app.ServiceProvider.GetService<LoginWindow>();
-                if (loginWindow != null)
-                {
-                    loginWindow.Show();
-                    
-                    parentWindow?.Close();
-                }
-                else
-                {
-                    MessageBox.Show("Could not create login window from service provider.");
-                }
-            }
-            else
-            {
-                MessageBox.Show("Application context is not available.");
             }
         }
     }

@@ -47,7 +47,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AntiSwearingChatBox.AI\AntiSwearingChatBox.AI.csproj" />
-    <ProjectReference Include="..\AntiSwearingChatBox.Service\AntiSwearingChatBox.Service.csproj" />
   </ItemGroup>
 
   <ItemGroup>

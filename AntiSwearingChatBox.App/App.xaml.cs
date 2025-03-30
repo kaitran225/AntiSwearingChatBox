@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using AntiSwearingChatBox.Repository.Models;
-using AntiSwearingChatBox.Service.Interfaces;
 using AntiSwearingChatBox.Service;
-using AntiSwearingChatBox.Repository.IRepositories;
-using AntiSwearingChatBox.Repository.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.IO;
 using Microsoft.Extensions.Configuration;
+using AntiSwearingChatBox.Service.Interface;
+using AntiSwearingChatBox.Repository;
+using AntiSwearingChatBox.Repository.Interfaces;
 
 namespace AntiSwearingChatBox.App
 {
@@ -108,16 +108,10 @@ namespace AntiSwearingChatBox.App
 
             // Register views (windows and pages)
             services.AddTransient<Views.MainWindow>();
-            services.AddTransient<Views.LoginPage2>();
-            services.AddTransient<Views.RegisterPage2>();
-            services.AddTransient<Views.ChatPage2>();
-            services.AddTransient<Views.DashboardPage2>();
+            services.AddTransient<Views.LoginPage>();
+            services.AddTransient<Views.RegisterPage>();
+            services.AddTransient<Views.ChatPage>();
             services.AddTransient<Views.UserSelectionPage>();
-            
-            // Register legacy windows for backward compatibility
-            services.AddTransient<Views.ChatWindow>();
-            services.AddTransient<Views.LoginWindow>();
-            services.AddTransient<Views.RegisterWindow>();
         }
 
         private string GetConnectionString()

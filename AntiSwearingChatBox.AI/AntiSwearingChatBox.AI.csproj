@@ -14,9 +14,6 @@
     <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.3" />
     <PackageReference Include="Mscc.GenerativeAI" Version="2.4.0" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\AntiSwearingChatBox.Service\AntiSwearingChatBox.Service.csproj" />
-  </ItemGroup>
 </Project>
 
 

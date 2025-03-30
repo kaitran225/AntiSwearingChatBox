@@ -5,7 +5,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using AntiSwearingChatBox.Repository.Models;
-using AntiSwearingChatBox.Service.Interfaces;
+using AntiSwearingChatBox.Service.Interface;
 
 namespace AntiSwearingChatBox.App.Views
 {

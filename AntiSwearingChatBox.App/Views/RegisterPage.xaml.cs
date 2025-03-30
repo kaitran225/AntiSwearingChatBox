@@ -2,7 +2,7 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using AntiSwearingChatBox.Repository.Models;
-using AntiSwearingChatBox.Service.Interfaces;
+using AntiSwearingChatBox.Service.Interface;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AntiSwearingChatBox.App.Views
