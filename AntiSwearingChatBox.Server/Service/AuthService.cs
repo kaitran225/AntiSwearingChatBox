@@ -1,9 +1,11 @@
+using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using AntiSwearingChatBox.Repository.Models;
 using AntiSwearingChatBox.Service;
 using AntiSwearingChatBox.Service.Interface;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
 namespace AntiSwearingChatBox.Server.Service

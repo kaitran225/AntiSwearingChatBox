@@ -1,209 +1,808 @@
-using System.Text;
+using System;
+using System.Collections.Generic;
 using System.IO;
-using AntiSwearingChatBox.AI.Services;
-using AntiSwearingChatBox.AI.Interfaces;
-using AntiSwearingChatBox.Server.Hubs;
-using Microsoft.IdentityModel.Tokens;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using AntiSwearingChatBox.Repository.Models;
-using AntiSwearingChatBox.Service;
-using AntiSwearingChatBox.Service.Interface;
 using AntiSwearingChatBox.Repository;
 using AntiSwearingChatBox.Repository.Interfaces;
-using Microsoft.OpenApi.Models;
+using AntiSwearingChatBox.Service;
+using AntiSwearingChatBox.Service.Interface;
+using AntiSwearingChatBox.AI.Interfaces;
+using AntiSwearingChatBox.AI.Services;
 using AntiSwearingChatBox.Server.Service;
 
-// Helper method to find the Service project directory
-static string FindServiceProjectDirectory()
+namespace AntiSwearingChatBox.Server
 {
-    // Start from current directory
-    string? currentDir = Directory.GetCurrentDirectory();
-    
-    // Try to find solution root by traversing up
-    while (currentDir != null && !File.Exists(Path.Combine(currentDir, "AntiSwearingChatBox.sln")))
+    public class Program
     {
-        currentDir = Directory.GetParent(currentDir)?.FullName;
-    }
-    
-    // If found solution root, look for Service project
-    if (currentDir != null)
-    {
-        string serviceDir = Path.Combine(currentDir, "AntiSwearingChatBox.Service");
-        if (Directory.Exists(serviceDir))
+        private static Microsoft.Extensions.DependencyInjection.ServiceProvider _serviceProvider = null!;
+        private static User? _currentUser = null;
+        private static bool _isRunning = true;
+
+        public static async Task Main(string[] args)
         {
-            return serviceDir;
-        }
-    }
-    
-    // Fallback to current directory
-    return Directory.GetCurrentDirectory();
-}
-
-// Find the path to the Service project's appsettings.json
-string serviceDirectory = FindServiceProjectDirectory();
-
-// Create a new WebApplicationBuilder with configuration from Service project
-var builder = WebApplication.CreateBuilder(new WebApplicationOptions
-{
-    ApplicationName = typeof(Program).Assembly.GetName().Name,
-    ContentRootPath = Directory.GetCurrentDirectory(),
-    Args = args
-});
-
-// Add Service project's appsettings.json as first configuration source
-builder.Configuration.AddJsonFile(Path.Combine(serviceDirectory, "appsettings.json"), optional: true, reloadOnChange: true);
-
-// Then add local appsettings.json files for any environment-specific overrides
-builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
-
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
-
-// Add controller services
-builder.Services.AddControllers();
-
-// Add Swagger services
-builder.Services.AddSwaggerGen(options =>
-{
-    options.SwaggerDoc("v1", new() { Title = "AntiSwearingChatBox API", Version = "v1" });
-    
-    // Configure Swagger to use JWT Authentication
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
-        Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
-    });
-
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement()
-    {
-        {
-            new OpenApiSecurityScheme
+            Console.WriteLine("=== AntiSwearingChatBox CLI ===");
+            
+            // Setup services
+            ConfigureServices();
+            
+            // Start command loop
+            while (_isRunning)
             {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                },
-                Scheme = "oauth2",
-                Name = "Bearer",
-                In = ParameterLocation.Header,
-            },
-            new List<string>()
+                DisplayPrompt();
+                string command = Console.ReadLine() ?? string.Empty;
+                await ProcessCommandAsync(command);
+            }
+            
+            // Clean up services
+            _serviceProvider.Dispose();
         }
-    });
-});
-
-// Add SignalR services
-builder.Services.AddSignalR();
-
-// Register database context
-builder.Services.AddDbContext<AntiSwearingChatBoxContext>(options =>
-{
-    options.UseSqlServer(builder.Configuration.GetConnectionString("AntiSwearingChatBox"));
-});
-
-// Register repositories
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-// Register services
-builder.Services.AddScoped<IChatThreadService, ChatThreadService>();
-builder.Services.AddScoped<IMessageHistoryService, MessageHistoryService>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IUserWarningService, UserWarningService>();
-builder.Services.AddScoped<IThreadParticipantService, ThreadParticipantService>();
-builder.Services.AddScoped<IFilteredWordService, FilteredWordService>();
-builder.Services.AddScoped<IAuthService, AuthService>();
-
-// Register profanity filter service
-builder.Services.AddSingleton<IProfanityFilter, ProfanityFilterService>();
-
-// Configure CORS to allow connections from any origin (for local network testing)
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("CorsPolicy", builder =>
-        builder.AllowAnyOrigin()
-               .AllowAnyMethod()
-               .AllowAnyHeader());
-});
-
-// Configure JWT
-builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
-var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
-
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
+        
+        private static void ConfigureServices()
         {
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtSettings?.SecretKey ?? throw new InvalidOperationException("JWT SecretKey is not configured"))),
-            ValidateIssuer = true,
-            ValidIssuer = jwtSettings.Issuer,
-            ValidateAudience = true,
-            ValidAudience = jwtSettings.Audience,
-            ClockSkew = TimeSpan.Zero
-        };
-    });
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "AntiSwearingChatBox API v1");
-    });
-    app.MapOpenApi();
-}
-
-app.UseHttpsRedirection();
-app.UseCors("CorsPolicy");
-
-// Place authentication middleware here - BEFORE MapControllers
-app.UseAuthentication();
-app.UseAuthorization();
-
-// Map the ChatHub to the correct ws endpoint from the API documentation
-app.MapHub<ChatHub>("/ws/chat");
-
-// Map API controllers
-app.MapControllers();
-
-// Keep the sample weather endpoint for testing purposes
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
-// Add a simple endpoint to check if the server is running
-app.MapGet("/", () => "Chat Server is running!");
-
-app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+            // Create configuration
+            IConfiguration configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .Build();
+                
+            // Create service collection
+            var services = new ServiceCollection();
+            
+            // Add configuration
+            services.AddSingleton(configuration);
+            
+            // Add DB context
+            services.AddDbContext<AntiSwearingChatBoxContext>(options =>
+                options.UseSqlServer(configuration.GetConnectionString("AntiSwearingChatBox")));
+            
+            // Register repositories
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            
+            // Register services
+            services.AddScoped<IChatThreadService, ChatThreadService>();
+            services.AddScoped<IMessageHistoryService, MessageHistoryService>();
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IUserWarningService, UserWarningService>();
+            services.AddScoped<IThreadParticipantService, ThreadParticipantService>();
+            services.AddScoped<IFilteredWordService, FilteredWordService>();
+            services.AddScoped<IAuthService, AuthService>();
+            
+            // Register profanity filter service
+            services.AddSingleton<IProfanityFilter, ProfanityFilterService>();
+            
+            // Build service provider
+            _serviceProvider = services.BuildServiceProvider();
+        }
+        
+        private static void DisplayPrompt()
+        {
+            string prompt = _currentUser == null ? "Guest" : _currentUser.Username;
+            Console.Write($"{prompt}> ");
+        }
+        
+        private static async Task ProcessCommandAsync(string command)
+        {
+            string[] parts = command.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            
+            if (parts.Length == 0)
+                return;
+                
+            string cmd = parts[0].ToLower();
+            
+            switch (cmd)
+            {
+                case "help":
+                    DisplayHelp();
+                    break;
+                    
+                case "exit":
+                case "quit":
+                    _isRunning = false;
+                    Console.WriteLine("Goodbye!");
+                    break;
+                    
+                case "login":
+                    await LoginAsync(parts);
+                    break;
+                    
+                case "register":
+                    await RegisterAsync(parts);
+                    break;
+                    
+                case "logout":
+                    Logout();
+                    break;
+                    
+                case "list":
+                    ListItems(parts);
+                    break;
+                    
+                case "create":
+                    await CreateItemAsync(parts);
+                    break;
+                    
+                case "join":
+                    await JoinGroupAsync(parts);
+                    break;
+                    
+                case "msg":
+                case "send":
+                    await SendMessageAsync(parts);
+                    break;
+                    
+                case "add":
+                    await AddMemberAsync(parts);
+                    break;
+                    
+                case "remove":
+                    await RemoveMemberAsync(parts);
+                    break;
+                    
+                default:
+                    Console.WriteLine($"Unknown command: {cmd}. Type 'help' for a list of commands.");
+                    break;
+            }
+        }
+        
+        private static void DisplayHelp()
+        {
+            Console.WriteLine("\nAvailable commands:");
+            Console.WriteLine("  help                                - Display this help message");
+            Console.WriteLine("  exit, quit                          - Exit the application");
+            Console.WriteLine("  login <username> <password>         - Login with credentials");
+            Console.WriteLine("  register <username> <email> <pwd>   - Register a new account");
+            Console.WriteLine("  logout                              - Logout from current account");
+            Console.WriteLine("  list groups                         - List all groups you're a member of");
+            Console.WriteLine("  list users                          - List all users");
+            Console.WriteLine("  list messages <groupId>             - List messages in a group");
+            Console.WriteLine("  create group <name>                 - Create a new group");
+            Console.WriteLine("  join <groupId>                      - Join a group");
+            Console.WriteLine("  msg <groupId> <message>             - Send a message to a group");
+            Console.WriteLine("  add <groupId> <userId>              - Add a user to a group");
+            Console.WriteLine("  remove <groupId> <userId>           - Remove a user from a group");
+            Console.WriteLine();
+        }
+        
+        private static async Task LoginAsync(string[] parts)
+        {
+            if (_currentUser != null)
+            {
+                Console.WriteLine("You are already logged in. Please logout first.");
+                return;
+            }
+            
+            if (parts.Length < 3)
+            {
+                Console.WriteLine("Usage: login <username> <password>");
+                return;
+            }
+            
+            string username = parts[1];
+            string password = parts[2];
+            
+            try
+            {
+                var authService = _serviceProvider.GetRequiredService<IAuthService>();
+                var userService = _serviceProvider.GetRequiredService<IUserService>();
+                var (success, message, token, _) = await authService.LoginAsync(username, password);
+                
+                if (success)
+                {
+                    // Get the user from user service
+                    var user = userService.GetByUsername(username);
+                    if (user != null)
+                    {
+                        _currentUser = user;
+                        Console.WriteLine($"Welcome, {user.Username}!");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Login successful but user details could not be loaded.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"Login failed: {message}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error during login: {ex.Message}");
+            }
+        }
+        
+        private static async Task RegisterAsync(string[] parts)
+        {
+            if (_currentUser != null)
+            {
+                Console.WriteLine("You are already logged in. Please logout first to register a new account.");
+                return;
+            }
+            
+            if (parts.Length < 4)
+            {
+                Console.WriteLine("Usage: register <username> <email> <password>");
+                return;
+            }
+            
+            string username = parts[1];
+            string email = parts[2];
+            string password = parts[3];
+            
+            try
+            {
+                var authService = _serviceProvider.GetRequiredService<IAuthService>();
+                var user = new User
+                {
+                    Username = username,
+                    Email = email,
+                    IsActive = true,
+                    IsVerified = true,
+                    CreatedAt = DateTime.UtcNow,
+                    Role = "User"
+                };
+                
+                var (success, message, _, _) = await authService.RegisterAsync(user, password);
+                
+                if (success)
+                {
+                    Console.WriteLine("Registration successful! You can now login.");
+                }
+                else
+                {
+                    Console.WriteLine($"Registration failed: {message}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error during registration: {ex.Message}");
+            }
+        }
+        
+        private static void Logout()
+        {
+            if (_currentUser == null)
+            {
+                Console.WriteLine("You are not logged in.");
+                return;
+            }
+            
+            string username = _currentUser.Username;
+            _currentUser = null;
+            Console.WriteLine($"Logged out {username} successfully.");
+        }
+        
+        private static void ListItems(string[] parts)
+        {
+            if (_currentUser == null)
+            {
+                Console.WriteLine("You must be logged in to use this command.");
+                return;
+            }
+            
+            if (parts.Length < 2)
+            {
+                Console.WriteLine("Usage: list [groups|users|messages <groupId>]");
+                return;
+            }
+            
+            string itemType = parts[1].ToLower();
+            
+            switch (itemType)
+            {
+                case "groups":
+                    ListGroups();
+                    break;
+                    
+                case "users":
+                    ListUsers();
+                    break;
+                    
+                case "messages":
+                    if (parts.Length < 3 || !int.TryParse(parts[2], out int groupId))
+                    {
+                        Console.WriteLine("Usage: list messages <groupId>");
+                        return;
+                    }
+                    ListMessages(groupId);
+                    break;
+                    
+                default:
+                    Console.WriteLine($"Unknown item type: {itemType}. Valid types are: groups, users, messages");
+                    break;
+            }
+        }
+        
+        private static void ListGroups()
+        {
+            try
+            {
+                var threadParticipantService = _serviceProvider.GetRequiredService<IThreadParticipantService>();
+                var chatThreadService = _serviceProvider.GetRequiredService<IChatThreadService>();
+                
+                var participations = threadParticipantService.GetByUserId(_currentUser!.UserId);
+                var groupThreadIds = participations.Select(p => p.ThreadId).ToList();
+                
+                var groupThreads = chatThreadService.GetAll()
+                    .Where(t => groupThreadIds.Contains(t.ThreadId) && !t.IsPrivate)
+                    .ToList();
+                
+                if (groupThreads.Count == 0)
+                {
+                    Console.WriteLine("You are not a member of any groups.");
+                    return;
+                }
+                
+                Console.WriteLine("\nYour Groups:");
+                Console.WriteLine("ID | Name | Created At | Last Activity");
+                Console.WriteLine("-------------------------------------------");
+                
+                foreach (var thread in groupThreads)
+                {
+                    Console.WriteLine($"{thread.ThreadId} | {thread.Title} | {thread.CreatedAt:g} | {thread.LastMessageAt:g}");
+                }
+                
+                Console.WriteLine();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error listing groups: {ex.Message}");
+            }
+        }
+        
+        private static void ListUsers()
+        {
+            try
+            {
+                var userService = _serviceProvider.GetRequiredService<IUserService>();
+                var users = userService.GetAll();
+                
+                Console.WriteLine("\nUsers:");
+                Console.WriteLine("ID | Username | Email | Role | Active");
+                Console.WriteLine("-------------------------------------------");
+                
+                foreach (var user in users)
+                {
+                    Console.WriteLine($"{user.UserId} | {user.Username} | {user.Email} | {user.Role} | {(user.IsActive ? "Yes" : "No")}");
+                }
+                
+                Console.WriteLine();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error listing users: {ex.Message}");
+            }
+        }
+        
+        private static void ListMessages(int groupId)
+        {
+            try
+            {
+                var threadParticipantService = _serviceProvider.GetRequiredService<IThreadParticipantService>();
+                var chatThreadService = _serviceProvider.GetRequiredService<IChatThreadService>();
+                var messageHistoryService = _serviceProvider.GetRequiredService<IMessageHistoryService>();
+                var userService = _serviceProvider.GetRequiredService<IUserService>();
+                
+                // Verify thread exists
+                var thread = chatThreadService.GetById(groupId);
+                if (thread == null)
+                {
+                    Console.WriteLine("Group not found.");
+                    return;
+                }
+                
+                // Verify user is a participant
+                var participants = threadParticipantService.GetByThreadId(groupId);
+                var userParticipant = participants.FirstOrDefault(p => p.UserId == _currentUser!.UserId);
+                if (userParticipant == null)
+                {
+                    Console.WriteLine("You are not a member of this group.");
+                    return;
+                }
+                
+                // Get messages
+                var messages = messageHistoryService.GetByThreadId(groupId);
+                
+                if (!messages.Any())
+                {
+                    Console.WriteLine("No messages in this group yet.");
+                    return;
+                }
+                
+                Console.WriteLine($"\nMessages in {thread.Title}:");
+                Console.WriteLine("Time | User | Message");
+                Console.WriteLine("-------------------------------------------");
+                
+                foreach (var msg in messages)
+                {
+                    var sender = userService.GetById(msg.UserId)?.Username ?? "Unknown";
+                    string displayMessage = msg.WasModified ? msg.ModeratedMessage! : msg.OriginalMessage;
+                    Console.WriteLine($"{msg.CreatedAt:g} | {sender}: {displayMessage}");
+                }
+                
+                Console.WriteLine();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error listing messages: {ex.Message}");
+            }
+        }
+        
+        private static async Task CreateItemAsync(string[] parts)
+        {
+            if (_currentUser == null)
+            {
+                Console.WriteLine("You must be logged in to use this command.");
+                return;
+            }
+            
+            if (parts.Length < 3)
+            {
+                Console.WriteLine("Usage: create group <name>");
+                return;
+            }
+            
+            string itemType = parts[1].ToLower();
+            
+            switch (itemType)
+            {
+                case "group":
+                    await CreateGroupAsync(parts[2]);
+                    break;
+                    
+                default:
+                    Console.WriteLine($"Unknown item type: {itemType}. Valid types are: group");
+                    break;
+            }
+        }
+        
+        private static async Task CreateGroupAsync(string name)
+        {
+            try
+            {
+                var chatThreadService = _serviceProvider.GetRequiredService<IChatThreadService>();
+                var threadParticipantService = _serviceProvider.GetRequiredService<IThreadParticipantService>();
+                
+                // Create a new thread for this group
+                var chatThread = new ChatThread
+                {
+                    Title = name,
+                    IsPrivate = false,
+                    CreatedAt = DateTime.UtcNow,
+                    LastMessageAt = DateTime.UtcNow,
+                    IsActive = true,
+                    ModerationEnabled = true
+                };
+                
+                var result = chatThreadService.Add(chatThread);
+                if (!result.success)
+                {
+                    Console.WriteLine($"Failed to create group: {result.message}");
+                    return;
+                }
+                
+                // Add creator as participant
+                var creatorParticipant = new ThreadParticipant
+                {
+                    ThreadId = chatThread.ThreadId,
+                    UserId = _currentUser!.UserId,
+                    JoinedAt = DateTime.UtcNow
+                };
+                
+                threadParticipantService.Add(creatorParticipant);
+                
+                Console.WriteLine($"Group '{name}' created successfully with ID {chatThread.ThreadId}");
+                await Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error creating group: {ex.Message}");
+            }
+        }
+        
+        private static async Task JoinGroupAsync(string[] parts)
+        {
+            if (_currentUser == null)
+            {
+                Console.WriteLine("You must be logged in to use this command.");
+                return;
+            }
+            
+            if (parts.Length < 2 || !int.TryParse(parts[1], out int groupId))
+            {
+                Console.WriteLine("Usage: join <groupId>");
+                return;
+            }
+            
+            try
+            {
+                var chatThreadService = _serviceProvider.GetRequiredService<IChatThreadService>();
+                var threadParticipantService = _serviceProvider.GetRequiredService<IThreadParticipantService>();
+                
+                // Verify thread exists
+                var thread = chatThreadService.GetById(groupId);
+                if (thread == null)
+                {
+                    Console.WriteLine("Group not found.");
+                    return;
+                }
+                
+                // Check if already a member
+                var participants = threadParticipantService.GetByThreadId(groupId);
+                if (participants.Any(p => p.UserId == _currentUser.UserId))
+                {
+                    Console.WriteLine("You are already a member of this group.");
+                    return;
+                }
+                
+                // Add user as participant
+                var participant = new ThreadParticipant
+                {
+                    ThreadId = groupId,
+                    UserId = _currentUser.UserId,
+                    JoinedAt = DateTime.UtcNow
+                };
+                
+                var result = threadParticipantService.Add(participant);
+                
+                if (result.success)
+                {
+                    Console.WriteLine($"Successfully joined group '{thread.Title}'");
+                }
+                else
+                {
+                    Console.WriteLine($"Failed to join group: {result.message}");
+                }
+                
+                await Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error joining group: {ex.Message}");
+            }
+        }
+        
+        private static async Task SendMessageAsync(string[] parts)
+        {
+            if (_currentUser == null)
+            {
+                Console.WriteLine("You must be logged in to use this command.");
+                return;
+            }
+            
+            if (parts.Length < 3 || !int.TryParse(parts[1], out int groupId))
+            {
+                Console.WriteLine("Usage: msg <groupId> <message>");
+                return;
+            }
+            
+            // Combine remaining parts as the message content
+            string message = string.Join(" ", parts.Skip(2));
+            
+            try
+            {
+                var chatThreadService = _serviceProvider.GetRequiredService<IChatThreadService>();
+                var threadParticipantService = _serviceProvider.GetRequiredService<IThreadParticipantService>();
+                var messageHistoryService = _serviceProvider.GetRequiredService<IMessageHistoryService>();
+                
+                // Verify thread exists
+                var thread = chatThreadService.GetById(groupId);
+                if (thread == null)
+                {
+                    Console.WriteLine("Group not found.");
+                    return;
+                }
+                
+                // Verify user is a participant
+                var participants = threadParticipantService.GetByThreadId(groupId);
+                if (!participants.Any(p => p.UserId == _currentUser.UserId))
+                {
+                    Console.WriteLine("You are not a member of this group.");
+                    return;
+                }
+                
+                // Create and store message
+                var messageHistory = new MessageHistory
+                {
+                    ThreadId = groupId,
+                    UserId = _currentUser.UserId,
+                    OriginalMessage = message,
+                    ModeratedMessage = message, 
+                    WasModified = false,
+                    CreatedAt = DateTime.UtcNow
+                };
+                
+                var result = messageHistoryService.Add(messageHistory);
+                
+                if (result.success)
+                {
+                    // Update the last message timestamp for the thread
+                    thread.LastMessageAt = DateTime.UtcNow;
+                    chatThreadService.Update(thread);
+                    
+                    Console.WriteLine("Message sent successfully.");
+                }
+                else
+                {
+                    Console.WriteLine($"Failed to send message: {result.message}");
+                }
+                
+                await Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error sending message: {ex.Message}");
+            }
+        }
+        
+        private static async Task AddMemberAsync(string[] parts)
+        {
+            if (_currentUser == null)
+            {
+                Console.WriteLine("You must be logged in to use this command.");
+                return;
+            }
+            
+            if (parts.Length < 3 || !int.TryParse(parts[1], out int groupId) || !int.TryParse(parts[2], out int userId))
+            {
+                Console.WriteLine("Usage: add <groupId> <userId>");
+                return;
+            }
+            
+            try
+            {
+                var chatThreadService = _serviceProvider.GetRequiredService<IChatThreadService>();
+                var threadParticipantService = _serviceProvider.GetRequiredService<IThreadParticipantService>();
+                var userService = _serviceProvider.GetRequiredService<IUserService>();
+                
+                // Verify thread exists
+                var thread = chatThreadService.GetById(groupId);
+                if (thread == null)
+                {
+                    Console.WriteLine("Group not found.");
+                    return;
+                }
+                
+                // Verify current user is a participant
+                var participants = threadParticipantService.GetByThreadId(groupId);
+                if (!participants.Any(p => p.UserId == _currentUser.UserId))
+                {
+                    Console.WriteLine("You are not a member of this group.");
+                    return;
+                }
+                
+                // Verify current user is the creator (first participant)
+                var firstParticipant = participants.OrderBy(p => p.JoinedAt).FirstOrDefault();
+                if (firstParticipant == null || firstParticipant.UserId != _currentUser.UserId)
+                {
+                    Console.WriteLine("Only the group creator can add members.");
+                    return;
+                }
+                
+                // Verify user to add exists
+                var userToAdd = userService.GetById(userId);
+                if (userToAdd == null)
+                {
+                    Console.WriteLine("User not found.");
+                    return;
+                }
+                
+                // Check if already a member
+                if (participants.Any(p => p.UserId == userId))
+                {
+                    Console.WriteLine("User is already a member of this group.");
+                    return;
+                }
+                
+                // Add user as participant
+                var participant = new ThreadParticipant
+                {
+                    ThreadId = groupId,
+                    UserId = userId,
+                    JoinedAt = DateTime.UtcNow
+                };
+                
+                var result = threadParticipantService.Add(participant);
+                
+                if (result.success)
+                {
+                    Console.WriteLine($"Successfully added user '{userToAdd.Username}' to group '{thread.Title}'");
+                }
+                else
+                {
+                    Console.WriteLine($"Failed to add user to group: {result.message}");
+                }
+                
+                await Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error adding member to group: {ex.Message}");
+            }
+        }
+        
+        private static async Task RemoveMemberAsync(string[] parts)
+        {
+            if (_currentUser == null)
+            {
+                Console.WriteLine("You must be logged in to use this command.");
+                return;
+            }
+            
+            if (parts.Length < 3 || !int.TryParse(parts[1], out int groupId) || !int.TryParse(parts[2], out int userId))
+            {
+                Console.WriteLine("Usage: remove <groupId> <userId>");
+                return;
+            }
+            
+            try
+            {
+                var chatThreadService = _serviceProvider.GetRequiredService<IChatThreadService>();
+                var threadParticipantService = _serviceProvider.GetRequiredService<IThreadParticipantService>();
+                var userService = _serviceProvider.GetRequiredService<IUserService>();
+                
+                // Verify thread exists
+                var thread = chatThreadService.GetById(groupId);
+                if (thread == null)
+                {
+                    Console.WriteLine("Group not found.");
+                    return;
+                }
+                
+                // Get all participants
+                var participants = threadParticipantService.GetByThreadId(groupId);
+                var currentUserParticipant = participants.FirstOrDefault(p => p.UserId == _currentUser.UserId);
+                
+                // Verify current user is a member
+                if (currentUserParticipant == null)
+                {
+                    Console.WriteLine("You are not a member of this group.");
+                    return;
+                }
+                
+                // Check if removing self or if user is the first participant (creator)
+                var firstParticipant = participants.OrderBy(p => p.JoinedAt).FirstOrDefault();
+                var isCreator = firstParticipant != null && firstParticipant.UserId == _currentUser.UserId;
+                
+                // Only allow self-removal or creator removing others
+                if (_currentUser.UserId != userId && !isCreator)
+                {
+                    Console.WriteLine("Only the group creator can remove other members.");
+                    return;
+                }
+                
+                // Find the participant to remove
+                var participantToRemove = participants.FirstOrDefault(p => p.UserId == userId);
+                if (participantToRemove == null)
+                {
+                    Console.WriteLine("User is not a member of this group.");
+                    return;
+                }
+                
+                // Use RemoveUserFromThread method
+                var result = threadParticipantService.RemoveUserFromThread(userId, groupId);
+                
+                if (result)
+                {
+                    var removedUser = userService.GetById(userId);
+                    Console.WriteLine($"Successfully removed user '{removedUser?.Username ?? userId.ToString()}' from group '{thread.Title}'");
+                }
+                else
+                {
+                    Console.WriteLine("Failed to remove member from group.");
+                }
+                
+                await Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error removing member from group: {ex.Message}");
+            }
+        }
+    }
 }
