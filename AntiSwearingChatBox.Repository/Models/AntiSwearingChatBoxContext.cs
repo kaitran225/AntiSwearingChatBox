@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using System.IO;
 
 namespace AntiSwearingChatBox.Repository.Models;
 
@@ -33,46 +32,10 @@ public partial class AntiSwearingChatBoxContext : DbContext
     {
         if (!optionsBuilder.IsConfigured)
         {
-            // Get the executing assembly's directory
-            string? currentDirectory = Path.GetDirectoryName(typeof(AntiSwearingChatBoxContext).Assembly.Location);
-            
-            // Look for the Service project directory (either as a direct parent or as a sibling)
-            string serviceDirectory = Path.Combine(currentDirectory ?? "", "..", "AntiSwearingChatBox.Service");
-            
-            // If not found as direct parent, try looking for it as sibling in the parent directory
-            if (!Directory.Exists(serviceDirectory))
-            {
-                serviceDirectory = Path.Combine(currentDirectory ?? "", "..", "..", "AntiSwearingChatBox.Service");
-            }
-            
-            // If still not found, try to get the solution root
-            if (!Directory.Exists(serviceDirectory))
-            {
-                // Try to find the solution root (looking for parent directories)
-                string? solutionRoot = currentDirectory;
-                while (solutionRoot != null && !File.Exists(Path.Combine(solutionRoot, "AntiSwearingChatBox.sln")))
-                {
-                    solutionRoot = Path.GetDirectoryName(solutionRoot);
-                }
-                
-                if (solutionRoot != null)
-                {
-                    serviceDirectory = Path.Combine(solutionRoot, "AntiSwearingChatBox.Service");
-                }
-            }
-            
-            // Fallback to current directory if all attempts fail
-            if (!Directory.Exists(serviceDirectory))
-            {
-                serviceDirectory = currentDirectory ?? "";
-            }
-            
-            // Create configuration
             IConfiguration config = new ConfigurationBuilder()
-                .SetBasePath(serviceDirectory)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .Build();
-                
+                 .SetBasePath(Directory.GetCurrentDirectory())
+                        .AddJsonFile("appsettings.json", true, true)
+                        .Build();
             var strConn = config["ConnectionStrings:AntiSwearingChatBox"];
             optionsBuilder.UseSqlServer(strConn);
         }

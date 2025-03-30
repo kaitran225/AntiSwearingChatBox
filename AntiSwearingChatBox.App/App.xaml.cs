@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Configuration;
-using System.Data;
+using System.Collections.Generic;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using AntiSwearingChatBox.Repository.Models;
@@ -21,6 +20,9 @@ namespace AntiSwearingChatBox.App
     {
         private Microsoft.Extensions.DependencyInjection.ServiceProvider serviceProvider;
         private IConfiguration configuration;
+        
+        // Add property to store current user
+        public User? CurrentUser { get; set; }
         
         public Microsoft.Extensions.DependencyInjection.ServiceProvider ServiceProvider => serviceProvider;
 
@@ -104,9 +106,17 @@ namespace AntiSwearingChatBox.App
             services.AddScoped<IThreadParticipantService, ThreadParticipantService>();
             services.AddScoped<IAuthService, AuthService>();
 
-            // Register views
+            // Register views (windows and pages)
+            services.AddTransient<Views.MainWindow>();
+            services.AddTransient<Views.LoginPage>();
+            services.AddTransient<Views.RegisterPage>();
+            services.AddTransient<Views.ChatPage>();
+            services.AddTransient<Views.DashboardPage>();
+            
+            // Register legacy windows for backward compatibility
             services.AddTransient<Views.ChatWindow>();
             services.AddTransient<Views.LoginWindow>();
+            services.AddTransient<Views.RegisterWindow>();
         }
 
         private string GetConnectionString()
@@ -168,9 +178,9 @@ namespace AntiSwearingChatBox.App
         {
             base.OnStartup(e);
 
-            // Get the login window from the service provider
-            var loginWindow = serviceProvider.GetService<Views.LoginWindow>();
-            loginWindow?.Show();
+            // Get the main window instead of login window
+            var mainWindow = serviceProvider.GetService<Views.MainWindow>();
+            mainWindow?.Show();
         }
     }
 }

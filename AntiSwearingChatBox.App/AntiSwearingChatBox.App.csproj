@@ -26,7 +26,6 @@
   <ItemGroup>
     <None Remove="Resources\LoginPage\bg.png" />
     <Resource Include="Resources\LoginPage\bg.png" />
-    <Resource Include="Resources\GlobalStyles.xaml" />
   </ItemGroup>
 
   <ItemGroup>
