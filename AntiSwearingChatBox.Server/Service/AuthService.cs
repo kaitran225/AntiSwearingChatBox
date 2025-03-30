@@ -5,7 +5,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using AntiSwearingChatBox.Repository.IRepositories;
+using AntiSwearingChatBox.Repository;
 using AntiSwearingChatBox.Repository.Models;
 using AntiSwearingChatBox.Service.Interface;
 using Microsoft.Extensions.Configuration;

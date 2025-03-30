@@ -1,6 +1,5 @@
 using System.Windows;
 using System.Windows.Input;
-using AntiSwearingChatBox.Service.Interface;
 
 namespace AntiSwearingChatBox.App.Views
 {
@@ -81,42 +80,10 @@ namespace AntiSwearingChatBox.App.Views
             MainFrame.Navigate(_chatPage);
             UpdateTitle("Chat");
         }
-
-        // Additional navigation method for user selection - always create a new instance
-        public void NavigateToUserSelection(IUserService userService, int currentUserId, EventHandler<UserSelectionEventArgs> selectionCompleteHandler, EventHandler selectionCancelledHandler)
-        {
-            var userSelectionPage = new UserSelectionPage(userService, currentUserId);
-            
-            // Hook up events
-            if (selectionCompleteHandler != null)
-            {
-                userSelectionPage.SelectionComplete += selectionCompleteHandler;
-            }
-            
-            if (selectionCancelledHandler != null)
-            {
-                userSelectionPage.SelectionCancelled += selectionCancelledHandler;
-            }
-            
-            MainFrame.Navigate(userSelectionPage);
-            UpdateTitle("Select Users");
-        }
         
         private void UpdateTitle(string pageTitle)
         {
-            // Get current user from app for personalized title
-            var app = (App)Application.Current;
-            string username = app.CurrentUser != null ? app.CurrentUser.Username : "";
-            
-            // Set window title
-            if (!string.IsNullOrEmpty(username))
-            {
-                this.Title = $"{pageTitle} - {username} - Anti-Swearing Chat Box";
-            }
-            else
-            {
-                this.Title = $"{pageTitle} - Anti-Swearing Chat Box";
-            }
+            this.Title = $"{pageTitle} - Anti-Swearing Chat Box";
         }
     }
 } 

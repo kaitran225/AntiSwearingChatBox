@@ -59,20 +59,6 @@ namespace AntiSwearingChatBox.App.Components
 
         private void MessageInput_MessageSent(object sender, string message)
         {
-            // Add sent message to the list
-            var newMessage = new MessageViewModel
-            {
-                IsSent = true,
-                Text = message,
-                Timestamp = DateTime.Now.ToString("h:mm tt"),
-                Avatar = "ME",
-                Background = Application.Current.Resources["PrimaryBackgroundBrush"] as SolidColorBrush,
-                BorderBrush = Application.Current.Resources["PrimaryGreenBrush"] as SolidColorBrush
-            };
-
-            Messages.Add(newMessage);
-            ScrollToBottom();
-
             // Notify parent
             MessageSent?.Invoke(this, message);
         }
@@ -90,22 +76,6 @@ namespace AntiSwearingChatBox.App.Components
         #endregion
 
         #region Methods
-
-        public void AddReceivedMessage(string message, string sender, string avatar = null)
-        {
-            var newMessage = new MessageViewModel
-            {
-                IsSent = false,
-                Text = message,
-                Timestamp = DateTime.Now.ToString("h:mm tt"),
-                Avatar = avatar ?? sender?.Substring(0, 2).ToUpper() ?? "??",
-                Background = Application.Current.Resources["SecondaryBackgroundBrush"] as SolidColorBrush,
-                BorderBrush = Application.Current.Resources["BorderBrush"] as SolidColorBrush
-            };
-
-            Messages.Add(newMessage);
-            ScrollToBottom();
-        }
 
         private void ScrollToBottom()
         {

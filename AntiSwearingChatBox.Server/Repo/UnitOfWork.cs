@@ -1,6 +1,6 @@
 using AntiSwearingChatBox.Repository.Models;
 using System;
-using AntiSwearingChatBox.Repository.Repositories;
+using AntiSwearingChatBox.Repository;
 using AntiSwearingChatBox.Repository.Interfaces;
 
 namespace AntiSwearingChatBox.Repository

@@ -19,8 +19,13 @@ namespace AntiSwearingChatBox.App.Components
         {
             InitializeComponent();
             this.DataContext = this;
+            
+            // Initialize collections
             Conversations = new ObservableCollection<ConversationItemViewModel>();
-            Groups = new ObservableCollection<ConversationItemViewModel>();
+            Groups = new ObservableCollection<string>();
+            
+            // Hook up event handlers
+            AdminDashboardButton.Click += AdminDashboard_Click;
         }
 
         #region Properties
@@ -36,8 +41,8 @@ namespace AntiSwearingChatBox.App.Components
             }
         }
 
-        private ObservableCollection<ConversationItemViewModel> _groups;
-        public ObservableCollection<ConversationItemViewModel> Groups
+        private ObservableCollection<string> _groups;
+        public ObservableCollection<string> Groups
         {
             get { return _groups; }
             set
@@ -74,67 +79,17 @@ namespace AntiSwearingChatBox.App.Components
 
         #region Event Handlers
 
+        private void ConversationItem_Selected(object sender, string id)
+        {
+            // Notify parent about selection
+            ConversationSelected?.Invoke(this, id);
+        }
+        
         private void ConversationItem_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (sender is ConversationItem item && item.Tag is string id)
             {
-                // Update active states
-                foreach (var conv in Conversations)
-                {
-                    conv.IsSelected = conv.Id == id;
-                }
-
-                foreach (var group in Groups)
-                {
-                    group.IsSelected = group.Id == id;
-                }
-
-                // Reset unread count for selected conversation
-                var selectedConv = Conversations.FirstOrDefault(c => c.Id == id);
-                if (selectedConv != null)
-                {
-                    selectedConv.UnreadCount = 0;
-                }
-
-                var selectedGroup = Groups.FirstOrDefault(g => g.Id == id);
-                if (selectedGroup != null)
-                {
-                    selectedGroup.UnreadCount = 0;
-                }
-
                 ConversationSelected?.Invoke(this, id);
-            }
-        }
-
-        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            // Filter conversations here if needed
-            string searchText = SearchBox.Text.ToLower();
-
-            if (string.IsNullOrWhiteSpace(searchText))
-            {
-                // Show all conversations
-                foreach (var contact in Conversations)
-                {
-                    // Show all items by setting their visibility property if you have one
-                    // contact.IsVisible = true;
-                }
-            }
-            else
-            {
-                // Filter conversations
-                foreach (var contact in Conversations)
-                {
-                    if (contact.Title.ToLower().Contains(searchText) || 
-                        contact.LastMessage.ToLower().Contains(searchText))
-                    {
-                        // contact.IsVisible = true;
-                    }
-                    else
-                    {
-                        // contact.IsVisible = false;
-                    }
-                }
             }
         }
 
@@ -147,15 +102,46 @@ namespace AntiSwearingChatBox.App.Components
         {
             AddConversationRequested?.Invoke(this, EventArgs.Empty);
         }
-
+        
         private void AdminDashboard_Click(object sender, RoutedEventArgs e)
         {
             AdminDashboardRequested?.Invoke(this, EventArgs.Empty);
+        }
+        
+        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            // Empty implementation for search functionality
+        }
+        
+        // Alias methods to maintain compatibility
+        private void NewChatButton_Click(object sender, RoutedEventArgs e)
+        {
+            NewChat_Click(sender, e);
+        }
+
+        private void AddConversationButton_Click(object sender, RoutedEventArgs e)
+        {
+            AddConversation_Click(sender, e);
+        }
+        
+        private void AdminDashboardButton_Click(object sender, RoutedEventArgs e)
+        {
+            AdminDashboard_Click(sender, e);
         }
 
         #endregion
 
         #region Methods
+
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public void SelectConversation(ConversationItemViewModel conversation)
+        {
+            // UI method to highlight the selected conversation
+        }
 
         public void AddConversation(ConversationItemViewModel conversation)
         {
@@ -179,7 +165,7 @@ namespace AntiSwearingChatBox.App.Components
 
         public void AddGroup(ConversationItemViewModel group)
         {
-            Groups.Add(group);
+            Groups.Add(group.Id);
             OnPropertyChanged(nameof(HasGroups));
         }
 
@@ -196,43 +182,6 @@ namespace AntiSwearingChatBox.App.Components
                     conversation.UnreadCount++;
                 }
             }
-
-            var group = Groups.FirstOrDefault(g => g.Id == id);
-            if (group != null)
-            {
-                group.LastMessage = lastMessage;
-                group.LastMessageTime = timestamp;
-
-                if (increaseUnread && !group.IsSelected)
-                {
-                    group.UnreadCount++;
-                }
-            }
-        }
-
-        public void SelectConversation(ConversationItemViewModel conversation)
-        {
-            if (conversation != null)
-            {
-                // Update active states
-                foreach (var conv in Conversations)
-                {
-                    conv.IsSelected = conv.Id == conversation.Id;
-                }
-
-                foreach (var group in Groups)
-                {
-                    group.IsSelected = group.Id == conversation.Id;
-                }
-
-                // Reset unread count for selected conversation
-                conversation.UnreadCount = 0;
-            }
-        }
-
-        protected void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         #endregion
