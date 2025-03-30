@@ -44,4 +44,25 @@ public class ProfanityFilterService : IProfanityFilter
 
         return Task.FromResult(filtered);
     }
+    
+    /// <inheritdoc />
+    public (string filteredText, bool wasModified) FilterProfanity(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return (string.Empty, false);
+            
+        // Check if the text contains profanity
+        bool containsProfanity = _profanityRegex.IsMatch(text);
+        
+        if (!containsProfanity)
+            return (text, false);
+            
+        // Replace profanity with asterisks
+        var filtered = _profanityRegex.Replace(text, match => 
+        {
+            return new string('*', match.Length);
+        });
+        
+        return (filtered, true);
+    }
 } 
