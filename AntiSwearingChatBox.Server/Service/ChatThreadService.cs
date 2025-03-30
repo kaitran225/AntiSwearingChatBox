@@ -23,7 +23,7 @@ namespace AntiSwearingChatBox.Service
 
         public ChatThread GetById(int id)
         {
-            return _unitOfWork.ChatThread.GetById(id.ToString());
+            return _unitOfWork.ChatThread.GetById(id);
         }
 
         public (bool success, string message) Add(ChatThread entity)
@@ -56,7 +56,7 @@ namespace AntiSwearingChatBox.Service
 
         public bool Delete(int id)
         {
-            var entity = _unitOfWork.ChatThread.GetById(id.ToString());
+            var entity = _unitOfWork.ChatThread.GetById(id);
             if (entity == null)
                 return false;
 
@@ -74,7 +74,7 @@ namespace AntiSwearingChatBox.Service
             var threads = new List<ChatThread>();
             foreach (var participant in threadParticipants)
             {
-                var thread = _unitOfWork.ChatThread.GetById(participant.ThreadId.ToString());
+                var thread = _unitOfWork.ChatThread.GetById(participant.ThreadId);
                 if (thread != null)
                 {
                     threads.Add(thread);

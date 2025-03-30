@@ -1,17 +1,12 @@
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
-using AntiSwearingChatBox.Repository;
 using AntiSwearingChatBox.Repository.Models;
+using AntiSwearingChatBox.Service;
 using AntiSwearingChatBox.Service.Interface;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
-namespace AntiSwearingChatBox.Service
+namespace AntiSwearingChatBox.Server.Service
 {
     public class AuthService : IAuthService
     {
@@ -40,16 +35,16 @@ namespace AntiSwearingChatBox.Service
             try
             {
                 // Authenticate user
-                var authResult = _userService.Authenticate(username, password);
-                if (!authResult.success || authResult.user == null)
+                var (success, message, user) = _userService.Authenticate(username, password);
+                if (!success || user == null)
                 {
-                    return (false, authResult.message, string.Empty, null);
+                    return (false, message, string.Empty, null);
                 }
 
                 // Generate JWT token
-                var token = GenerateJwtToken(authResult.user);
+                var token = GenerateJwtToken(user);
 
-                return (true, "Login successful", token, authResult.user);
+                return (true, "Login successful", token, user);
             }
             catch (Exception ex)
             {
@@ -84,16 +79,16 @@ namespace AntiSwearingChatBox.Service
 
         public async Task<(bool success, string message)> VerifyAccountAsync(string token)
         {
-            // This is a placeholder for account verification
-            // In a real implementation, you would verify the token and update the user's verification status
+            // In a real implementation, we would do an asynchronous operation here
+            await Task.Yield(); // Add a minimal await operation to suppress warning
             return (true, "Account verified successfully");
         }
 
-        public async Task<(bool success, string message)> RequestPasswordResetAsync(string email)
+        public Task<(bool success, string message)> RequestPasswordResetAsync(string email)
         {
             // This is a placeholder for password reset
             // In a real implementation, you would generate a reset token and send an email to the user
-            return (true, "Password reset email sent");
+            return Task.FromResult<(bool success, string message)>((true, "Password reset email sent"));
         }
 
         private string GenerateJwtToken(User user)
@@ -103,10 +98,10 @@ namespace AntiSwearingChatBox.Service
 
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role, user.Role)
+                new(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new(ClaimTypes.Name, user.Username),
+                new(ClaimTypes.Email, user.Email),
+                new(ClaimTypes.Role, user.Role)
             };
 
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -124,38 +119,45 @@ namespace AntiSwearingChatBox.Service
 
         public async Task<(bool success, string message, string token, string refreshToken)> RegisterAsync(User user, string password)
         {
-            var result = Register(user.Username, user.Email, password);
-            return (result.success, result.message, "dummy-token", "dummy-refresh-token");
+            var (success, message) = Register(user.Username, user.Email, password);
+            await Task.Yield(); // Add minimal await operation to suppress warning
+            return (success, message, "dummy-token", "dummy-refresh-token");
         }
 
         public async Task<(bool success, string message, string token, string refreshToken)> LoginAsync(string username, string password)
         {
-            var result = Login(username, password);
-            return (result.success, result.message, result.token, "dummy-refresh-token");
+            var (success, message, token, _) = Login(username, password);
+            await Task.Yield(); // Add minimal await operation to suppress warning
+            return (success, message, token, "dummy-refresh-token");
         }
 
         public async Task<(bool success, string message, string token, string refreshToken)> RefreshTokenAsync(string refreshToken)
         {
+            await Task.Yield(); // Add minimal await operation to suppress warning
             return (true, "Token refreshed", "new-dummy-token", "new-dummy-refresh-token");
         }
 
         public async Task<bool> RevokeTokenAsync(string refreshToken)
         {
+            await Task.Yield(); // Add minimal await operation to suppress warning
             return true;
         }
 
         public async Task<bool> ChangePasswordAsync(int userId, string currentPassword, string newPassword)
         {
+            await Task.Yield(); // Add minimal await operation to suppress warning
             return true;
         }
 
         public async Task<bool> ResetPasswordAsync(string email)
         {
+            await Task.Yield(); // Add minimal await operation to suppress warning
             return true;
         }
 
         public async Task<bool> VerifyEmailAsync(string token)
         {
+            await Task.Yield(); // Add minimal await operation to suppress warning
             return true;
         }
     }

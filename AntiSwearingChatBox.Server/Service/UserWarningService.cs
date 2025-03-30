@@ -1,5 +1,5 @@
 using AntiSwearingChatBox.Repository.Interfaces;
-using AntiSwearingChatBox.Repository.Models;
+using AntiSwearingChatBox.Server.Repo.Models;
 using AntiSwearingChatBox.Service.Interface;
 using System;
 using System.Collections.Generic;
@@ -21,7 +21,7 @@ namespace AntiSwearingChatBox.Service
             return _unitOfWork.UserWarning.GetAll();
         }
 
-        public UserWarning GetById(string id)
+        public UserWarning GetById(int id)
         {
             return _unitOfWork.UserWarning.GetById(id);
         }
@@ -54,7 +54,7 @@ namespace AntiSwearingChatBox.Service
             }
         }
 
-        public bool Delete(string id)
+        public bool Delete(int id)
         {
             var entity = _unitOfWork.UserWarning.GetById(id);
             if (entity == null)

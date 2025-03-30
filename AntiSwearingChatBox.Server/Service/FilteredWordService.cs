@@ -21,7 +21,7 @@ namespace AntiSwearingChatBox.Service
             return _unitOfWork.FilteredWord.GetAll();
         }
 
-        public FilteredWord GetById(string id)
+        public FilteredWord GetById(int id)
         {
             return _unitOfWork.FilteredWord.GetById(id);
         }
@@ -54,7 +54,7 @@ namespace AntiSwearingChatBox.Service
             }
         }
 
-        public bool Delete(string id)
+        public bool Delete(int id)
         {
             var entity = _unitOfWork.FilteredWord.GetById(id);
             if (entity == null)

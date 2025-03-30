@@ -6,10 +6,10 @@ namespace AntiSwearingChatBox.Service.Interface
     public interface IFilteredWordService
     {
         IEnumerable<FilteredWord> GetAll();
-        FilteredWord GetById(string id);
+        FilteredWord GetById(int id);
         (bool success, string message) Add(FilteredWord entity);
         (bool success, string message) Update(FilteredWord entity);
-        bool Delete(string id);
+        bool Delete(int id);
         IEnumerable<FilteredWord> Search(string searchTerm);
     }
 }

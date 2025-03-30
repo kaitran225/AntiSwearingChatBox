@@ -50,7 +50,7 @@ namespace AntiSwearingChatBox.Repository
 
         public T GetById(object id)
         {
-            return _dbSet.Find(id);
+            return _dbSet.Find(id)!;
         }
 
         public void Update(T entity)

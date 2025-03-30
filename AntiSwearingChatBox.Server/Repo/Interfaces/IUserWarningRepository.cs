@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using AntiSwearingChatBox.Repository.Models;
+using AntiSwearingChatBox.Server.Repo.Models;
 
 namespace AntiSwearingChatBox.Repository.Interfaces
 {

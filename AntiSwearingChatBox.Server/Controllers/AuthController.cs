@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace AntiSwearingChatBox.Server.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/auth")]
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
@@ -32,7 +32,7 @@ namespace AntiSwearingChatBox.Server.Controllers
             if (!success)
                 return BadRequest(new { message });
 
-            return Ok(new { message });
+            return Ok(new { message, token, refreshToken });
         }
 
         [HttpPost("login")]

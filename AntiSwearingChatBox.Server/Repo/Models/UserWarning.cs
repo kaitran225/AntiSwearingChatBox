@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using AntiSwearingChatBox.Repository.Models;
 
-namespace AntiSwearingChatBox.Repository.Models;
+namespace AntiSwearingChatBox.Server.Repo.Models;
 
 public partial class UserWarning
 {

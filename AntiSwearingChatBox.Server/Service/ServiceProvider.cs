@@ -10,85 +10,74 @@ namespace AntiSwearingChatBox.Service
     {
         private readonly AntiSwearingChatBoxContext _context;
         private readonly IUnitOfWork _unitOfWork;
-                private IChatThreadService _chatthreadService;
-                private IFilteredWordService _filteredwordService;
-                private IMessageHistoryService _messagehistoryService;
-                private IThreadParticipantService _threadparticipantService;
-                private IUserService _userService;
-                private IUserWarningService _userwarningService;
+        private IChatThreadService? _chatthreadService;
+        private IFilteredWordService? _filteredwordService;
+        private IMessageHistoryService? _messagehistoryService;
+        private IThreadParticipantService? _threadparticipantService;
+        private IUserService? _userService;
+        private IUserWarningService? _userwarningService;
                 
         public ServiceProvider()
         {
             _context = new AntiSwearingChatBoxContext();
             _unitOfWork = new UnitOfWork(_context);
         }
-                public IChatThreadService ChatThreadService
+        
+        public IChatThreadService ChatThreadService
         {
             get
             {
-                if (_chatthreadService == null)
-                {
-                    _chatthreadService = new ChatThreadService(_unitOfWork);
-                }
+                _chatthreadService ??= new ChatThreadService(_unitOfWork);
                 return _chatthreadService;
             }
         }
-                public IFilteredWordService FilteredWordService
+        
+        public IFilteredWordService FilteredWordService
         {
             get
             {
-                if (_filteredwordService == null)
-                {
-                    _filteredwordService = new FilteredWordService(_unitOfWork);
-                }
+                _filteredwordService ??= new FilteredWordService(_unitOfWork);
                 return _filteredwordService;
             }
         }
-                public IMessageHistoryService MessageHistoryService
+        
+        public IMessageHistoryService MessageHistoryService
         {
             get
             {
-                if (_messagehistoryService == null)
-                {
-                    _messagehistoryService = new MessageHistoryService(_unitOfWork);
-                }
+                _messagehistoryService ??= new MessageHistoryService(_unitOfWork);
                 return _messagehistoryService;
             }
         }
-                public IThreadParticipantService ThreadParticipantService
+        
+        public IThreadParticipantService ThreadParticipantService
         {
             get
             {
-                if (_threadparticipantService == null)
-                {
-                    _threadparticipantService = new ThreadParticipantService(_unitOfWork);
-                }
+                _threadparticipantService ??= new ThreadParticipantService(_unitOfWork);
                 return _threadparticipantService;
             }
         }
-                public IUserService UserService
+        
+        public IUserService UserService
         {
             get
             {
-                if (_userService == null)
-                {
-                    _userService = new UserService(_unitOfWork);
-                }
+                _userService ??= new UserService(_unitOfWork);
                 return _userService;
             }
         }
-                public IUserWarningService UserWarningService
+        
+        public IUserWarningService UserWarningService
         {
             get
             {
-                if (_userwarningService == null)
-                {
-                    _userwarningService = new UserWarningService(_unitOfWork);
-                }
+                _userwarningService ??= new UserWarningService(_unitOfWork);
                 return _userwarningService;
             }
         }
-                public void Dispose()
+        
+        public void Dispose()
         {
             _unitOfWork.Dispose();
         }

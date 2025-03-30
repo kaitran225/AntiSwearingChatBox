@@ -12,6 +12,8 @@ using AntiSwearingChatBox.Service;
 using AntiSwearingChatBox.Service.Interface;
 using AntiSwearingChatBox.Repository;
 using AntiSwearingChatBox.Repository.Interfaces;
+using Microsoft.OpenApi.Models;
+using AntiSwearingChatBox.Server.Service;
 
 // Helper method to find the Service project directory
 static string FindServiceProjectDirectory()
@@ -60,6 +62,43 @@ builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnCh
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+// Add controller services
+builder.Services.AddControllers();
+
+// Add Swagger services
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new() { Title = "AntiSwearingChatBox API", Version = "v1" });
+    
+    // Configure Swagger to use JWT Authentication
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement()
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                },
+                Scheme = "oauth2",
+                Name = "Bearer",
+                In = ParameterLocation.Header,
+            },
+            new List<string>()
+        }
+    });
+});
 
 // Add SignalR services
 builder.Services.AddSignalR();
@@ -118,14 +157,26 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "AntiSwearingChatBox API v1");
+    });
     app.MapOpenApi();
 }
 
 app.UseHttpsRedirection();
 app.UseCors("CorsPolicy");
 
-// Map the ChatHub
-app.MapHub<ChatHub>("/chatHub");
+// Place authentication middleware here - BEFORE MapControllers
+app.UseAuthentication();
+app.UseAuthorization();
+
+// Map the ChatHub to the correct ws endpoint from the API documentation
+app.MapHub<ChatHub>("/ws/chat");
+
+// Map API controllers
+app.MapControllers();
 
 // Keep the sample weather endpoint for testing purposes
 var summaries = new[]
@@ -149,9 +200,6 @@ app.MapGet("/weatherforecast", () =>
 
 // Add a simple endpoint to check if the server is running
 app.MapGet("/", () => "Chat Server is running!");
-
-app.UseAuthentication();
-app.UseAuthorization();
 
 app.Run();
 

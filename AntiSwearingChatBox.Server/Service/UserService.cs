@@ -25,13 +25,13 @@ namespace AntiSwearingChatBox.Service
 
         public User GetById(int id)
         {
-            return _unitOfWork.User.GetById(id.ToString());
+            return _unitOfWork.User.GetById(id);
         }
 
         public User GetByUsername(string username)
         {
             var users = _unitOfWork.User.Find(u => u.Username.ToLower() == username.ToLower());
-            return users.FirstOrDefault();
+            return users.FirstOrDefault()!;
         }
 
         public (bool success, string message, User? user) Authenticate(string username, string password)
@@ -102,7 +102,7 @@ namespace AntiSwearingChatBox.Service
 
         public bool Delete(int id)
         {
-            var entity = _unitOfWork.User.GetById(id.ToString());
+            var entity = _unitOfWork.User.GetById(id);
             if (entity == null)
                 return false;
 

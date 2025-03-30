@@ -23,7 +23,7 @@ namespace AntiSwearingChatBox.Service
 
         public MessageHistory GetById(int id)
         {
-            return _unitOfWork.MessageHistory.GetById(id.ToString());
+            return _unitOfWork.MessageHistory.GetById(id);
         }
 
         public IEnumerable<MessageHistory> GetByThreadId(int threadId)
@@ -69,7 +69,7 @@ namespace AntiSwearingChatBox.Service
 
         public bool Delete(int id)
         {
-            var entity = _unitOfWork.MessageHistory.GetById(id.ToString());
+            var entity = _unitOfWork.MessageHistory.GetById(id);
             if (entity == null)
                 return false;
 

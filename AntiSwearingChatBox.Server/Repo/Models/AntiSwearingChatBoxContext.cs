@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using AntiSwearingChatBox.Server.Repo.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
