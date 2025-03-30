@@ -23,10 +23,31 @@ namespace AntiSwearingChatBox.Server
         private static Microsoft.Extensions.DependencyInjection.ServiceProvider _serviceProvider = null!;
         private static User? _currentUser = null;
         private static bool _isRunning = true;
+        
+        // App color palette
+        private static class Colors
+        {
+            public static ConsoleColor Background = ConsoleColor.Black;
+            public static ConsoleColor Primary = ConsoleColor.DarkCyan;
+            public static ConsoleColor Secondary = ConsoleColor.Cyan;
+            public static ConsoleColor Accent = ConsoleColor.Magenta;
+            public static ConsoleColor Warning = ConsoleColor.Yellow;
+            public static ConsoleColor Error = ConsoleColor.Red;
+            public static ConsoleColor Success = ConsoleColor.Green;
+            public static ConsoleColor NormalText = ConsoleColor.White;
+            public static ConsoleColor Timestamp = ConsoleColor.DarkGray;
+            public static ConsoleColor Username = ConsoleColor.Cyan;
+            public static ConsoleColor SystemMessage = ConsoleColor.DarkYellow;
+        }
 
         public static async Task Main(string[] args)
         {
-            Console.WriteLine("=== AntiSwearingChatBox CLI ===");
+            // Set console colors
+            Console.BackgroundColor = Colors.Background;
+            Console.ForegroundColor = Colors.NormalText;
+            Console.Clear();
+            
+            ColorWriteLine("=== AntiSwearingChatBox CLI ===", Colors.Primary);
             
             // Setup services
             ConfigureServices();
@@ -41,6 +62,19 @@ namespace AntiSwearingChatBox.Server
             
             // Clean up services
             _serviceProvider.Dispose();
+        }
+        
+        private static void ColorWrite(string text, ConsoleColor color)
+        {
+            ConsoleColor previous = Console.ForegroundColor;
+            Console.ForegroundColor = color;
+            Console.Write(text);
+            Console.ForegroundColor = previous;
+        }
+        
+        private static void ColorWriteLine(string text, ConsoleColor color)
+        {
+            ColorWrite(text + Environment.NewLine, color);
         }
         
         private static void ConfigureServices()
@@ -83,7 +117,7 @@ namespace AntiSwearingChatBox.Server
         private static void DisplayPrompt()
         {
             string prompt = _currentUser == null ? "Guest" : _currentUser.Username;
-            Console.Write($"{prompt}> ");
+            ColorWrite($"{prompt}> ", Colors.Primary);
         }
         
         private static async Task ProcessCommandAsync(string command)
@@ -104,7 +138,7 @@ namespace AntiSwearingChatBox.Server
                 case "exit":
                 case "quit":
                     _isRunning = false;
-                    Console.WriteLine("Goodbye!");
+                    ColorWriteLine("Goodbye!", Colors.Primary);
                     break;
                     
                 case "login":
@@ -127,13 +161,45 @@ namespace AntiSwearingChatBox.Server
                     await CreateItemAsync(parts);
                     break;
                     
-                case "join":
-                    await JoinGroupAsync(parts);
-                    break;
+                case "chat":
+                    if (parts.Length < 2)
+                    {
+                        ColorWriteLine("Usage: chat <groupId|userId>", Colors.Warning);
+                        return;
+                    }
                     
-                case "msg":
-                case "send":
-                    await SendMessageAsync(parts);
+                    if (int.TryParse(parts[1], out int chatId))
+                    {
+                        // Check if it's a user ID or a group ID
+                        var userService = _serviceProvider.GetRequiredService<IUserService>();
+                        var chatThreadService = _serviceProvider.GetRequiredService<IChatThreadService>();
+                        
+                        // If it's a valid group ID, enter that chat
+                        var group = chatThreadService.GetById(chatId);
+                        if (group != null)
+                        {
+                            await EnterChatSessionAsync(chatId);
+                            return;
+                        }
+                        
+                        // If it's a valid user ID, find or create a personal chat
+                        var user = userService.GetById(chatId);
+                        if (user != null)
+                        {
+                            int personalChatId = await FindOrCreatePersonalChatAsync(chatId);
+                            if (personalChatId > 0)
+                            {
+                                await EnterChatSessionAsync(personalChatId);
+                            }
+                            return;
+                        }
+                        
+                        ColorWriteLine("Invalid ID. Not a valid group or user ID.", Colors.Error);
+                    }
+                    else
+                    {
+                        ColorWriteLine("Invalid ID format. Must be a number.", Colors.Error);
+                    }
                     break;
                     
                 case "add":
@@ -144,24 +210,15 @@ namespace AntiSwearingChatBox.Server
                     await RemoveMemberAsync(parts);
                     break;
                     
-                case "chat":
-                    if (parts.Length < 2 || !int.TryParse(parts[1], out int chatGroupId))
-                    {
-                        Console.WriteLine("Usage: chat <groupId>");
-                        return;
-                    }
-                    await EnterChatSessionAsync(chatGroupId);
-                    break;
-                    
                 default:
-                    Console.WriteLine($"Unknown command: {cmd}. Type 'help' for a list of commands.");
+                    ColorWriteLine($"Unknown command: {cmd}. Type 'help' for a list of commands.", Colors.Warning);
                     break;
             }
         }
         
         private static void DisplayHelp()
         {
-            Console.WriteLine("\nAvailable commands:");
+            ColorWriteLine("\nAvailable commands:", Colors.Secondary);
             Console.WriteLine("  help                                - Display this help message");
             Console.WriteLine("  exit, quit                          - Exit the application");
             Console.WriteLine("  login <username> <password>         - Login with credentials");
@@ -170,11 +227,10 @@ namespace AntiSwearingChatBox.Server
             Console.WriteLine("  list groups                         - List all groups you're a member of");
             Console.WriteLine("  list users                          - List all users");
             Console.WriteLine("  list messages <groupId>             - List messages in a group");
-            Console.WriteLine("  create group <name>                 - Create a new group");
-            Console.WriteLine("  join <groupId>                      - Join a group");
-            Console.WriteLine("  msg <groupId> <message>             - Send a message to a group");
-            Console.WriteLine("  chat <groupId>                      - Enter real-time chat session");
-            Console.WriteLine("  add <groupId> <userId>              - Add a user to a group");
+            Console.WriteLine("  create group <name>                 - Create a group chat (3+ members)");
+            Console.WriteLine("  chat <groupId>                      - Enter real-time chat session with a group");
+            Console.WriteLine("  chat <userId>                       - Start or continue a personal chat with a user");
+            Console.WriteLine("  add <groupId> <userId>              - Add a user to a group (non-personal chats only)");
             Console.WriteLine("  remove <groupId> <userId>           - Remove a user from a group");
             Console.WriteLine();
         }
@@ -209,21 +265,21 @@ namespace AntiSwearingChatBox.Server
                     if (user != null)
                     {
                         _currentUser = user;
-                        Console.WriteLine($"Welcome, {user.Username}!");
+                        ColorWriteLine($"Welcome, {user.Username}!", Colors.Success);
                     }
                     else
                     {
-                        Console.WriteLine("Login successful but user details could not be loaded.");
+                        ColorWriteLine("Login successful but user details could not be loaded.", Colors.Warning);
                     }
                 }
                 else
                 {
-                    Console.WriteLine($"Login failed: {message}");
+                    ColorWriteLine($"Login failed: {message}", Colors.Error);
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error during login: {ex.Message}");
+                ColorWriteLine($"Error during login: {ex.Message}", Colors.Error);
             }
         }
         
@@ -231,13 +287,13 @@ namespace AntiSwearingChatBox.Server
         {
             if (_currentUser != null)
             {
-                Console.WriteLine("You are already logged in. Please logout first to register a new account.");
+                ColorWriteLine("You are already logged in. Please logout first to register a new account.", Colors.Warning);
                 return;
             }
             
             if (parts.Length < 4)
             {
-                Console.WriteLine("Usage: register <username> <email> <password>");
+                ColorWriteLine("Usage: register <username> <email> <password>", Colors.Warning);
                 return;
             }
             
@@ -262,16 +318,16 @@ namespace AntiSwearingChatBox.Server
                 
                 if (success)
                 {
-                    Console.WriteLine("Registration successful! You can now login.");
+                    ColorWriteLine("Registration successful! You can now login.", Colors.Success);
                 }
                 else
                 {
-                    Console.WriteLine($"Registration failed: {message}");
+                    ColorWriteLine($"Registration failed: {message}", Colors.Error);
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error during registration: {ex.Message}");
+                ColorWriteLine($"Error during registration: {ex.Message}", Colors.Error);
             }
         }
         
@@ -279,26 +335,26 @@ namespace AntiSwearingChatBox.Server
         {
             if (_currentUser == null)
             {
-                Console.WriteLine("You are not logged in.");
+                ColorWriteLine("You are not logged in.", Colors.Warning);
                 return;
             }
             
             string username = _currentUser.Username;
             _currentUser = null;
-            Console.WriteLine($"Logged out {username} successfully.");
+            ColorWriteLine($"Logged out {username} successfully.", Colors.Success);
         }
         
         private static void ListItems(string[] parts)
         {
             if (_currentUser == null)
             {
-                Console.WriteLine("You must be logged in to use this command.");
+                ColorWriteLine("You must be logged in to use this command.", Colors.Warning);
                 return;
             }
             
             if (parts.Length < 2)
             {
-                Console.WriteLine("Usage: list [groups|users|messages <groupId>]");
+                ColorWriteLine("Usage: list [groups|users|messages <groupId>]", Colors.Warning);
                 return;
             }
             
@@ -345,13 +401,13 @@ namespace AntiSwearingChatBox.Server
                 
                 if (groupThreads.Count == 0)
                 {
-                    Console.WriteLine("You are not a member of any groups.");
+                    ColorWriteLine("You are not a member of any groups.", Colors.Warning);
                     return;
                 }
                 
-                Console.WriteLine("\nYour Groups:");
-                Console.WriteLine("ID | Name | Created At | Last Activity");
-                Console.WriteLine("-------------------------------------------");
+                ColorWriteLine("\nYour Groups:", Colors.Secondary);
+                ColorWriteLine("ID | Name | Created At | Last Activity", Colors.Secondary);
+                ColorWriteLine("-------------------------------------------", Colors.Secondary);
                 
                 foreach (var thread in groupThreads)
                 {
@@ -362,7 +418,7 @@ namespace AntiSwearingChatBox.Server
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error listing groups: {ex.Message}");
+                ColorWriteLine($"Error listing groups: {ex.Message}", Colors.Error);
             }
         }
         
@@ -373,9 +429,9 @@ namespace AntiSwearingChatBox.Server
                 var userService = _serviceProvider.GetRequiredService<IUserService>();
                 var users = userService.GetAll();
                 
-                Console.WriteLine("\nUsers:");
-                Console.WriteLine("ID | Username | Email | Role | Active");
-                Console.WriteLine("-------------------------------------------");
+                ColorWriteLine("\nUsers:", Colors.Secondary);
+                ColorWriteLine("ID | Username | Email | Role | Active", Colors.Secondary);
+                ColorWriteLine("-------------------------------------------", Colors.Secondary);
                 
                 foreach (var user in users)
                 {
@@ -386,7 +442,7 @@ namespace AntiSwearingChatBox.Server
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error listing users: {ex.Message}");
+                ColorWriteLine($"Error listing users: {ex.Message}", Colors.Error);
             }
         }
         
@@ -421,40 +477,54 @@ namespace AntiSwearingChatBox.Server
                 
                 if (!messages.Any())
                 {
-                    Console.WriteLine("No messages in this group yet.");
+                    ColorWriteLine("No messages in this group yet.", Colors.Warning);
                     return;
                 }
                 
-                Console.WriteLine($"\nMessages in {thread.Title}:");
-                Console.WriteLine("Time | User | Message");
-                Console.WriteLine("-------------------------------------------");
+                ColorWriteLine($"\nMessages in {thread.Title}:", Colors.Secondary);
+                ColorWriteLine("Time          User          Message", Colors.Secondary);
+                ColorWriteLine("---------------------------------------", Colors.Secondary);
                 
                 foreach (var msg in messages)
                 {
-                    var sender = userService.GetById(msg.UserId)?.Username ?? "Unknown";
-                    string displayMessage = msg.WasModified ? msg.ModeratedMessage! : msg.OriginalMessage;
-                    Console.WriteLine($"{msg.CreatedAt:g} | {sender}: {displayMessage}");
+                    PrintFormattedMessage(msg, userService);
                 }
                 
                 Console.WriteLine();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error listing messages: {ex.Message}");
+                ColorWriteLine($"Error listing messages: {ex.Message}", Colors.Error);
             }
+        }
+        
+        private static void PrintFormattedMessage(MessageHistory msg, IUserService userService)
+        {
+            var sender = userService.GetById(msg.UserId)?.Username ?? "Unknown";
+            string displayMessage = msg.WasModified ? msg.ModeratedMessage! : msg.OriginalMessage;
+            
+            // Format time
+            ColorWrite($"{msg.CreatedAt:HH:mm:ss}  ", Colors.Timestamp);
+            
+            // Format username with padding to align messages
+            string paddedUsername = sender.PadRight(14);
+            ColorWrite(paddedUsername, Colors.Username);
+            
+            // Print the message
+            Console.WriteLine(displayMessage);
         }
         
         private static async Task CreateItemAsync(string[] parts)
         {
             if (_currentUser == null)
             {
-                Console.WriteLine("You must be logged in to use this command.");
+                ColorWriteLine("You must be logged in to use this command.", Colors.Warning);
                 return;
             }
             
             if (parts.Length < 3)
             {
-                Console.WriteLine("Usage: create group <name>");
+                ColorWriteLine("Usage: create group <name>", Colors.Warning);
                 return;
             }
             
@@ -467,7 +537,7 @@ namespace AntiSwearingChatBox.Server
                     break;
                     
                 default:
-                    Console.WriteLine($"Unknown item type: {itemType}. Valid types are: group");
+                    ColorWriteLine($"Unknown item type: {itemType}. Valid types are: group", Colors.Warning);
                     break;
             }
         }
@@ -483,7 +553,7 @@ namespace AntiSwearingChatBox.Server
                 var chatThread = new ChatThread
                 {
                     Title = name,
-                    IsPrivate = false,
+                    IsPrivate = false,  // Group chats are non-private by definition
                     CreatedAt = DateTime.UtcNow,
                     LastMessageAt = DateTime.UtcNow,
                     IsActive = true,
@@ -493,7 +563,7 @@ namespace AntiSwearingChatBox.Server
                 var result = chatThreadService.Add(chatThread);
                 if (!result.success)
                 {
-                    Console.WriteLine($"Failed to create group: {result.message}");
+                    ColorWriteLine($"Failed to create group: {result.message}", Colors.Error);
                     return;
                 }
                 
@@ -507,147 +577,13 @@ namespace AntiSwearingChatBox.Server
                 
                 threadParticipantService.Add(creatorParticipant);
                 
-                Console.WriteLine($"Group '{name}' created successfully with ID {chatThread.ThreadId}");
+                ColorWriteLine($"Group '{name}' created successfully with ID {chatThread.ThreadId}", Colors.Success);
+                ColorWriteLine($"Remember to add at least 2 more members for a proper group chat.", Colors.Warning);
                 await Task.CompletedTask;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error creating group: {ex.Message}");
-            }
-        }
-        
-        private static async Task JoinGroupAsync(string[] parts)
-        {
-            if (_currentUser == null)
-            {
-                Console.WriteLine("You must be logged in to use this command.");
-                return;
-            }
-            
-            if (parts.Length < 2 || !int.TryParse(parts[1], out int groupId))
-            {
-                Console.WriteLine("Usage: join <groupId>");
-                return;
-            }
-            
-            try
-            {
-                var chatThreadService = _serviceProvider.GetRequiredService<IChatThreadService>();
-                var threadParticipantService = _serviceProvider.GetRequiredService<IThreadParticipantService>();
-                
-                // Verify thread exists
-                var thread = chatThreadService.GetById(groupId);
-                if (thread == null)
-                {
-                    Console.WriteLine("Group not found.");
-                    return;
-                }
-                
-                // Check if already a member
-                var participants = threadParticipantService.GetByThreadId(groupId);
-                if (participants.Any(p => p.UserId == _currentUser.UserId))
-                {
-                    Console.WriteLine("You are already a member of this group.");
-                    return;
-                }
-                
-                // Add user as participant
-                var participant = new ThreadParticipant
-                {
-                    ThreadId = groupId,
-                    UserId = _currentUser.UserId,
-                    JoinedAt = DateTime.UtcNow
-                };
-                
-                var result = threadParticipantService.Add(participant);
-                
-                if (result.success)
-                {
-                    Console.WriteLine($"Successfully joined group '{thread.Title}'");
-                }
-                else
-                {
-                    Console.WriteLine($"Failed to join group: {result.message}");
-                }
-                
-                await Task.CompletedTask;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error joining group: {ex.Message}");
-            }
-        }
-        
-        private static async Task SendMessageAsync(string[] parts)
-        {
-            if (_currentUser == null)
-            {
-                Console.WriteLine("You must be logged in to use this command.");
-                return;
-            }
-            
-            if (parts.Length < 3 || !int.TryParse(parts[1], out int groupId))
-            {
-                Console.WriteLine("Usage: msg <groupId> <message>");
-                return;
-            }
-            
-            // Combine remaining parts as the message content
-            string message = string.Join(" ", parts.Skip(2));
-            
-            try
-            {
-                var chatThreadService = _serviceProvider.GetRequiredService<IChatThreadService>();
-                var threadParticipantService = _serviceProvider.GetRequiredService<IThreadParticipantService>();
-                var messageHistoryService = _serviceProvider.GetRequiredService<IMessageHistoryService>();
-                
-                // Verify thread exists
-                var thread = chatThreadService.GetById(groupId);
-                if (thread == null)
-                {
-                    Console.WriteLine("Group not found.");
-                    return;
-                }
-                
-                // Verify user is a participant
-                var participants = threadParticipantService.GetByThreadId(groupId);
-                if (!participants.Any(p => p.UserId == _currentUser.UserId))
-                {
-                    Console.WriteLine("You are not a member of this group.");
-                    return;
-                }
-                
-                // Create and store message
-                var messageHistory = new MessageHistory
-                {
-                    ThreadId = groupId,
-                    UserId = _currentUser.UserId,
-                    OriginalMessage = message,
-                    ModeratedMessage = message, 
-                    WasModified = false,
-                    CreatedAt = DateTime.UtcNow
-                };
-                
-                var result = messageHistoryService.Add(messageHistory);
-                
-                if (result.success)
-                {
-                    // Update the last message timestamp for the thread
-                    thread.LastMessageAt = DateTime.UtcNow;
-                    chatThreadService.Update(thread);
-                    
-                    Console.WriteLine("Message sent successfully.");
-                }
-                else
-                {
-                    Console.WriteLine($"Failed to send message: {result.message}");
-                }
-                
-                await Task.CompletedTask;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error sending message: {ex.Message}");
+                ColorWriteLine($"Error creating group: {ex.Message}", Colors.Error);
             }
         }
         
@@ -655,13 +591,13 @@ namespace AntiSwearingChatBox.Server
         {
             if (_currentUser == null)
             {
-                Console.WriteLine("You must be logged in to use this command.");
+                ColorWriteLine("You must be logged in to use this command.", Colors.Warning);
                 return;
             }
             
             if (parts.Length < 3 || !int.TryParse(parts[1], out int groupId) || !int.TryParse(parts[2], out int userId))
             {
-                Console.WriteLine("Usage: add <groupId> <userId>");
+                ColorWriteLine("Usage: add <groupId> <userId>", Colors.Warning);
                 return;
             }
             
@@ -675,15 +611,26 @@ namespace AntiSwearingChatBox.Server
                 var thread = chatThreadService.GetById(groupId);
                 if (thread == null)
                 {
-                    Console.WriteLine("Group not found.");
+                    ColorWriteLine("Group not found.", Colors.Error);
                     return;
+                }
+                
+                // Check if this is a personal chat (private chat between 2 users)
+                if (thread.IsPrivate)
+                {
+                    var participants = threadParticipantService.GetByThreadId(groupId);
+                    if (participants.Count() == 2)
+                    {
+                        ColorWriteLine("Cannot add users to a personal chat.", Colors.Error);
+                        return;
+                    }
                 }
                 
                 // Verify current user is a participant
                 var participants = threadParticipantService.GetByThreadId(groupId);
                 if (!participants.Any(p => p.UserId == _currentUser.UserId))
                 {
-                    Console.WriteLine("You are not a member of this group.");
+                    ColorWriteLine("You are not a member of this group.", Colors.Error);
                     return;
                 }
                 
@@ -691,7 +638,7 @@ namespace AntiSwearingChatBox.Server
                 var firstParticipant = participants.OrderBy(p => p.JoinedAt).FirstOrDefault();
                 if (firstParticipant == null || firstParticipant.UserId != _currentUser.UserId)
                 {
-                    Console.WriteLine("Only the group creator can add members.");
+                    ColorWriteLine("Only the group creator can add members.", Colors.Error);
                     return;
                 }
                 
@@ -699,14 +646,14 @@ namespace AntiSwearingChatBox.Server
                 var userToAdd = userService.GetById(userId);
                 if (userToAdd == null)
                 {
-                    Console.WriteLine("User not found.");
+                    ColorWriteLine("User not found.", Colors.Error);
                     return;
                 }
                 
                 // Check if already a member
                 if (participants.Any(p => p.UserId == userId))
                 {
-                    Console.WriteLine("User is already a member of this group.");
+                    ColorWriteLine("User is already a member of this group.", Colors.Warning);
                     return;
                 }
                 
@@ -722,18 +669,18 @@ namespace AntiSwearingChatBox.Server
                 
                 if (result.success)
                 {
-                    Console.WriteLine($"Successfully added user '{userToAdd.Username}' to group '{thread.Title}'");
+                    ColorWriteLine($"Successfully added user '{userToAdd.Username}' to group '{thread.Title}'", Colors.Success);
                 }
                 else
                 {
-                    Console.WriteLine($"Failed to add user to group: {result.message}");
+                    ColorWriteLine($"Failed to add user to group: {result.message}", Colors.Error);
                 }
                 
                 await Task.CompletedTask;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error adding member to group: {ex.Message}");
+                ColorWriteLine($"Error adding member to group: {ex.Message}", Colors.Error);
             }
         }
         
@@ -741,13 +688,13 @@ namespace AntiSwearingChatBox.Server
         {
             if (_currentUser == null)
             {
-                Console.WriteLine("You must be logged in to use this command.");
+                ColorWriteLine("You must be logged in to use this command.", Colors.Warning);
                 return;
             }
             
             if (parts.Length < 3 || !int.TryParse(parts[1], out int groupId) || !int.TryParse(parts[2], out int userId))
             {
-                Console.WriteLine("Usage: remove <groupId> <userId>");
+                ColorWriteLine("Usage: remove <groupId> <userId>", Colors.Warning);
                 return;
             }
             
@@ -820,7 +767,7 @@ namespace AntiSwearingChatBox.Server
         {
             if (_currentUser == null)
             {
-                Console.WriteLine("You must be logged in to use this command.");
+                ColorWriteLine("You must be logged in to use this command.", Colors.Error);
                 return;
             }
             
@@ -835,7 +782,7 @@ namespace AntiSwearingChatBox.Server
                 var thread = chatThreadService.GetById(groupId);
                 if (thread == null)
                 {
-                    Console.WriteLine("Group not found.");
+                    ColorWriteLine("Chat group not found.", Colors.Error);
                     return;
                 }
                 
@@ -843,15 +790,18 @@ namespace AntiSwearingChatBox.Server
                 var participants = threadParticipantService.GetByThreadId(groupId);
                 if (!participants.Any(p => p.UserId == _currentUser.UserId))
                 {
-                    Console.WriteLine("You are not a member of this group.");
+                    ColorWriteLine("You are not a member of this chat.", Colors.Error);
                     return;
                 }
                 
+                // Get chat type for display
+                string chatType = thread.IsPrivate && participants.Count() == 2 ? "Personal chat" : "Group chat";
+                
                 // Clear the console for a clean chat interface
                 Console.Clear();
-                Console.WriteLine($"=== Real-time chat: {thread.Title} ===");
-                Console.WriteLine("Type your message and press Enter to send. Type /exit to leave the chat.");
-                Console.WriteLine("-------------------------------------------");
+                ColorWriteLine($"=== {chatType}: {thread.Title} ===", Colors.Primary);
+                ColorWriteLine("Type your message and press Enter to send. Type /exit to leave the chat.", Colors.Secondary);
+                ColorWriteLine("---------------------------------------", Colors.Secondary);
                 
                 // Display most recent messages first
                 await DisplayRecentMessagesAsync(groupId);
@@ -867,7 +817,7 @@ namespace AntiSwearingChatBox.Server
                 while (inChatSession)
                 {
                     // Display prompt
-                    Console.Write($"{_currentUser.Username}> ");
+                    ColorWrite($"{_currentUser.Username}> ", Colors.Primary);
                     string userInput = Console.ReadLine() ?? string.Empty;
                     
                     // Check if user wants to exit
@@ -875,7 +825,7 @@ namespace AntiSwearingChatBox.Server
                     {
                         inChatSession = false;
                         cts.Cancel();
-                        Console.WriteLine("Exiting chat session...");
+                        ColorWriteLine("Exiting chat session...", Colors.SystemMessage);
                         continue;
                     }
                     
@@ -895,15 +845,9 @@ namespace AntiSwearingChatBox.Server
                         
                         // Send message
                         var result = messageHistoryService.Add(messageHistory);
-                        if (result.success)
+                        if (!result.success)
                         {
-                            // Update thread's LastMessageAt
-                            thread.LastMessageAt = DateTime.UtcNow;
-                            chatThreadService.Update(thread);
-                        }
-                        else
-                        {
-                            Console.WriteLine($"Error sending message: {result.message}");
+                            ColorWriteLine($"Error sending message: {result.message}", Colors.Error);
                         }
                     }
                 }
@@ -918,11 +862,11 @@ namespace AntiSwearingChatBox.Server
                     // This is expected when we cancel the task
                 }
                 
-                Console.WriteLine("Returned to command mode. Type 'help' for available commands.");
+                ColorWriteLine("Returned to command mode. Type 'help' for available commands.", Colors.SystemMessage);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in chat session: {ex.Message}");
+                ColorWriteLine($"Error in chat session: {ex.Message}", Colors.Error);
             }
         }
         
@@ -940,9 +884,7 @@ namespace AntiSwearingChatBox.Server
             
             foreach (var msg in messages)
             {
-                var sender = userService.GetById(msg.UserId)?.Username ?? "Unknown";
-                string displayMessage = msg.WasModified ? msg.ModeratedMessage! : msg.OriginalMessage;
-                Console.WriteLine($"[{msg.CreatedAt:HH:mm:ss}] {sender}: {displayMessage}");
+                PrintFormattedMessage(msg, userService);
             }
         }
         
@@ -997,13 +939,11 @@ namespace AntiSwearingChatBox.Server
                         // Display new messages
                         foreach (var msg in messages)
                         {
-                            var sender = userService.GetById(msg.UserId)?.Username ?? "Unknown";
-                            string displayMessage = msg.WasModified ? msg.ModeratedMessage! : msg.OriginalMessage;
-                            Console.WriteLine($"[{msg.CreatedAt:HH:mm:ss}] {sender}: {displayMessage}");
+                            PrintFormattedMessage(msg, userService);
                         }
                         
                         // Redisplay the prompt and whatever the user was typing
-                        Console.Write($"{_currentUser.Username}> ");
+                        ColorWrite($"{_currentUser.Username}> ", Colors.Primary);
                     }
                     
                     // Update the last check time
@@ -1017,8 +957,109 @@ namespace AntiSwearingChatBox.Server
                 catch (Exception ex)
                 {
                     // Log the error but continue polling
-                    Console.WriteLine($"Error checking for messages: {ex.Message}");
+                    ColorWriteLine($"Error checking for messages: {ex.Message}", Colors.Error);
                 }
+            }
+        }
+        
+        // Method to find or create a personal chat between current user and another user
+        private static async Task<int> FindOrCreatePersonalChatAsync(int otherUserId)
+        {
+            if (_currentUser == null)
+            {
+                ColorWriteLine("You must be logged in to use this command.", Colors.Error);
+                return -1;
+            }
+            
+            if (_currentUser.UserId == otherUserId)
+            {
+                ColorWriteLine("You cannot start a chat with yourself.", Colors.Error);
+                return -1;
+            }
+            
+            try
+            {
+                var chatThreadService = _serviceProvider.GetRequiredService<IChatThreadService>();
+                var threadParticipantService = _serviceProvider.GetRequiredService<IThreadParticipantService>();
+                var userService = _serviceProvider.GetRequiredService<IUserService>();
+                
+                // Check if other user exists
+                var otherUser = userService.GetById(otherUserId);
+                if (otherUser == null)
+                {
+                    ColorWriteLine("User not found.", Colors.Error);
+                    return -1;
+                }
+                
+                // Find active personal chats where both users are participants
+                var currentUserThreads = threadParticipantService.GetByUserId(_currentUser.UserId);
+                var otherUserThreads = threadParticipantService.GetByUserId(otherUserId);
+                
+                // Get the intersection of thread IDs
+                var sharedThreadIds = currentUserThreads.Select(t => t.ThreadId)
+                    .Intersect(otherUserThreads.Select(t => t.ThreadId))
+                    .ToList();
+                
+                // Find personal chats among shared threads
+                foreach (var threadId in sharedThreadIds)
+                {
+                    var thread = chatThreadService.GetById(threadId);
+                    if (thread != null && thread.IsPrivate && thread.IsActive)
+                    {
+                        // Check if this is a 2-person chat
+                        var participants = threadParticipantService.GetByThreadId(threadId);
+                        if (participants.Count() == 2)
+                        {
+                            ColorWriteLine($"Continuing existing chat with {otherUser.Username}...", Colors.Success);
+                            return threadId;
+                        }
+                    }
+                }
+                
+                // No existing personal chat found, create a new one
+                var chatTitle = $"Chat between {_currentUser.Username} and {otherUser.Username}";
+                var newThread = new ChatThread
+                {
+                    Title = chatTitle,
+                    IsPrivate = true,
+                    CreatedAt = DateTime.UtcNow,
+                    LastMessageAt = DateTime.UtcNow,
+                    IsActive = true,
+                    ModerationEnabled = true
+                };
+                
+                var result = chatThreadService.Add(newThread);
+                if (!result.success)
+                {
+                    ColorWriteLine($"Failed to create chat: {result.message}", Colors.Error);
+                    return -1;
+                }
+                
+                // Add both users as participants
+                var currentUserParticipant = new ThreadParticipant
+                {
+                    ThreadId = newThread.ThreadId,
+                    UserId = _currentUser.UserId,
+                    JoinedAt = DateTime.UtcNow
+                };
+                
+                var otherUserParticipant = new ThreadParticipant
+                {
+                    ThreadId = newThread.ThreadId,
+                    UserId = otherUserId,
+                    JoinedAt = DateTime.UtcNow
+                };
+                
+                threadParticipantService.Add(currentUserParticipant);
+                threadParticipantService.Add(otherUserParticipant);
+                
+                ColorWriteLine($"Started new chat with {otherUser.Username}.", Colors.Success);
+                return newThread.ThreadId;
+            }
+            catch (Exception ex)
+            {
+                ColorWriteLine($"Error creating personal chat: {ex.Message}", Colors.Error);
+                return -1;
             }
         }
     }
