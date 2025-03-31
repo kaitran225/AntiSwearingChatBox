@@ -1,18 +1,19 @@
 using System;
 using System.Globalization;
+using System.Windows;
 using System.Windows.Data;
 
 namespace AntiSwearingChatBox.App.Converters
 {
-    public class IntToBoolConverter : IValueConverter
+    public class BoolToAlignmentConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is int intValue)
+            if (value is bool isSent)
             {
-                return intValue > 0;
+                return isSent ? HorizontalAlignment.Right : HorizontalAlignment.Left;
             }
-            return false;
+            return HorizontalAlignment.Left;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

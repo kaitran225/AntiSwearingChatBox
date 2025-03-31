@@ -14,25 +14,21 @@ namespace AntiSwearingChatBox.App.Components
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
+        public event EventHandler<string> MessageSent;
+        public event EventHandler MenuRequested;
+        public event EventHandler AttachmentRequested;
+
+        public ObservableCollection<ChatMessageViewModel> Messages { get; private set; }
+
         public ChatView()
         {
             InitializeComponent();
             this.DataContext = this;
-            Messages = new ObservableCollection<MessageViewModel>();
+            Messages = new ObservableCollection<ChatMessageViewModel>();
+            MessagesList.ItemsSource = Messages;
         }
 
         #region Properties
-
-        private ObservableCollection<MessageViewModel> _messages;
-        public ObservableCollection<MessageViewModel> Messages
-        {
-            get { return _messages; }
-            set
-            {
-                _messages = value;
-                OnPropertyChanged(nameof(Messages));
-            }
-        }
 
         private ContactViewModel _currentContact;
         public ContactViewModel CurrentContact
@@ -47,30 +43,25 @@ namespace AntiSwearingChatBox.App.Components
 
         #endregion
 
-        #region Events
-
-        public event EventHandler<string> MessageSent;
-        public event EventHandler MenuRequested;
-        public event EventHandler AttachmentRequested;
-
-        #endregion
-
         #region Event Handlers
 
-        private void MessageInput_MessageSent(object sender, string message)
+        private void SendButton_Click(object sender, RoutedEventArgs e)
         {
-            // Notify parent
-            MessageSent?.Invoke(this, message);
+            if (string.IsNullOrWhiteSpace(MessageTextBox.Text))
+                return;
+
+            MessageSent?.Invoke(this, MessageTextBox.Text);
+            MessageTextBox.Clear();
         }
 
-        private void MessageInput_AttachmentRequested(object sender, EventArgs e)
+        private void MenuButton_Click(object sender, RoutedEventArgs e)
         {
-            AttachmentRequested?.Invoke(this, e);
+            MenuRequested?.Invoke(this, EventArgs.Empty);
         }
 
-        private void Header_MenuRequested(object sender, EventArgs e)
+        private void AttachmentButton_Click(object sender, RoutedEventArgs e)
         {
-            MenuRequested?.Invoke(this, e);
+            AttachmentRequested?.Invoke(this, EventArgs.Empty);
         }
 
         #endregion
@@ -82,7 +73,7 @@ namespace AntiSwearingChatBox.App.Components
             // Wait for UI to update before scrolling
             this.Dispatcher.InvokeAsync(() =>
             {
-                MessageScrollViewer.ScrollToEnd();
+                MessagesScroll.ScrollToEnd();
             }, System.Windows.Threading.DispatcherPriority.ContextIdle);
         }
 
@@ -92,15 +83,5 @@ namespace AntiSwearingChatBox.App.Components
         }
 
         #endregion
-    }
-
-    public class MessageViewModel
-    {
-        public bool IsSent { get; set; }
-        public string Text { get; set; }
-        public string Timestamp { get; set; }
-        public string Avatar { get; set; }
-        public Brush Background { get; set; }
-        public Brush BorderBrush { get; set; }
     }
 } 

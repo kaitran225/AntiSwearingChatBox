@@ -2,7 +2,10 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:AntiSwearingChatBox.App"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
+             xmlns:components="clr-namespace:AntiSwearingChatBox.App.Components"
+             xmlns:converters="clr-namespace:AntiSwearingChatBox.App.Converters"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             StartupUri="Views/MainWindow.xaml">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -145,12 +148,61 @@
                 <Setter Property="FontWeight" Value="Medium"/>
             </Style>
             
+            <!-- Chat Input Style -->
+            <Style x:Key="ChatInputStyle" TargetType="TextBox">
+                <Setter Property="Background" Value="{StaticResource SecondaryBackgroundBrush}"/>
+                <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Padding" Value="12,8"/>
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                <Setter Property="MinHeight" Value="40"/>
+                <Setter Property="MaxHeight" Value="120"/>
+                <Setter Property="TextWrapping" Value="Wrap"/>
+                <Setter Property="AcceptsReturn" Value="True"/>
+                <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="TextBox">
+                            <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="20">
+                                <ScrollViewer x:Name="PART_ContentHost"
+                                            Margin="{TemplateBinding Padding}"
+                                            VerticalScrollBarVisibility="{TemplateBinding VerticalScrollBarVisibility}"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            
             <!-- Window Bar Button Style -->
-            <Style x:Key="WindowBarButtonStyle" BasedOn="{StaticResource MaterialDesignIconButton}" TargetType="Button">
-                <Setter Property="Width" Value="30" />
-                <Setter Property="Height" Value="30" />
-                <Setter Property="Padding" Value="0" />
-                <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="4" />
+            <Style x:Key="WindowBarButtonStyle" TargetType="Button">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Padding" Value="8"/>
+                <Setter Property="MinWidth" Value="40"/>
+                <Setter Property="MinHeight" Value="40"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="20">
+                                <ContentPresenter HorizontalAlignment="Center" 
+                                                VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="{StaticResource HoverBackgroundBrush}"/>
+                    </Trigger>
+                </Style.Triggers>
             </Style>
             
             <!-- Card Styles -->
@@ -217,7 +269,7 @@
             
             <!-- Converters -->
             <local:ReduceWidthConverter x:Key="ReduceWidthConverter"/>
-            <local:IntToBoolConverter x:Key="IntToBoolConverter"/>
+            <converters:IntToBoolConverter x:Key="IntToBoolConverter"/>
             
             <!-- Default Avatar -->
             <DrawingImage x:Key="DefaultAvatarImage">
@@ -241,6 +293,12 @@
                     </DrawingGroup>
                 </DrawingImage.Drawing>
             </DrawingImage>
+            
+            <!-- Bool to Column Converter -->
+            <converters:BoolToColumnConverter x:Key="BoolToColumnConverter"/>
+            
+            <!-- Bool to Alignment Converter -->
+            <converters:BoolToAlignmentConverter x:Key="BoolToAlignmentConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

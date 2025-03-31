@@ -9,24 +9,22 @@ namespace AntiSwearingChatBox.App.Components
     /// </summary>
     public class ConversationItemViewModel : INotifyPropertyChanged
     {
-        private string _id = string.Empty;
-        private string _title = string.Empty;
-        private string _lastMessage = string.Empty;
-        private string _lastMessageTime = string.Empty;
-        private string _avatar = string.Empty;
-        private bool _isSelected = false;
-        private int _unreadCount = 0;
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        private string _id;
+        private string _title;
+        private string _lastMessage;
+        private string _lastMessageTime;
+        private bool _isSelected;
+        private int _unreadCount;
 
         public string Id
         {
             get => _id;
             set
             {
-                if (_id != value)
-                {
-                    _id = value;
-                    OnPropertyChanged();
-                }
+                _id = value;
+                OnPropertyChanged(nameof(Id));
             }
         }
 
@@ -35,14 +33,8 @@ namespace AntiSwearingChatBox.App.Components
             get => _title;
             set
             {
-                if (_title != value)
-                {
-                    _title = value;
-                    Avatar = !string.IsNullOrEmpty(value) && value.Length > 0
-                        ? value.Substring(0, 1).ToUpper()
-                        : "?";
-                    OnPropertyChanged();
-                }
+                _title = value;
+                OnPropertyChanged(nameof(Title));
             }
         }
 
@@ -51,11 +43,8 @@ namespace AntiSwearingChatBox.App.Components
             get => _lastMessage;
             set
             {
-                if (_lastMessage != value)
-                {
-                    _lastMessage = value;
-                    OnPropertyChanged();
-                }
+                _lastMessage = value;
+                OnPropertyChanged(nameof(LastMessage));
             }
         }
 
@@ -64,24 +53,8 @@ namespace AntiSwearingChatBox.App.Components
             get => _lastMessageTime;
             set
             {
-                if (_lastMessageTime != value)
-                {
-                    _lastMessageTime = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        public string Avatar
-        {
-            get => _avatar;
-            set
-            {
-                if (_avatar != value)
-                {
-                    _avatar = value;
-                    OnPropertyChanged();
-                }
+                _lastMessageTime = value;
+                OnPropertyChanged(nameof(LastMessageTime));
             }
         }
 
@@ -90,11 +63,8 @@ namespace AntiSwearingChatBox.App.Components
             get => _isSelected;
             set
             {
-                if (_isSelected != value)
-                {
-                    _isSelected = value;
-                    OnPropertyChanged();
-                }
+                _isSelected = value;
+                OnPropertyChanged(nameof(IsSelected));
             }
         }
 
@@ -103,17 +73,15 @@ namespace AntiSwearingChatBox.App.Components
             get => _unreadCount;
             set
             {
-                if (_unreadCount != value)
-                {
-                    _unreadCount = value;
-                    OnPropertyChanged();
-                }
+                _unreadCount = value;
+                OnPropertyChanged(nameof(UnreadCount));
+                OnPropertyChanged(nameof(HasUnread));
             }
         }
 
-        public event PropertyChangedEventHandler? PropertyChanged;
+        public bool HasUnread => UnreadCount > 0;
 
-        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        protected void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }

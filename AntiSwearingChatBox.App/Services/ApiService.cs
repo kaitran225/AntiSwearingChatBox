@@ -5,6 +5,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using AntiSwearingChatBox.App.Models;
 
 namespace AntiSwearingChatBox.App.Services
 {
@@ -114,10 +115,11 @@ namespace AntiSwearingChatBox.App.Services
             try
             {
                 var response = await GetAsync<List<ChatThread>>($"api/chat/threads?userId={userId}");
-                return response;
+                return response ?? new List<ChatThread>();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Console.WriteLine($"Error getting user threads: {ex}");
                 return new List<ChatThread>();
             }
         }
@@ -127,10 +129,11 @@ namespace AntiSwearingChatBox.App.Services
             try
             {
                 var response = await GetAsync<List<Message>>($"api/chat/threads/{threadId}/messages");
-                return response;
+                return response ?? new List<Message>();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Console.WriteLine($"Error getting thread messages: {ex}");
                 return new List<Message>();
             }
         }
@@ -206,7 +209,7 @@ namespace AntiSwearingChatBox.App.Services
             public bool IsVerified { get; set; }
             public DateTime? TokenExpiration { get; set; }
             public DateTime CreatedAt { get; set; }
-            public DateTime LastLoginAt { get; set; }
+            public DateTime? LastLoginAt { get; set; }
             public decimal TrustScore { get; set; }
             public bool IsActive { get; set; }
         }
@@ -228,16 +231,6 @@ namespace AntiSwearingChatBox.App.Services
             public int UserId { get; set; }
             public int ThreadId { get; set; }
             public DateTime? JoinedAt { get; set; }
-            public User? User { get; set; }
-        }
-
-        public class Message
-        {
-            public int Id { get; set; }
-            public int ThreadId { get; set; }
-            public int UserId { get; set; }
-            public string? Text { get; set; }
-            public DateTime CreatedAt { get; set; }
             public User? User { get; set; }
         }
 

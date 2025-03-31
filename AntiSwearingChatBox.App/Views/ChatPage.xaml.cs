@@ -8,6 +8,8 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Linq;
 using System.Collections.Generic;
 using System.Windows.Media;
+using AntiSwearingChatBox.App.Models;
+using AntiSwearingChatBox.App.Components;
 
 namespace AntiSwearingChatBox.App.Views
 {
@@ -85,29 +87,31 @@ namespace AntiSwearingChatBox.App.Views
             {
                 if (_apiService.CurrentUser == null)
                 {
+                    MessageBox.Show("No user is currently logged in.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
+                Console.WriteLine($"Loading chat threads for user {_apiService.CurrentUser.UserId}...");
+
                 // Clear existing conversations
                 ClearConversations();
+                Console.WriteLine("Cleared existing conversations");
                 
                 // Get chat threads from API
                 var threads = await _apiService.GetUserThreadsAsync(_apiService.CurrentUser.UserId);
+                Console.WriteLine($"Retrieved {threads.Count} threads from API");
                 
                 // Add each thread to the UI
                 foreach (var thread in threads)
                 {
-                    string lastMessage = thread.LastMessage! != null 
-                        ? thread.LastMessage.Text! 
-                        : "No messages yet";
+                    Console.WriteLine($"Adding thread: ID={thread.Id}, Title={thread.Title ?? "Untitled"}");
                     
-                    string lastMessageTime = thread.LastMessage != null 
-                        ? thread.LastMessage.CreatedAt.ToString("h:mm tt") 
-                        : "";
+                    string lastMessage = "No messages yet";
+                    string lastMessageTime = thread.LastMessageAt.ToString("g");
                     
                     AddConversation(
-                        thread.Id.ToString()!, 
-                        thread.Title!,
+                        thread.Id.ToString(), 
+                        thread.Title ?? $"Chat {thread.Id}",
                         lastMessage,
                         lastMessageTime
                     );
@@ -116,12 +120,17 @@ namespace AntiSwearingChatBox.App.Views
                 // If there are threads, select the first one
                 if (threads.Count > 0)
                 {
-                    SelectChatThread(threads[0].Id.ToString()!);
+                    Console.WriteLine($"Selecting first thread: {threads[0].Id}");
+                    SelectChatThread(threads[0].Id.ToString());
+                }
+                else
+                {
+                    Console.WriteLine("No threads found for user");
                 }
             }
             catch (Exception ex)
             {
-                // Handle error appropriately
+                Console.WriteLine($"Error in LoadChatThreads: {ex}");
                 MessageBox.Show($"Error loading chat threads: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -135,7 +144,7 @@ namespace AntiSwearingChatBox.App.Views
         private void AddConversation(string id, string title, string lastMessage, string lastMessageTime)
         {
             // Add a conversation to the UI
-            ConversationList.Conversations.Add(new Components.ConversationItemViewModel
+            ConversationList.Conversations.Add(new ConversationItemViewModel
             {
                 Id = id,
                 Title = title,
@@ -148,30 +157,42 @@ namespace AntiSwearingChatBox.App.Views
         {
             try
             {
+                Console.WriteLine("Initializing SignalR connection...");
+                
                 // Create SignalR connection for real-time messages
                 _connection = new HubConnectionBuilder()
-                    .WithUrl("http://localhost:5000/chatHub")
-                    .WithAutomaticReconnect()
+                    .WithUrl("http://localhost:5000/hubs/chat")  // Updated hub URL
+                    .WithAutomaticReconnect(new[] { TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(10) })
                     .Build();
+                
+                Console.WriteLine("Registering message handler...");
                 
                 // Handle incoming messages
                 _connection.On<int, string, string, string>("ReceiveMessage", 
                     (threadId, sender, message, timestamp) =>
                 {
+                    Console.WriteLine($"Received message in thread {threadId} from {sender}: {message}");
+                    
                     // Only process messages for the current thread
                     if (threadId == _currentThreadId)
                     {
                         Dispatcher.Invoke(() =>
                         {
+                            var username = sender ?? "Unknown";
+                            var avatar = !string.IsNullOrEmpty(username) ? username[0].ToString().ToUpper() : "?";
+                            var isSent = sender == _currentUsername;
+                            
+                            Console.WriteLine($"Adding message to chat view (isSent: {isSent})");
+                            
                             // Add to chat view
-                            ChatView.Messages.Add(new Components.MessageViewModel
+                            ChatView.Messages.Add(new ChatMessageViewModel
                             {
-                                IsSent = sender == _currentUsername,
+                                IsSent = isSent,
                                 Text = message,
                                 Timestamp = timestamp,
-                                Avatar = sender.Substring(0, 1).ToUpper(),
-                                Background = new SolidColorBrush(Colors.LightGray),
-                                BorderBrush = new SolidColorBrush(Colors.Gray)
+                                Avatar = avatar,
+                                Background = new SolidColorBrush(isSent ? Color.FromRgb(220, 248, 198) : Color.FromRgb(255, 255, 255)),
+                                BorderBrush = new SolidColorBrush(isSent ? Color.FromRgb(206, 233, 185) : Color.FromRgb(229, 229, 229))
                             });
                         });
                     }
@@ -180,10 +201,13 @@ namespace AntiSwearingChatBox.App.Views
                     UpdateConversationLastMessage(threadId.ToString(), message, timestamp);
                 });
                 
+                Console.WriteLine("Starting SignalR connection...");
                 await _connection.StartAsync();
+                Console.WriteLine("SignalR connection established successfully");
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error initializing SignalR connection: {ex}");
                 MessageBox.Show($"Failed to connect to chat server: {ex.Message}", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -201,136 +225,6 @@ namespace AntiSwearingChatBox.App.Views
             }
         }
         
-        private async void ChatView_MessageSent(object sender, string message)
-        {
-            if (string.IsNullOrWhiteSpace(message) || _currentThreadId == 0)
-                return;
-                
-            try
-            {
-                // Send message to API
-                var (success, _, sentMessage) = await _apiService.SendMessageAsync(_currentThreadId, message);
-                
-                if (success && sentMessage != null)
-                {
-                    // Add message to the chat view
-                    ChatView.Messages.Add(new Components.MessageViewModel
-                    {
-                        IsSent = true,
-                        Text = sentMessage.Text!,
-                        Timestamp = sentMessage.CreatedAt.ToString("h:mm tt"),
-                        Avatar = _currentUsername.Substring(0, 1).ToUpper(),
-                        Background = new SolidColorBrush(Colors.LightBlue),
-                        BorderBrush = new SolidColorBrush(Colors.SkyBlue)
-                    });
-                    
-                    // Update conversation with last message
-                    UpdateConversationLastMessage(
-                        _currentThreadId.ToString(), 
-                        sentMessage.Text!, 
-                        sentMessage.CreatedAt.ToString("h:mm tt")
-                    );
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error sending message: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-        
-        private async void ConversationList_ConversationSelected(object sender, string threadId)
-        {
-            await LoadChatThread(threadId);
-        }
-        
-        private async Task LoadChatThread(string threadId)
-        {
-            if (string.IsNullOrEmpty(threadId))
-                return;
-                
-            try
-            {
-                // Parse thread ID
-                if (int.TryParse(threadId, out int id))
-                {
-                    _currentThreadId = id;
-                    
-                    // Clear existing messages
-                    ChatView.Messages.Clear();
-                    
-                    // Get messages for this thread
-                    var messages = await _apiService.GetThreadMessagesAsync(id);
-                    
-                    // Add messages to the chat view
-                    foreach (var message in messages)
-                    {
-                        bool isSent = message.User?.Username == _currentUsername;
-                        
-                        ChatView.Messages.Add(new Components.MessageViewModel
-                        {
-                            IsSent = isSent,
-                            Text = message.Text!,
-                            Timestamp = message.CreatedAt.ToString("h:mm tt"),
-                            Avatar = (message.User?.Username?.Substring(0, 1) ?? "?").ToUpper(),
-                            Background = isSent 
-                                ? new SolidColorBrush(Colors.LightBlue) 
-                                : new SolidColorBrush(Colors.LightGray),
-                            BorderBrush = isSent
-                                ? new SolidColorBrush(Colors.SkyBlue)
-                                : new SolidColorBrush(Colors.Gray)
-                        });
-                    }
-                    
-                    // Update contact info in chat header
-                    var threads = await _apiService.GetUserThreadsAsync(_apiService.CurrentUser!.UserId);
-                    var thread = threads.FirstOrDefault(t => t.Id == id);
-                    
-                    if (thread != null)
-                    {
-                        ChatView.CurrentContact = new Components.ContactViewModel
-                        {
-                            Id = thread.Id.ToString()!,
-                            Name = thread.Title!,
-                            Status = "Online",
-                            IsOnline = true
-                        };
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error loading chat: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-        
-        private async void ConversationList_NewChatRequested(object sender, EventArgs e)
-        {
-            try
-            {
-                // Create a new chat thread
-                string newThreadTitle = "New Conversation";
-                var (success, _, thread) = await _apiService.CreateThreadAsync(newThreadTitle, false);
-                
-                if (success && thread != null)
-                {
-                    // Add the new thread to the UI
-                    AddConversation(
-                        thread.Id.ToString()!,
-                        thread.Title!,
-                        "No messages yet",
-                        ""
-                    );
-                    
-                    // Select the new thread
-                    SelectChatThread(thread.Id.ToString()!);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error creating new chat: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-        
         private void SelectChatThread(string threadId)
         {
             // Find the conversation in the list and select it
@@ -345,34 +239,89 @@ namespace AntiSwearingChatBox.App.Views
                 ConversationList_ConversationSelected(this, threadId);
             }
         }
-        
-        private void ConversationList_AddConversationRequested(object sender, EventArgs e)
+
+        private async void ConversationList_ConversationSelected(object sender, string threadId)
         {
-            MessageBox.Show("Add conversation feature is not yet implemented.", "Coming Soon", MessageBoxButton.OK, MessageBoxImage.Information);
+            try
+            {
+                _currentThreadId = int.Parse(threadId);
+                
+                // Clear existing messages
+                ChatView.Messages.Clear();
+                
+                // Load messages for the selected thread
+                var messages = await _apiService.GetThreadMessagesAsync(_currentThreadId);
+                
+                // Add messages to the chat view
+                foreach (var message in messages)
+                {
+                    var username = message.User?.Username ?? "Unknown";
+                    var avatar = !string.IsNullOrEmpty(username) ? username[0].ToString().ToUpper() : "?";
+                    var isSent = message.UserId == _apiService.CurrentUser?.UserId;
+                    
+                    ChatView.Messages.Add(new ChatMessageViewModel
+                    {
+                        IsSent = isSent,
+                        Text = message.ModeratedText ?? message.Text,
+                        Timestamp = message.CreatedAt.ToString("h:mm tt"),
+                        Avatar = avatar,
+                        Background = new SolidColorBrush(isSent ? Color.FromRgb(220, 248, 198) : Color.FromRgb(255, 255, 255)),
+                        BorderBrush = new SolidColorBrush(isSent ? Color.FromRgb(206, 233, 185) : Color.FromRgb(229, 229, 229))
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading thread messages: {ex}");
+                MessageBox.Show($"Error loading messages: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        
+        private async void ChatView_MessageSent(object sender, string message)
+        {
+            try
+            {
+                var result = await _apiService.SendMessageAsync(_currentThreadId, message);
+                if (!result.success)
+                {
+                    MessageBox.Show(result.message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error sending message: {ex}");
+                MessageBox.Show($"Error sending message: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
         
         private void ChatView_MenuRequested(object sender, EventArgs e)
         {
-            MessageBox.Show("Menu feature is not yet implemented.", "Coming Soon", MessageBoxButton.OK, MessageBoxImage.Information);
+            // Handle menu request
         }
         
         private void ChatView_AttachmentRequested(object sender, EventArgs e)
         {
-            MessageBox.Show("Attachment feature is not yet implemented.", "Coming Soon", MessageBoxButton.OK, MessageBoxImage.Information);
+            // Handle attachment request
+        }
+        
+        private void ConversationList_NewChatRequested(object sender, EventArgs e)
+        {
+            // Handle new chat request
+        }
+        
+        private void ConversationList_AddConversationRequested(object sender, EventArgs e)
+        {
+            // Handle add conversation request
         }
         
         private void ConversationList_AdminDashboardRequested(object sender, EventArgs e)
         {
-            MessageBox.Show("Admin dashboard is not yet implemented.", "Coming Soon", MessageBoxButton.OK, MessageBoxImage.Information);
+            // Handle admin dashboard request
         }
         
         private void CloseAdminDashboardButton_Click(object sender, RoutedEventArgs e)
         {
-            // Hide admin dashboard panel
-            if (AdminDashboardPanel != null)
-            {
-                AdminDashboardPanel.Visibility = Visibility.Collapsed;
-            }
+            // Handle close admin dashboard request
         }
     }
 } 

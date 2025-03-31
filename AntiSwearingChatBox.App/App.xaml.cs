@@ -49,10 +49,11 @@ namespace AntiSwearingChatBox.App
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
-
-            // Get the main window
-            var mainWindow = serviceProvider.GetService<Views.MainWindow>();
-            mainWindow?.Show();
+            
+            // Set the initial view to the login page
+            var mainWindow = new MainWindow();
+            mainWindow.Show();
+            mainWindow.MainFrame.Navigate(new Uri("/Views/LoginView.xaml", UriKind.Relative));
         }
     }
 }

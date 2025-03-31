@@ -1,18 +1,19 @@
 using System;
 using System.Globalization;
+using System.Windows;
 using System.Windows.Data;
 
 namespace AntiSwearingChatBox.App.Converters
 {
-    public class IntToBoolConverter : IValueConverter
+    public class BoolToColumnConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is int intValue)
+            if (value is bool isSent)
             {
-                return intValue > 0;
+                return isSent ? 2 : 0; // 0 for received (left), 2 for sent (right)
             }
-            return false;
+            return 0;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

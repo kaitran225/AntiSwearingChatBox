@@ -6,8 +6,9 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:local="clr-namespace:AntiSwearingChatBox.App.Components"
+    xmlns:converters="clr-namespace:AntiSwearingChatBox.App.Converters"
     mc:Ignorable="d"
-    d:DesignHeight="800" d:DesignWidth="1000">
+    d:DesignHeight="450" d:DesignWidth="800">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -17,47 +18,111 @@
         </Grid.RowDefinitions>
 
         <!-- Chat Header -->
-        <local:ChatHeader
-            x:Name="Header"
-            Grid.Row="0"
-            AvatarText="{Binding CurrentContact.Initials}"
-            DisplayName="{Binding CurrentContact.Name}"
-            StatusText="Active now"
-            ShowActions="True"
-            MenuRequested="Header_MenuRequested" />
+        <Border Grid.Row="0" 
+                Background="{StaticResource PrimaryBackgroundBrush}" 
+                BorderBrush="{StaticResource BorderBrush}" 
+                BorderThickness="0,0,0,1"
+                Padding="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-        <!-- Messages Area -->
-        <Grid Grid.Row="1">
-            <Image Source="/Resources/LoginPage/bg.png" Height="Auto" Width="Auto" Stretch="UniformToFill" Opacity="0.05"/>
-            <Border Opacity="1">
-                <ScrollViewer
-                    x:Name="MessageScrollViewer"
-                    Margin="12"
-                    Padding="16"
-                    VerticalScrollBarVisibility="Auto">
-                    <ItemsControl x:Name="MessagesItemsControl" ItemsSource="{Binding Messages}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <local:ChatBubble
-                                    Margin="0,16,0,0"
-                                    Avatar="{Binding Avatar}"
-                                    IsSent="{Binding IsSent}"
-                                    MessageText="{Binding Text}"
-                                    Timestamp="{Binding Timestamp}"
-                                    BubbleBackground="{Binding Background}"
-                                    BubbleBorder="{Binding BorderBrush}" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
-            </Border>
+                <TextBlock Text="{Binding CurrentContact.Name}" 
+                         Foreground="{StaticResource PrimaryTextBrush}"
+                         FontSize="16"
+                         FontWeight="SemiBold"
+                         VerticalAlignment="Center"/>
+
+                <Button Grid.Column="1" 
+                        Style="{StaticResource WindowBarButtonStyle}"
+                        Click="MenuButton_Click">
+                    <TextBlock Text="⋮" FontSize="20"/>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- Messages List -->
+        <ScrollViewer Grid.Row="1" 
+                      x:Name="MessagesScroll"
+                      VerticalScrollBarVisibility="Auto"
+                      Margin="0,8">
+            <ItemsControl x:Name="MessagesList" 
+                         ItemsSource="{Binding Messages}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type local:ChatMessageViewModel}">
+                        <Grid Margin="16,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Avatar (for received messages) -->
+                            <Border Grid.Column="{Binding IsSent, Converter={StaticResource converters:BoolToColumnConverter}}"
+                                    Width="32" Height="32"
+                                    Background="{Binding Background}"
+                                    BorderBrush="{Binding BorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="16"
+                                    Margin="0,0,8,0">
+                                <TextBlock Text="{Binding Avatar}"
+                                         Foreground="{StaticResource PrimaryTextBrush}"
+                                         HorizontalAlignment="Center"
+                                         VerticalAlignment="Center"/>
+                            </Border>
+
+                            <!-- Message Bubble -->
+                            <Border Grid.Column="1"
+                                    Background="{Binding Background}"
+                                    BorderBrush="{Binding BorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    Padding="12,8"
+                                    HorizontalAlignment="{Binding IsSent, Converter={StaticResource converters:BoolToAlignmentConverter}}">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Text}"
+                                             Foreground="{StaticResource PrimaryTextBrush}"
+                                             TextWrapping="Wrap"/>
+                                    <TextBlock Text="{Binding Timestamp}"
+                                             Foreground="{StaticResource SecondaryTextBrush}"
+                                             FontSize="10"
+                                             Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!-- Message Input -->
+        <Grid Grid.Row="2" 
+              Background="{StaticResource PrimaryBackgroundBrush}"
+              Margin="16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Button Style="{StaticResource WindowBarButtonStyle}"
+                    Click="AttachmentButton_Click">
+                <TextBlock Text="📎" FontSize="20"/>
+            </Button>
+
+            <TextBox Grid.Column="1"
+                     x:Name="MessageTextBox"
+                     Margin="8,0"
+                     Style="{StaticResource ChatInputStyle}"
+                     AcceptsReturn="True"/>
+
+            <Button Grid.Column="2"
+                    Style="{StaticResource WindowBarButtonStyle}"
+                    Click="SendButton_Click">
+                <TextBlock Text="➤" FontSize="20"/>
+            </Button>
         </Grid>
-
-        <!-- Message Input Area -->
-        <local:MessageInputBox
-            x:Name="MessageInput"
-            Grid.Row="2"
-            MessageSent="MessageInput_MessageSent"
-            AttachmentRequested="MessageInput_AttachmentRequested" />
     </Grid>
 </UserControl> 
