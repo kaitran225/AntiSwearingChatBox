@@ -3,7 +3,7 @@ namespace AntiSwearingChatBox.WPF.Services.Api
     public static class ApiConfig
     {
         // Base URL for the API
-        public static string BaseUrl { get; set; } = "https://localhost:5000";
+        public static string BaseUrl { get; set; } = "http://localhost:5000";
        
         // API Endpoints
         public static string LoginEndpoint => $"{BaseUrl}/api/auth/login";
@@ -12,6 +12,6 @@ namespace AntiSwearingChatBox.WPF.Services.Api
         public static string MessagesEndpoint => $"{BaseUrl}/api/chat/messages";
         
         // SignalR Hub URL
-        public static string ChatHubUrl => $"{BaseUrl}/chatHub";
+        public static string ChatHubUrl => $"{BaseUrl}/hubs/chat";
     }
 } 

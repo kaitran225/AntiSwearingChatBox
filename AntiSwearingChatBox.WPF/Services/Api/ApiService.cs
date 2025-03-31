@@ -15,6 +15,8 @@ namespace AntiSwearingChatBox.WPF.Services.Api
         private readonly HttpClient _httpClient;
         private HubConnection? _hubConnection;
         private string _token = string.Empty;
+        private int _currentUserId;
+        private string _currentUsername = string.Empty;
         
         public event Action<ChatMessage>? OnMessageReceived;
         public event Action<ChatThread>? OnThreadCreated;
@@ -22,7 +24,10 @@ namespace AntiSwearingChatBox.WPF.Services.Api
         
         public ApiService()
         {
-            _httpClient = new HttpClient();
+            _httpClient = new HttpClient(new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+            });
         }
         
         private void SetAuthorizationHeader(string token)
@@ -60,6 +65,8 @@ namespace AntiSwearingChatBox.WPF.Services.Api
                     if (authResponse != null && authResponse.Success)
                     {
                         SetAuthorizationHeader(authResponse.Token);
+                        _currentUserId = authResponse.UserId;
+                        _currentUsername = authResponse.Username;
                     }
                     
                     return authResponse ?? new AuthResponse { Success = false, Message = "Failed to parse response" };
@@ -145,7 +152,11 @@ namespace AntiSwearingChatBox.WPF.Services.Api
         {
             try
             {
-                var request = new { Name = name };
+                var request = new { 
+                    Name = name,
+                    UserId = _currentUserId 
+                };
+                
                 var content = CreateJsonContent(request);
                 
                 var response = await _httpClient.PostAsync(ApiConfig.ThreadsEndpoint, content);
@@ -153,14 +164,20 @@ namespace AntiSwearingChatBox.WPF.Services.Api
                 if (response.IsSuccessStatusCode)
                 {
                     var responseContent = await response.Content.ReadAsStringAsync();
-                    var thread = JsonConvert.DeserializeObject<ChatThread>(responseContent);
-                    return thread ?? new ChatThread();
+                    var result = JsonConvert.DeserializeObject<dynamic>(responseContent);
+                    
+                    if (result != null && result.Success == true && result.Thread != null)
+                    {
+                        var thread = JsonConvert.DeserializeObject<ChatThread>(result.Thread.ToString());
+                        return thread ?? new ChatThread();
+                    }
                 }
                 
                 return new ChatThread();
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"Error creating thread: {ex.Message}");
                 return new ChatThread();
             }
         }
@@ -169,7 +186,11 @@ namespace AntiSwearingChatBox.WPF.Services.Api
         {
             try
             {
-                var request = new { ThreadId = threadId };
+                var request = new { 
+                    ThreadId = threadId,
+                    UserId = _currentUserId
+                };
+                
                 var content = CreateJsonContent(request);
                 
                 var response = await _httpClient.PostAsync($"{ApiConfig.ThreadsEndpoint}/{threadId}/join", content);
@@ -211,7 +232,8 @@ namespace AntiSwearingChatBox.WPF.Services.Api
                 var request = new
                 {
                     ThreadId = threadId,
-                    Content = content
+                    Content = content,
+                    UserId = _currentUserId
                 };
                 
                 var jsonContent = CreateJsonContent(request);
@@ -238,30 +260,42 @@ namespace AntiSwearingChatBox.WPF.Services.Api
             if (string.IsNullOrEmpty(_token))
                 return;
 
-            _hubConnection = new HubConnectionBuilder()
-                .WithUrl(ApiConfig.ChatHubUrl, options =>
+            try {
+                // Check if the hub is available first
+                var response = await _httpClient.GetAsync(ApiConfig.ChatHubUrl);
+                if (!response.IsSuccessStatusCode) {
+                    Console.WriteLine($"SignalR hub not available: {response.StatusCode}");
+                    return;
+                }
+                
+                _hubConnection = new HubConnectionBuilder()
+                    .WithUrl(ApiConfig.ChatHubUrl, options =>
+                    {
+                        options.AccessTokenProvider = () => Task.FromResult(_token);
+                    })
+                    .WithAutomaticReconnect()
+                    .Build();
+
+                _hubConnection.On<ChatMessage>("ReceiveMessage", message =>
                 {
-                    options.AccessTokenProvider = () => Task.FromResult(_token);
-                })
-                .WithAutomaticReconnect()
-                .Build();
+                    OnMessageReceived?.Invoke(message);
+                });
 
-            _hubConnection.On<ChatMessage>("ReceiveMessage", message =>
-            {
-                OnMessageReceived?.Invoke(message);
-            });
+                _hubConnection.On<ChatThread>("ThreadCreated", thread =>
+                {
+                    OnThreadCreated?.Invoke(thread);
+                });
 
-            _hubConnection.On<ChatThread>("ThreadCreated", thread =>
-            {
-                OnThreadCreated?.Invoke(thread);
-            });
+                _hubConnection.On<int, string>("UserJoinedThread", (userId, username) =>
+                {
+                    OnUserJoinedThread?.Invoke(userId, username);
+                });
 
-            _hubConnection.On<int, string>("UserJoinedThread", (userId, username) =>
-            {
-                OnUserJoinedThread?.Invoke(userId, username);
-            });
-
-            await _hubConnection.StartAsync();
+                await _hubConnection.StartAsync();
+            }
+            catch (Exception ex) {
+                Console.WriteLine($"SignalR connection error: {ex.Message}");
+            }
         }
 
         public async Task DisconnectFromHubAsync()
