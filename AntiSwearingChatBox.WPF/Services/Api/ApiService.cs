@@ -231,7 +231,7 @@ namespace AntiSwearingChatBox.WPF.Services.Api
                         foreach (var msg in messages)
                         {
                             // Make sure Content and Username are properly set
-                            Console.WriteLine($"Message: {msg.OriginalMessage} from {msg.SenderName} at {msg.Timestamp}");
+                            Console.WriteLine($"Message: {msg.OriginalMessage} from {msg.Username} at {msg.Timestamp}");
                         }
                     }
                     
@@ -315,7 +315,7 @@ namespace AntiSwearingChatBox.WPF.Services.Api
                             User = new UserModel { Username = username },
                             ModeratedMessage = message,
                             UserId = userId,
-                            CreatedAt = timestamp
+                            Timestamp = timestamp
                         };
                         
                         OnMessageReceived?.Invoke(chatMessage);
