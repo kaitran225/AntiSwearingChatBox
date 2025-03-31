@@ -6,8 +6,17 @@
         xmlns:local="clr-namespace:AntiSwearingChatBox.WPF.Views"
         xmlns:converters="clr-namespace:AntiSwearingChatBox.WPF.Converters"
         mc:Ignorable="d"
-        Title="Chat" Height="600" Width="1000"
+        Title="Messenger" Height="600" Width="900"
         WindowStartupLocation="CenterScreen">
+    
+    <Window.Resources>
+        <Style x:Key="ThreadItemStyle" TargetType="ListViewItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Padding" Value="10" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+            <Setter Property="BorderBrush" Value="#e9eaed" />
+        </Style>
+    </Window.Resources>
     
     <Grid>
         <Grid.RowDefinitions>
@@ -16,155 +25,296 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <Grid Grid.Row="0" Background="#FF007ACC">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
+        <Grid Grid.Row="0" Background="#f0f2f5">
+            <TextBlock Text="Anti-Swearing ChatBox" 
+                       FontWeight="SemiBold" 
+                       FontSize="18" 
+                       Margin="15,12"/>
             
-            <TextBlock Text="Anti-Swearing ChatBox"
-                       Foreground="White"
-                       FontSize="20"
-                       Margin="10"/>
-            
-            <StackPanel Grid.Column="1" 
-                        Orientation="Horizontal" 
-                        Margin="10">
-                <TextBlock Text="Welcome, "
-                           Foreground="White"
-                           VerticalAlignment="Center"/>
-                <TextBlock Text="{Binding CurrentUser}"
-                           Foreground="White"
-                           VerticalAlignment="Center"/>
-                <Button Content="Logout"
-                        Command="{Binding LogoutCommand}"
-                        Margin="10,0,0,0"
-                        Padding="10,5"/>
+            <StackPanel Orientation="Horizontal" 
+                        HorizontalAlignment="Right" 
+                        Margin="0,0,15,0">
+                <TextBlock Text="{Binding CurrentUser}" 
+                           VerticalAlignment="Center" 
+                           FontWeight="Medium" 
+                           Margin="0,0,10,0"/>
+                <Button Content="Logout" 
+                        Command="{Binding LogoutCommand}" 
+                        Padding="10,5" 
+                        Background="#e4e6eb" 
+                        BorderThickness="0"/>
             </StackPanel>
         </Grid>
 
         <!-- Main Content -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="280"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Thread List -->
-            <Grid Grid.Column="0" Background="#F0F0F0">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+            <!-- Thread List Panel -->
+            <Border Grid.Column="0" Background="White" BorderThickness="0,0,1,0" BorderBrush="#e9eaed">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
 
-                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10">
-                    <TextBlock Text="Chat Threads" FontWeight="Bold" VerticalAlignment="Center"/>
-                    <Button Content="+" 
-                            Command="{Binding CreateThreadCommand}"
-                            Margin="10,0,0,0" 
-                            Padding="5,0" 
-                            ToolTip="Create New Thread"/>
-                    <Button Content="⟳" 
-                            Command="{Binding RefreshThreadsCommand}"
-                            Margin="5,0,0,0" 
-                            Padding="5,0" 
-                            ToolTip="Refresh Threads"/>
-                </StackPanel>
+                    <!-- Thread List Header -->
+                    <Border Grid.Row="0" Background="#f5f7f9" Padding="10" BorderThickness="0,0,0,1" BorderBrush="#e9eaed">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <TextBlock Grid.Column="0" 
+                                      Text="Conversations" 
+                                      FontWeight="Medium"/>
+                            
+                            <Button Grid.Column="1" 
+                                    Content="+" 
+                                    Command="{Binding CreateThreadCommand}"
+                                    Width="28" 
+                                    Height="28" 
+                                    Margin="0,0,5,0"
+                                    Background="#e4e6eb" 
+                                    BorderThickness="0"/>
+                            
+                            <Button Grid.Column="2" 
+                                    Content="⟳" 
+                                    Command="{Binding RefreshThreadsCommand}"
+                                    Width="28" 
+                                    Height="28"
+                                    Background="#e4e6eb" 
+                                    BorderThickness="0"/>
+                        </Grid>
+                    </Border>
 
-                <ListView Grid.Row="1" 
-                          ItemsSource="{Binding Threads}"
-                          SelectedItem="{Binding SelectedThread, Mode=TwoWay}"
-                          BorderThickness="0"
-                          Margin="0,5,0,0">
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Margin="5">
-                                <TextBlock Text="{Binding Name}" FontWeight="Medium"/>
-                                <TextBlock Text="{Binding CreatedAt, StringFormat='Created: {0:g}'}" 
-                                           FontSize="11" 
-                                           Foreground="Gray"/>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-            </Grid>
+                    <!-- Thread List -->
+                    <ListView Grid.Row="1" 
+                              ItemsSource="{Binding Threads}"
+                              SelectedItem="{Binding SelectedThread, Mode=TwoWay}"
+                              BorderThickness="0"
+                              Background="White"
+                              ItemContainerStyle="{StaticResource ThreadItemStyle}">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <!-- Thread Avatar (Placeholder) -->
+                                    <Border Grid.Column="0" 
+                                            Width="40" 
+                                            Height="40" 
+                                            Background="#e4e6eb" 
+                                            CornerRadius="20"
+                                            Margin="0,0,10,0">
+                                        <TextBlock Text="{Binding Name[0]}" 
+                                                   FontWeight="Bold" 
+                                                   VerticalAlignment="Center" 
+                                                   HorizontalAlignment="Center"/>
+                                    </Border>
+                                    
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="{Binding Name}" 
+                                                   FontWeight="Medium" 
+                                                   TextTrimming="CharacterEllipsis"/>
+                                        
+                                        <TextBlock Text="{Binding CreatedAt, StringFormat='{}{0:MM/dd/yyyy}'}" 
+                                                   Foreground="#65676b" 
+                                                   FontSize="12" 
+                                                   Margin="0,3,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Grid>
+            </Border>
 
             <!-- Chat Area -->
-            <Grid Grid.Column="1">
+            <Grid Grid.Column="1" Background="#ffffff">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
+                
+                <!-- Chat Header -->
+                <Border Grid.Row="0" 
+                        Background="#f0f2f5" 
+                        Padding="15,10"
+                        BorderThickness="0,0,0,1" 
+                        BorderBrush="#e9eaed"
+                        Visibility="{Binding SelectedThread, Converter={StaticResource NullToVisibilityConverter}}">
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="36" 
+                                Height="36" 
+                                Background="#e4e6eb" 
+                                CornerRadius="18"
+                                Margin="0,0,10,0">
+                            <TextBlock Text="{Binding SelectedThread.Name[0]}" 
+                                       FontWeight="Bold" 
+                                       VerticalAlignment="Center" 
+                                       HorizontalAlignment="Center"/>
+                        </Border>
+                        <TextBlock Text="{Binding SelectedThread.Name}" 
+                                   FontWeight="SemiBold" 
+                                   FontSize="16" 
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
 
                 <!-- Chat Messages -->
-                <ListView Grid.Row="0" 
-                          ItemsSource="{Binding Messages}"
-                          Background="#FFF5F5F5"
-                          BorderThickness="0">
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <Border Background="White" 
-                                    Margin="5" 
-                                    Padding="10" 
-                                    CornerRadius="5">
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
+                <ScrollViewer Grid.Row="1" 
+                              VerticalScrollBarVisibility="Auto" 
+                              Background="#ffffff"
+                              Padding="15,10">
+                    <ItemsControl ItemsSource="{Binding Messages}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Avatar (only shown for other users) -->
+                                    <Border Grid.Column="0" 
+                                            Width="32" 
+                                            Height="32" 
+                                            Background="#e4e6eb" 
+                                            CornerRadius="16"
+                                            Margin="0,0,8,0"
+                                            VerticalAlignment="Top">
+                                        <TextBlock Text="{Binding SenderName[0]}" 
+                                                   FontWeight="SemiBold" 
+                                                   VerticalAlignment="Center" 
+                                                   HorizontalAlignment="Center"
+                                                   FontSize="12"/>
+                                        <Border.Visibility>
+                                            <MultiBinding Converter="{StaticResource SenderVisibilityConverter}" ConverterParameter="Invert">
+                                                <Binding Path="SenderName" />
+                                                <Binding Path="DataContext.CurrentUser" RelativeSource="{RelativeSource AncestorType=ScrollViewer}" />
+                                            </MultiBinding>
+                                        </Border.Visibility>
+                                    </Border>
                                     
-                                    <DockPanel Grid.Row="0">
-                                        <TextBlock Text="{Binding SenderName}"
-                                                 FontWeight="Bold"
-                                                 DockPanel.Dock="Left"/>
+                                    <!-- Messages Container -->
+                                    <StackPanel Grid.Column="1">
+                                        <!-- Sender name (only shown for other users) -->
+                                        <TextBlock Text="{Binding SenderName}" 
+                                                   FontWeight="SemiBold" 
+                                                   FontSize="12" 
+                                                   Foreground="#65676b"
+                                                   Margin="0,0,0,4">
+                                            <TextBlock.Visibility>
+                                                <MultiBinding Converter="{StaticResource SenderVisibilityConverter}" ConverterParameter="Invert">
+                                                    <Binding Path="SenderName" />
+                                                    <Binding Path="DataContext.CurrentUser" RelativeSource="{RelativeSource AncestorType=ScrollViewer}" />
+                                                </MultiBinding>
+                                            </TextBlock.Visibility>
+                                        </TextBlock>
                                         
-                                        <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:g}'}"
-                                                 FontSize="10"
-                                                 Foreground="Gray"
-                                                 TextAlignment="Right"
-                                                 DockPanel.Dock="Right"/>
-                                    </DockPanel>
+                                        <!-- Message Bubble -->
+                                        <Border Padding="12,8" 
+                                                CornerRadius="18"
+                                                MaxWidth="400"
+                                                Margin="0,0,0,0">
+                                            <Border.Background>
+                                                <MultiBinding Converter="{StaticResource MessageBackgroundConverter}">
+                                                    <Binding Path="SenderName" />
+                                                    <Binding Path="DataContext.CurrentUser" RelativeSource="{RelativeSource AncestorType=ScrollViewer}" />
+                                                </MultiBinding>
+                                            </Border.Background>
+                                            <Border.HorizontalAlignment>
+                                                <MultiBinding Converter="{StaticResource MessageAlignmentConverter}">
+                                                    <Binding Path="SenderName" />
+                                                    <Binding Path="DataContext.CurrentUser" RelativeSource="{RelativeSource AncestorType=ScrollViewer}" />
+                                                </MultiBinding>
+                                            </Border.HorizontalAlignment>
+                                            <TextBlock Text="{Binding Content}" 
+                                                       TextWrapping="Wrap">
+                                                <TextBlock.Foreground>
+                                                    <MultiBinding Converter="{StaticResource MessageForegroundConverter}">
+                                                        <Binding Path="SenderName" />
+                                                        <Binding Path="DataContext.CurrentUser" RelativeSource="{RelativeSource AncestorType=ScrollViewer}" />
+                                                    </MultiBinding>
+                                                </TextBlock.Foreground>
+                                            </TextBlock>
+                                        </Border>
+                                        
+                                        <!-- Filtered Message Indicator -->
+                                        <TextBlock Text="Filtered message" 
+                                                   FontStyle="Italic" 
+                                                   FontSize="11" 
+                                                   Foreground="#f03d25" 
+                                                   Margin="12,4,0,0"
+                                                   Visibility="{Binding IsFiltered, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                            <TextBlock.HorizontalAlignment>
+                                                <MultiBinding Converter="{StaticResource MessageAlignmentConverter}">
+                                                    <Binding Path="SenderName" />
+                                                    <Binding Path="DataContext.CurrentUser" RelativeSource="{RelativeSource AncestorType=ScrollViewer}" />
+                                                </MultiBinding>
+                                            </TextBlock.HorizontalAlignment>
+                                        </TextBlock>
+                                    </StackPanel>
                                     
-                                    <TextBlock Grid.Row="1" 
-                                             Text="{Binding Content}"
-                                             TextWrapping="Wrap"
-                                             Margin="0,5,0,0"/>
-                                    
-                                    <TextBlock Grid.Row="2"
-                                             Text="This message was filtered"
-                                             Foreground="Red"
-                                             FontStyle="Italic"
-                                             FontSize="10"
-                                             Margin="0,5,0,0"
-                                             Visibility="{Binding IsFiltered, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                    <!-- Timestamp -->
+                                    <TextBlock Grid.Column="2" 
+                                               Text="{Binding Timestamp, StringFormat='{}{0:t}'}" 
+                                               FontSize="10" 
+                                               Foreground="#65676b"
+                                               VerticalAlignment="Top"
+                                               Margin="8,4,0,0"/>
                                 </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
 
                 <!-- Message Input -->
-                <Grid Grid.Row="1" 
-                      Background="White" 
-                      Margin="10">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    
-                    <TextBox Text="{Binding MessageText, UpdateSourceTrigger=PropertyChanged}"
-                            Style="{StaticResource PlaceholderTextBoxStyle}"
-                            Tag="Type your message..."
-                            Margin="0,5"
-                            Padding="5"/>
-                    
-                    <Button Grid.Column="1"
-                            Content="Send"
-                            Command="{Binding SendMessageCommand}"
-                            Margin="10,5,5,5"
-                            Padding="20,5"/>
-                </Grid>
+                <Border Grid.Row="2" 
+                        Background="#f0f2f5" 
+                        Padding="15,10"
+                        BorderThickness="0,1,0,0" 
+                        BorderBrush="#e9eaed">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <Border Grid.Column="0" 
+                                Background="White" 
+                                CornerRadius="20" 
+                                BorderThickness="0">
+                            <TextBox Text="{Binding MessageText, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource PlaceholderTextBoxStyle}"
+                                     Tag="Type a message..."
+                                     Background="Transparent"
+                                     BorderThickness="0"
+                                     Padding="15,8"/>
+                        </Border>
+                        
+                        <Button Grid.Column="1"
+                                Content="Send"
+                                Command="{Binding SendMessageCommand}"
+                                Background="#0084ff"
+                                Foreground="White"
+                                BorderThickness="0"
+                                Padding="15,8"
+                                Margin="10,0,0,0"
+                                VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
             </Grid>
             
             <!-- Loading Overlay -->

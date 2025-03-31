@@ -7,6 +7,11 @@
     <Application.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+        <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+        <converters:MessageAlignmentConverter x:Key="MessageAlignmentConverter"/>
+        <converters:MessageBackgroundConverter x:Key="MessageBackgroundConverter"/>
+        <converters:MessageForegroundConverter x:Key="MessageForegroundConverter"/>
+        <converters:SenderVisibilityConverter x:Key="SenderVisibilityConverter"/>
 
         <!-- TextBox with Placeholder Style -->
         <Style x:Key="PlaceholderTextBoxStyle" TargetType="TextBox">

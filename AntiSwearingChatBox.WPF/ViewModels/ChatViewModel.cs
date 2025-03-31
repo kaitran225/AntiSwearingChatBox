@@ -191,7 +191,18 @@ namespace AntiSwearingChatBox.WPF.ViewModels
             try
             {
                 IsLoading = true;
-                await ServiceProvider.ApiService.SendMessageAsync(SelectedThread.ThreadId, MessageText);
+                var sentMessage = await ServiceProvider.ApiService.SendMessageAsync(SelectedThread.ThreadId, MessageText);
+                
+                // Add the sent message to the Messages collection
+                if (sentMessage != null && sentMessage.MessageId > 0)
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        Messages.Add(sentMessage);
+                        Console.WriteLine($"Added sent message to UI: {sentMessage.Content}");
+                    });
+                }
+                
                 MessageText = string.Empty;
             }
             catch (Exception ex)
