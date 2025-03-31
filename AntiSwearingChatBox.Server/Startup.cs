@@ -16,6 +16,10 @@ using AntiSwearingChatBox.Service.Interface;
 using AntiSwearingChatBox.AI.Interfaces;
 using AntiSwearingChatBox.AI.Services;
 using AntiSwearingChatBox.Server.Service;
+using Microsoft.OpenApi.Models;
+using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
+using AntiSwearingChatBox.Server.Middleware;
 
 namespace AntiSwearingChatBox.Server
 {
@@ -89,10 +93,38 @@ namespace AntiSwearingChatBox.Server
 
             // Configure Swagger
             services.AddEndpointsApiExplorer();
-            services.AddSwaggerGen();
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "AntiSwearing ChatBox API", Version = "v1" });
+                
+                // Add JWT Authentication
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer"
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new List<string>()
+                    }
+                });
+            });
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
         {
             if (env.IsDevelopment())
             {
@@ -100,6 +132,9 @@ namespace AntiSwearingChatBox.Server
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+
+            // Use request/response logging middleware
+            app.UseRequestResponseLogging();
 
             app.UseHttpsRedirection();
             app.UseRouting();

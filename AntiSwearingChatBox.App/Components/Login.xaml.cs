@@ -2,6 +2,8 @@
 using System.Windows;
 using System.Windows.Controls;
 using AntiSwearingChatBox.App.Views;
+using AntiSwearingChatBox.App.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AntiSwearingChatBox.App.Components
 {
@@ -10,6 +12,8 @@ namespace AntiSwearingChatBox.App.Components
     /// </summary>
     public partial class Login : UserControl
     {
+        private readonly ApiService _apiService;
+        
         // Add event for login success
         public event EventHandler LoginSuccessful;
         
@@ -29,9 +33,12 @@ namespace AntiSwearingChatBox.App.Components
             InitializeComponent();
             btnLogin.Click += BtnLogin_Click;
             btnRegister.MouseDown += BtnRegister_Click;
+            
+            // Get ApiService from DI container
+            _apiService = ((App)Application.Current).ServiceProvider.GetService<ApiService>();
         }
 
-        private void BtnLogin_Click(object sender, RoutedEventArgs e)
+        private async void BtnLogin_Click(object sender, RoutedEventArgs e)
         {
             // Validate inputs
             if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password))
@@ -40,8 +47,34 @@ namespace AntiSwearingChatBox.App.Components
                 return;
             }
             
-            // Raise the login successful event
-            LoginSuccessful?.Invoke(this, EventArgs.Empty);
+            // Disable login button during API call
+            btnLogin.IsEnabled = false;
+            loadingIndicator.Visibility = Visibility.Visible;
+            
+            try
+            {
+                // Call API to login
+                var (success, token, message) = await _apiService.LoginAsync(Username, Password);
+                
+                if (success)
+                {
+                    // Save token and raise success event
+                    LoginSuccessful?.Invoke(this, EventArgs.Empty);
+                }
+                else
+                {
+                    MessageBox.Show(message, "Login Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred: {ex.Message}", "Login Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                btnLogin.IsEnabled = true;
+                loadingIndicator.Visibility = Visibility.Collapsed;
+            }
         }
 
         private void BtnRegister_Click(object sender, RoutedEventArgs e)
@@ -71,6 +104,12 @@ namespace AntiSwearingChatBox.App.Components
                     loginPage.ShowRegisterPanel();
                     return;
                 }
+            }
+            
+            // If we got here, we couldn't find the login page, so navigate using the main window
+            if (parentWindow is MainWindow mainWindow)
+            {
+                mainWindow.NavigateToRegister();
             }
         }
     }

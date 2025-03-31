@@ -50,7 +50,15 @@
                 </Grid>
 
                 <!-- Login Button with Green Color -->
-                <Button x:Name="btnLogin" Content="Sign In" Style="{StaticResource PrimaryButtonStyle}"/>
+                <Grid>
+                    <Button x:Name="btnLogin" Content="Sign In" Style="{StaticResource PrimaryButtonStyle}"/>
+                    <ProgressBar
+                        x:Name="loadingIndicator"
+                        IsIndeterminate="True"
+                        Visibility="Collapsed"
+                        Height="4"
+                        VerticalAlignment="Bottom"/>
+                </Grid>
 
                 <!-- Register Link -->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,28,0,0">
