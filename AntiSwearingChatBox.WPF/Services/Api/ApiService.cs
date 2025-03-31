@@ -131,7 +131,7 @@ namespace AntiSwearingChatBox.WPF.Services.Api
         {
             try
             {
-                var response = await _httpClient.GetAsync(ApiConfig.ThreadsEndpoint);
+                var response = await _httpClient.GetAsync($"{ApiConfig.ThreadsEndpoint}?userId={_currentUserId}");
                 
                 if (response.IsSuccessStatusCode)
                 {
@@ -142,8 +142,9 @@ namespace AntiSwearingChatBox.WPF.Services.Api
                 
                 return new List<ChatThread>();
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"Error loading threads: {ex.Message}");
                 return new List<ChatThread>();
             }
         }
@@ -153,8 +154,10 @@ namespace AntiSwearingChatBox.WPF.Services.Api
             try
             {
                 var request = new { 
-                    Name = name,
-                    UserId = _currentUserId 
+                    Title = name,
+                    IsPrivate = false,
+                    CreatorUserId = _currentUserId,
+                    OtherUserId = (int?)null // For personal chats
                 };
                 
                 var content = CreateJsonContent(request);
@@ -164,12 +167,12 @@ namespace AntiSwearingChatBox.WPF.Services.Api
                 if (response.IsSuccessStatusCode)
                 {
                     var responseContent = await response.Content.ReadAsStringAsync();
-                    var result = JsonConvert.DeserializeObject<dynamic>(responseContent);
+                    var result = JsonConvert.DeserializeAnonymousType(responseContent, 
+                        new { Success = false, Message = "", Thread = new ChatThread() });
                     
-                    if (result != null && result.Success == true && result.Thread != null)
+                    if (result != null && result.Success)
                     {
-                        var thread = JsonConvert.DeserializeObject<ChatThread>(result.Thread.ToString());
-                        return thread ?? new ChatThread();
+                        return result.Thread;
                     }
                 }
                 
@@ -208,19 +211,48 @@ namespace AntiSwearingChatBox.WPF.Services.Api
         {
             try
             {
-                var response = await _httpClient.GetAsync($"{ApiConfig.MessagesEndpoint}?threadId={threadId}");
+                var response = await _httpClient.GetAsync($"{ApiConfig.ThreadsEndpoint}/{threadId}/messages");
                 
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
-                    var messages = JsonConvert.DeserializeObject<List<ChatMessage>>(content);
+                    Console.WriteLine($"Message response: {content.Substring(0, Math.Min(100, content.Length))}...");
+                    
+                    var messages = JsonConvert.DeserializeObject<List<ChatMessage>>(content, new JsonSerializerSettings
+                    {
+                        NullValueHandling = NullValueHandling.Ignore,
+                        MissingMemberHandling = MissingMemberHandling.Ignore
+                    });
+                    
+                    Console.WriteLine($"Deserialized {messages?.Count ?? 0} messages");
+                    
+                    if (messages != null && messages.Count > 0)
+                    {
+                        foreach (var msg in messages)
+                        {
+                            // Make sure Content and Username are properly set
+                            Console.WriteLine($"Message: {msg.OriginalMessage} from {msg.SenderName} at {msg.Timestamp}");
+                        }
+                    }
+                    
                     return messages ?? new List<ChatMessage>();
+                }
+                else
+                {
+                    Console.WriteLine($"Error getting messages: {response.StatusCode}");
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error content: {errorContent}");
                 }
                 
                 return new List<ChatMessage>();
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"Error loading messages: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner error: {ex.InnerException.Message}");
+                }
                 return new List<ChatMessage>();
             }
         }
@@ -231,25 +263,30 @@ namespace AntiSwearingChatBox.WPF.Services.Api
             {
                 var request = new
                 {
-                    ThreadId = threadId,
-                    Content = content,
-                    UserId = _currentUserId
+                    UserId = _currentUserId,
+                    Message = content
                 };
                 
                 var jsonContent = CreateJsonContent(request);
-                var response = await _httpClient.PostAsync(ApiConfig.MessagesEndpoint, jsonContent);
+                var response = await _httpClient.PostAsync($"{ApiConfig.ThreadsEndpoint}/{threadId}/messages", jsonContent);
                 
                 if (response.IsSuccessStatusCode)
                 {
                     var responseContent = await response.Content.ReadAsStringAsync();
-                    var message = JsonConvert.DeserializeObject<ChatMessage>(responseContent);
-                    return message ?? new ChatMessage();
+                    var result = JsonConvert.DeserializeAnonymousType(responseContent, 
+                        new { Success = false, Message = "", MessageHistory = new ChatMessage(), WasModerated = false });
+                        
+                    if (result != null && result.Success)
+                    {
+                        return result.MessageHistory;
+                    }
                 }
                 
                 return new ChatMessage();
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"Error sending message: {ex.Message}");
                 return new ChatMessage();
             }
         }
@@ -261,13 +298,6 @@ namespace AntiSwearingChatBox.WPF.Services.Api
                 return;
 
             try {
-                // Check if the hub is available first
-                var response = await _httpClient.GetAsync(ApiConfig.ChatHubUrl);
-                if (!response.IsSuccessStatusCode) {
-                    Console.WriteLine($"SignalR hub not available: {response.StatusCode}");
-                    return;
-                }
-                
                 _hubConnection = new HubConnectionBuilder()
                     .WithUrl(ApiConfig.ChatHubUrl, options =>
                     {
@@ -276,22 +306,37 @@ namespace AntiSwearingChatBox.WPF.Services.Api
                     .WithAutomaticReconnect()
                     .Build();
 
-                _hubConnection.On<ChatMessage>("ReceiveMessage", message =>
-                {
-                    OnMessageReceived?.Invoke(message);
-                });
+                // Register event handlers
+                _hubConnection.On<string, string, int, DateTime>("ReceiveMessage", 
+                    (username, message, userId, timestamp) =>
+                    {
+                        var chatMessage = new ChatMessage
+                        {
+                            User = new UserModel { Username = username },
+                            ModeratedMessage = message,
+                            UserId = userId,
+                            CreatedAt = timestamp
+                        };
+                        
+                        OnMessageReceived?.Invoke(chatMessage);
+                    });
 
                 _hubConnection.On<ChatThread>("ThreadCreated", thread =>
                 {
                     OnThreadCreated?.Invoke(thread);
                 });
 
-                _hubConnection.On<int, string>("UserJoinedThread", (userId, username) =>
+                _hubConnection.On<string, int>("UserJoined", (username, userId) =>
                 {
                     OnUserJoinedThread?.Invoke(userId, username);
                 });
-
+            
                 await _hubConnection.StartAsync();
+            
+                // Once connected, join the chat with our user info
+                await _hubConnection.InvokeAsync("JoinChat", _currentUsername, _currentUserId);
+            
+                Console.WriteLine("Successfully connected to SignalR hub");
             }
             catch (Exception ex) {
                 Console.WriteLine($"SignalR connection error: {ex.Message}");

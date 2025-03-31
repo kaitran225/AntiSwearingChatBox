@@ -31,7 +31,7 @@ namespace AntiSwearingChatBox.Server.Middleware
             try
             {
                 // Continue down the middleware pipeline
-                await _next(context);
+                        await _next(context);
 
                 // Log the response
                 await LogResponse(context, responseBody, originalBodyStream);

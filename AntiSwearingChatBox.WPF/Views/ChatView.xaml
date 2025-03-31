@@ -115,7 +115,7 @@
                                     </Grid.RowDefinitions>
                                     
                                     <DockPanel Grid.Row="0">
-                                        <TextBlock Text="{Binding Username}"
+                                        <TextBlock Text="{Binding SenderName}"
                                                  FontWeight="Bold"
                                                  DockPanel.Dock="Left"/>
                                         

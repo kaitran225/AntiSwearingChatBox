@@ -51,6 +51,7 @@ namespace AntiSwearingChatBox.WPF.ViewModels
             {
                 if (SetProperty(ref _selectedThread, value) && value != null)
                 {
+                    // Just load messages directly without joining the thread
                     LoadMessagesAsync(value.ThreadId);
                 }
             }
@@ -147,9 +148,20 @@ namespace AntiSwearingChatBox.WPF.ViewModels
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     Messages.Clear();
-                    foreach (var message in messages)
+                    
+                    if (messages != null && messages.Count > 0)
                     {
-                        Messages.Add(message);
+                        Console.WriteLine($"Adding {messages.Count} messages to the view");
+                        
+                        foreach (var message in messages)
+                        {
+                            Console.WriteLine($"Adding message: {message.Content} from {message.SenderName}");
+                            Messages.Add(message);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("No messages to display");
                     }
                 });
             }
