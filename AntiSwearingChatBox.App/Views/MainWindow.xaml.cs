@@ -1,20 +1,43 @@
+using System;
 using System.Windows;
 using System.Windows.Input;
+using AntiSwearingChatBox.App.Services;
+using Microsoft.Extensions.DependencyInjection;
+using AntiSwearingChatBox.App.Components;
 
 namespace AntiSwearingChatBox.App.Views
 {
     public partial class MainWindow : Window
     {
-        // Store page instances for better state management
-        private LoginPage _loginPage;
-        private RegisterPage _registerPage;
-        private ChatPage _chatPage;
+        private readonly LoginPage _loginPage;
+        private readonly RegisterPage _registerPage;
+        private readonly ChatPage _chatPage;
+        private readonly ApiService _apiService;
         
         public MainWindow()
         {
             InitializeComponent();
             
-            // Navigate to the login page by default
+            _apiService = ((App)Application.Current).ServiceProvider.GetRequiredService<ApiService>();
+            
+            _loginPage = new LoginPage();
+            _registerPage = new RegisterPage();
+            _chatPage = new ChatPage();
+            
+            // Hook up login page events
+            if (_loginPage.FindName("LoginComponent") is Login loginComponent)
+            {
+                loginComponent.LoginSuccessful += LoginComponent_LoginSuccessful;
+                loginComponent.RegisterRequested += LoginComponent_RegisterRequested;
+            }
+            
+            // Hook up register page events
+            if (_registerPage.FindName("Register") is Register registerComponent)
+            {
+                registerComponent.BackToLoginRequested += RegisterComponent_BackToLoginRequested;
+            }
+            
+            // Start with login page
             NavigateToLogin();
         }
         
@@ -47,43 +70,32 @@ namespace AntiSwearingChatBox.App.Views
         // Navigation methods with page caching
         public void NavigateToLogin()
         {
-            // Create a new login page or reuse the existing one
-            if (_loginPage == null)
-            {
-                _loginPage = new LoginPage();
-            }
-            
             MainFrame.Navigate(_loginPage);
-            UpdateTitle("Login");
         }
         
         public void NavigateToRegister()
         {
-            // Create a new register page or reuse the existing one
-            if (_registerPage == null)
-            {
-                _registerPage = new RegisterPage();
-            }
-            
             MainFrame.Navigate(_registerPage);
-            UpdateTitle("Register");
         }
         
         public void NavigateToChat()
         {
-            // Create a new chat page or reuse the existing one
-            if (_chatPage == null)
-            {
-                _chatPage = new ChatPage();
-            }
-            
             MainFrame.Navigate(_chatPage);
-            UpdateTitle("Chat");
         }
         
-        private void UpdateTitle(string pageTitle)
+        private void LoginComponent_LoginSuccessful(object? sender, EventArgs e)
         {
-            this.Title = $"{pageTitle} - Anti-Swearing Chat Box";
+            NavigateToChat();
+        }
+
+        private void LoginComponent_RegisterRequested(object? sender, EventArgs e)
+        {
+            NavigateToRegister();
+        }
+
+        private void RegisterComponent_BackToLoginRequested(object? sender, EventArgs e)
+        {
+            NavigateToLogin();
         }
     }
 } 

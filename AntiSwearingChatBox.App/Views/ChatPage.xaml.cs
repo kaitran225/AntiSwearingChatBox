@@ -23,7 +23,7 @@ namespace AntiSwearingChatBox.App.Views
             InitializeComponent();
             
             // Get the ApiService from the DI container
-            _apiService = ((App)Application.Current).ServiceProvider.GetService<ApiService>();
+            _apiService = ((App)Application.Current).ServiceProvider.GetService<ApiService>()!;
             
             // Initialize events
             InitializeEvents();
@@ -53,7 +53,7 @@ namespace AntiSwearingChatBox.App.Views
         {
             if (_apiService.CurrentUser != null)
             {
-                _currentUsername = _apiService.CurrentUser.Username;
+                _currentUsername = _apiService.CurrentUser.Username!;
                 UpdateUserDisplay(_currentUsername);
             }
             else
@@ -92,13 +92,13 @@ namespace AntiSwearingChatBox.App.Views
                 ClearConversations();
                 
                 // Get chat threads from API
-                var threads = await _apiService.GetUserThreadsAsync(_apiService.CurrentUser.Id);
+                var threads = await _apiService.GetUserThreadsAsync(_apiService.CurrentUser.UserId);
                 
                 // Add each thread to the UI
                 foreach (var thread in threads)
                 {
-                    string lastMessage = thread.LastMessage != null 
-                        ? thread.LastMessage.Text 
+                    string lastMessage = thread.LastMessage! != null 
+                        ? thread.LastMessage.Text! 
                         : "No messages yet";
                     
                     string lastMessageTime = thread.LastMessage != null 
@@ -106,8 +106,8 @@ namespace AntiSwearingChatBox.App.Views
                         : "";
                     
                     AddConversation(
-                        thread.Id.ToString(), 
-                        thread.Title,
+                        thread.Id.ToString()!, 
+                        thread.Title!,
                         lastMessage,
                         lastMessageTime
                     );
@@ -116,7 +116,7 @@ namespace AntiSwearingChatBox.App.Views
                 // If there are threads, select the first one
                 if (threads.Count > 0)
                 {
-                    SelectChatThread(threads[0].Id.ToString());
+                    SelectChatThread(threads[0].Id.ToString()!);
                 }
             }
             catch (Exception ex)
@@ -217,7 +217,7 @@ namespace AntiSwearingChatBox.App.Views
                     ChatView.Messages.Add(new Components.MessageViewModel
                     {
                         IsSent = true,
-                        Text = sentMessage.Text,
+                        Text = sentMessage.Text!,
                         Timestamp = sentMessage.CreatedAt.ToString("h:mm tt"),
                         Avatar = _currentUsername.Substring(0, 1).ToUpper(),
                         Background = new SolidColorBrush(Colors.LightBlue),
@@ -227,7 +227,7 @@ namespace AntiSwearingChatBox.App.Views
                     // Update conversation with last message
                     UpdateConversationLastMessage(
                         _currentThreadId.ToString(), 
-                        sentMessage.Text, 
+                        sentMessage.Text!, 
                         sentMessage.CreatedAt.ToString("h:mm tt")
                     );
                 }
@@ -269,7 +269,7 @@ namespace AntiSwearingChatBox.App.Views
                         ChatView.Messages.Add(new Components.MessageViewModel
                         {
                             IsSent = isSent,
-                            Text = message.Text,
+                            Text = message.Text!,
                             Timestamp = message.CreatedAt.ToString("h:mm tt"),
                             Avatar = (message.User?.Username?.Substring(0, 1) ?? "?").ToUpper(),
                             Background = isSent 
@@ -282,15 +282,15 @@ namespace AntiSwearingChatBox.App.Views
                     }
                     
                     // Update contact info in chat header
-                    var threads = await _apiService.GetUserThreadsAsync(_apiService.CurrentUser.Id);
+                    var threads = await _apiService.GetUserThreadsAsync(_apiService.CurrentUser!.UserId);
                     var thread = threads.FirstOrDefault(t => t.Id == id);
                     
                     if (thread != null)
                     {
                         ChatView.CurrentContact = new Components.ContactViewModel
                         {
-                            Id = thread.Id.ToString(),
-                            Name = thread.Title,
+                            Id = thread.Id.ToString()!,
+                            Name = thread.Title!,
                             Status = "Online",
                             IsOnline = true
                         };
@@ -315,14 +315,14 @@ namespace AntiSwearingChatBox.App.Views
                 {
                     // Add the new thread to the UI
                     AddConversation(
-                        thread.Id.ToString(),
-                        thread.Title,
+                        thread.Id.ToString()!,
+                        thread.Title!,
                         "No messages yet",
                         ""
                     );
                     
                     // Select the new thread
-                    SelectChatThread(thread.Id.ToString());
+                    SelectChatThread(thread.Id.ToString()!);
                 }
             }
             catch (Exception ex)

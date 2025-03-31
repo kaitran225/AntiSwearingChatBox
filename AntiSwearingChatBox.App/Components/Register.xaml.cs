@@ -1,8 +1,9 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Controls;
-using AntiSwearingChatBox.App.Views;
+using System.Windows.Input;
+using AntiSwearingChatBox.App.Services;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 
 namespace AntiSwearingChatBox.App.Components
 {
@@ -11,79 +12,80 @@ namespace AntiSwearingChatBox.App.Components
     /// </summary>
     public partial class Register : UserControl
     {
-        // Event for registration
-        public event EventHandler<(string username, string email, string password, string confirmPassword)> RegisterButtonClicked;
-        
-        // Controls to expose
-        private TextBox _txtUsername;
-        private TextBox _txtEmail;
-        private PasswordBox _txtPassword;
-        private PasswordBox _txtConfirmPassword;
-        
+        private readonly ApiService _apiService;
+        private readonly TextBox _txtUsername;
+        private readonly TextBox _txtEmail;
+        private readonly PasswordBox _txtPassword;
+        private readonly PasswordBox _txtConfirmPassword;
+        private readonly Button _btnRegister;
+        private readonly TextBlock _btnLogin;
+
+        public event EventHandler? BackToLoginRequested;
+
         public Register()
         {
             InitializeComponent();
-            
-            // Hook up to login link
-            btnLogin.MouseDown += BtnLogin_Click;
-            
-            // Get references to form controls
-            _txtUsername = this.FindName("txtUsername") as TextBox;
-            _txtEmail = this.FindName("txtEmail") as TextBox;
-            _txtPassword = this.FindName("txtPassword") as PasswordBox;
-            _txtConfirmPassword = this.FindName("txtConfirmPassword") as PasswordBox;
-            
-            // Hook up register button click event
-            Button registerButton = this.FindName("btnRegister") as Button;
-            if (registerButton != null)
+            _apiService = ((App)Application.Current).ServiceProvider.GetRequiredService<ApiService>();
+
+            _txtUsername = (TextBox)FindName("txtUsername") ?? throw new InvalidOperationException("txtUsername not found");
+            _txtEmail = (TextBox)FindName("txtEmail") ?? throw new InvalidOperationException("txtEmail not found");
+            _txtPassword = (PasswordBox)FindName("txtPassword") ?? throw new InvalidOperationException("txtPassword not found");
+            _txtConfirmPassword = (PasswordBox)FindName("txtConfirmPassword") ?? throw new InvalidOperationException("txtConfirmPassword not found");
+            _btnRegister = (Button)FindName("btnRegister") ?? throw new InvalidOperationException("btnRegister not found");
+            _btnLogin = (TextBlock)FindName("btnLogin") ?? throw new InvalidOperationException("btnLogin not found");
+
+            _btnRegister.Click += BtnRegister_Click;
+            _btnLogin.MouseDown += BtnLogin_Click;
+        }
+
+        private async void BtnRegister_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Email) || 
+                string.IsNullOrWhiteSpace(Password) || string.IsNullOrWhiteSpace(ConfirmPassword))
             {
-                registerButton.Click += BtnRegister_Click;
+                MessageBox.Show("Please fill in all fields.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
             }
-        }
-        
-        private void BtnRegister_Click(object sender, RoutedEventArgs e)
-        {
-            // Validate inputs and raise event
-            string username = _txtUsername?.Text ?? string.Empty;
-            string email = _txtEmail?.Text ?? string.Empty;
-            string password = _txtPassword?.Password ?? string.Empty;
-            string confirmPassword = _txtConfirmPassword?.Password ?? string.Empty;
-            
-            // Raise the registration event
-            RegisterButtonClicked?.Invoke(this, (username, email, password, confirmPassword));
-        }
-        
-        private void BtnLogin_Click(object sender, RoutedEventArgs e)
-        {
-            // Get parent window
-            Window parentWindow = Window.GetWindow(this);
-            
-            // Check if we're in the new Page-based navigation
-            if (parentWindow is MainWindow && this.Parent != null)
+
+            if (Password != ConfirmPassword)
             {
-                // Find containing page
-                var parent = this.Parent;
-                while (parent != null && !(parent is Page))
-                {
-                    if (parent is FrameworkElement fe)
-                    {
-                        parent = fe.Parent;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
+                MessageBox.Show("Passwords do not match.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                _btnRegister.IsEnabled = false;
+                var (success, message) = await _apiService.RegisterAsync(Username, Email, Password);
                 
-                if (parent is RegisterPage registerPage)
+                if (success)
                 {
-                    if (parentWindow is MainWindow mainWindow)
-                    {
-                        mainWindow.NavigateToLogin();
-                        return;
-                    }
+                    MessageBox.Show("Registration successful! Please log in.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    BackToLoginRequested?.Invoke(this, EventArgs.Empty);
+                }
+                else
+                {
+                    MessageBox.Show($"Registration failed: {message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                _btnRegister.IsEnabled = true;
+            }
         }
+
+        private void BtnLogin_Click(object sender, MouseButtonEventArgs e)
+        {
+            BackToLoginRequested?.Invoke(this, EventArgs.Empty);
+        }
+
+        private string Username => _txtUsername.Text;
+        private string Email => _txtEmail.Text;
+        private string Password => _txtPassword.Password;
+        private string ConfirmPassword => _txtConfirmPassword.Password;
     }
 }

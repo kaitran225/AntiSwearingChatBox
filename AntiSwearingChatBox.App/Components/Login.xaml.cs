@@ -14,51 +14,54 @@ namespace AntiSwearingChatBox.App.Components
     {
         private readonly ApiService _apiService;
         
-        // Add event for login success
-        public event EventHandler LoginSuccessful;
+        public event EventHandler? LoginSuccessful;
+        public event EventHandler? RegisterRequested;
         
-        // Properties to expose username and password
-        public string Username 
-        { 
-            get { return txtUsername.Text; }
-        }
+        private TextBox? _txtUsername;
+        private PasswordBox? _txtPassword;
+        private Button? _btnLogin;
+        private TextBlock? _btnRegister;
         
-        public string Password 
-        {
-            get { return txtPassword.Password; }
-        }
+        public string Username => _txtUsername?.Text ?? string.Empty;
+        public string Password => _txtPassword?.Password ?? string.Empty;
         
         public Login()
         {
             InitializeComponent();
-            btnLogin.Click += BtnLogin_Click;
-            btnRegister.MouseDown += BtnRegister_Click;
             
             // Get ApiService from DI container
-            _apiService = ((App)Application.Current).ServiceProvider.GetService<ApiService>();
+            _apiService = ((App)Application.Current).ServiceProvider.GetRequiredService<ApiService>();
+            
+            // Find controls
+            _txtUsername = FindName("txtUsername") as TextBox;
+            _txtPassword = FindName("txtPassword") as PasswordBox;
+            _btnLogin = FindName("btnLogin") as Button;
+            _btnRegister = FindName("btnRegister") as TextBlock;
+            
+            // Hook up events
+            if (_btnLogin != null)
+                _btnLogin.Click += BtnLogin_Click;
+            if (_btnRegister != null)
+                _btnRegister.MouseDown += BtnRegister_Click;
         }
 
         private async void BtnLogin_Click(object sender, RoutedEventArgs e)
         {
-            // Validate inputs
             if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password))
             {
                 MessageBox.Show("Please enter both username and password.", "Login Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
             
-            // Disable login button during API call
-            btnLogin.IsEnabled = false;
-            loadingIndicator.Visibility = Visibility.Visible;
+            if (_btnLogin != null)
+                _btnLogin.IsEnabled = false;
             
             try
             {
-                // Call API to login
                 var (success, token, message) = await _apiService.LoginAsync(Username, Password);
                 
                 if (success)
                 {
-                    // Save token and raise success event
                     LoginSuccessful?.Invoke(this, EventArgs.Empty);
                 }
                 else
@@ -72,45 +75,14 @@ namespace AntiSwearingChatBox.App.Components
             }
             finally
             {
-                btnLogin.IsEnabled = true;
-                loadingIndicator.Visibility = Visibility.Collapsed;
+                if (_btnLogin != null)
+                    _btnLogin.IsEnabled = true;
             }
         }
 
         private void BtnRegister_Click(object sender, RoutedEventArgs e)
         {
-            // Get parent window
-            Window parentWindow = Window.GetWindow(this);
-            
-            // Check if we're in the new Page-based navigation
-            if (parentWindow is MainWindow && this.Parent != null)
-            {
-                // Find containing page
-                var parent = this.Parent;
-                while (parent != null && !(parent is Page))
-                {
-                    if (parent is FrameworkElement fe)
-                    {
-                        parent = fe.Parent;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-                
-                if (parent is LoginPage loginPage)
-                {
-                    loginPage.ShowRegisterPanel();
-                    return;
-                }
-            }
-            
-            // If we got here, we couldn't find the login page, so navigate using the main window
-            if (parentWindow is MainWindow mainWindow)
-            {
-                mainWindow.NavigateToRegister();
-            }
+            RegisterRequested?.Invoke(this, EventArgs.Empty);
         }
     }
 }

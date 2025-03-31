@@ -1,11 +1,11 @@
 using System.Windows;
 using System.Windows.Controls;
+using AntiSwearingChatBox.App.Components;
 
 namespace AntiSwearingChatBox.App.Views
 {
     public partial class LoginPage : Page
     {
-  
         public LoginPage()
         {
             InitializeComponent();
@@ -34,9 +34,12 @@ namespace AntiSwearingChatBox.App.Views
             // Add any footer initialization logic here
         }
 
-        internal void ShowRegisterPanel()
+        public void ShowRegisterPanel()
         {
-            throw new NotImplementedException();
+            if (Window.GetWindow(this) is MainWindow mainWindow)
+            {
+                mainWindow.NavigateToRegister();
+            }
         }
     }
 } 

@@ -18,13 +18,12 @@
     mc:Ignorable="d">
 
     <Page.Resources>
-        <Style
-            x:Key="WindowBarButtonStyle"
-            BasedOn="{StaticResource MaterialDesignIconButton}"
-            TargetType="Button">
+        <Style x:Key="WindowBarButtonStyle" TargetType="Button" BasedOn="{StaticResource MaterialDesignIconButton}">
             <Setter Property="Width" Value="30" />
             <Setter Property="Height" Value="30" />
             <Setter Property="Padding" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
             <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="4" />
         </Style>
     </Page.Resources>

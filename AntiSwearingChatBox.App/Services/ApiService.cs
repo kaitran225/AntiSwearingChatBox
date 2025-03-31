@@ -45,7 +45,7 @@ namespace AntiSwearingChatBox.App.Services
             var response = await _httpClient.GetAsync(endpoint);
             response.EnsureSuccessStatusCode();
             var json = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<T>(json, _jsonOptions);
+            return JsonSerializer.Deserialize<T>(json, _jsonOptions)!;
         }
 
         public async Task<T> PostAsync<T>(string endpoint, object data)
@@ -55,7 +55,7 @@ namespace AntiSwearingChatBox.App.Services
             var response = await _httpClient.PostAsync(endpoint, content);
             response.EnsureSuccessStatusCode();
             var responseJson = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<T>(responseJson, _jsonOptions);
+            return JsonSerializer.Deserialize<T>(responseJson, _jsonOptions)!;
         }
 
         public async Task<T> PutAsync<T>(string endpoint, object data)
@@ -65,7 +65,7 @@ namespace AntiSwearingChatBox.App.Services
             var response = await _httpClient.PutAsync(endpoint, content);
             response.EnsureSuccessStatusCode();
             var responseJson = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<T>(responseJson, _jsonOptions);
+            return JsonSerializer.Deserialize<T>(responseJson, _jsonOptions)!;
         }
 
         public async Task DeleteAsync(string endpoint)
@@ -83,14 +83,14 @@ namespace AntiSwearingChatBox.App.Services
                 var response = await PostAsync<LoginResponse>("api/auth/login", loginData);
                 if (response.Success)
                 {
-                    SetAuthToken(response.Token);
+                    SetAuthToken(response.Token!);
                     CurrentUser = response.User;
                 }
-                return (response.Success, response.Token, response.Message);
+                return (response.Success, response.Token, response.Message)!;
             }
             catch (Exception ex)
             {
-                return (false, null, $"Login error: {ex.Message}");
+                return (false, null, $"Login error: {ex.Message}")!;
             }
         }
 
@@ -100,7 +100,7 @@ namespace AntiSwearingChatBox.App.Services
             {
                 var registerData = new { Username = username, Email = email, Password = password };
                 var response = await PostAsync<RegisterResponse>("api/auth/register", registerData);
-                return (response.Success, response.Message);
+                return (response.Success, response.Message)!;
             }
             catch (Exception ex)
             {
@@ -141,11 +141,11 @@ namespace AntiSwearingChatBox.App.Services
             {
                 var messageData = new { Message = text };
                 var response = await PostAsync<SendMessageResponse>($"api/chat/threads/{threadId}/messages", messageData);
-                return (response.Success, response.Message, response.MessageHistory?.Message);
+                return (response.Success, response.Message, response.MessageHistory?.Message)!;
             }
             catch (Exception ex)
             {
-                return (false, $"Send message error: {ex.Message}", null);
+                return (false, $"Send message error: {ex.Message}", null)!;
             }
         }
 
@@ -155,11 +155,11 @@ namespace AntiSwearingChatBox.App.Services
             {
                 var threadData = new { Title = title, IsPrivate = isPrivate, OtherUserId = otherUserId };
                 var response = await PostAsync<CreateThreadResponse>("api/chat/threads", threadData);
-                return (response.Success, response.Message, response.Thread);
+                return (response.Success, response.Message, response.Thread)!;
             }
             catch (Exception ex)
             {
-                return (false, $"Create thread error: {ex.Message}", null);
+                return (false, $"Create thread error: {ex.Message}", null)!;
             }
         }
 
@@ -167,49 +167,59 @@ namespace AntiSwearingChatBox.App.Services
         public class LoginResponse
         {
             public bool Success { get; set; }
-            public string Message { get; set; }
-            public string Token { get; set; }
-            public User User { get; set; }
+            public string? Message { get; set; }
+            public string? Token { get; set; }
+            public User? User { get; set; }
         }
 
         public class RegisterResponse
         {
             public bool Success { get; set; }
-            public string Message { get; set; }
+            public string? Message { get; set; }
         }
 
         public class SendMessageResponse
         {
             public bool Success { get; set; }
-            public string Message { get; set; }
-            public MessageHistory MessageHistory { get; set; }
+            public string? Message { get; set; }
+            public MessageHistory? MessageHistory { get; set; }
             public bool WasModerated { get; set; }
         }
 
         public class CreateThreadResponse
         {
             public bool Success { get; set; }
-            public string Message { get; set; }
-            public ChatThread Thread { get; set; }
+            public string? Message { get; set; }
+            public ChatThread? Thread { get; set; }
         }
 
         public class User
         {
-            public int Id { get; set; }
-            public string Username { get; set; }
-            public string Email { get; set; }
-            public string Role { get; set; }
+            public int UserId { get; set; }
+            public string? Username { get; set; }
+            public string? Email { get; set; }
+            public string? Role { get; set; }
+            public string? PasswordHash { get; set; }
+            public string? VerificationToken { get; set; }
+            public string? ResetToken { get; set; }
+            public string? Gender { get; set; }
+            public bool IsVerified { get; set; }
+            public DateTime? TokenExpiration { get; set; }
+            public DateTime CreatedAt { get; set; }
+            public DateTime LastLoginAt { get; set; }
+            public decimal TrustScore { get; set; }
+            public bool IsActive { get; set; }
         }
 
         public class ChatThread
         {
-            public int Id { get; set; }
-            public string Title { get; set; }
-            public bool IsPrivate { get; set; }
-            public DateTime CreatedAt { get; set; }
-            public int CreatorUserId { get; set; }
-            public List<Participant> Participants { get; set; }
-            public Message LastMessage { get; set; }
+            public int? Id { get; set; }
+            public string? Title { get; set; }
+            public bool? IsPrivate { get; set; }
+            public DateTime? CreatedAt { get; set; }
+            public int? CreatorUserId { get; set; }
+            public List<Participant>? Participants { get; set; }
+            public Message? LastMessage { get; set; }
         }
 
         public class Participant
@@ -217,8 +227,8 @@ namespace AntiSwearingChatBox.App.Services
             public int Id { get; set; }
             public int UserId { get; set; }
             public int ThreadId { get; set; }
-            public DateTime JoinedAt { get; set; }
-            public User User { get; set; }
+            public DateTime? JoinedAt { get; set; }
+            public User? User { get; set; }
         }
 
         public class Message
@@ -226,9 +236,9 @@ namespace AntiSwearingChatBox.App.Services
             public int Id { get; set; }
             public int ThreadId { get; set; }
             public int UserId { get; set; }
-            public string Text { get; set; }
+            public string? Text { get; set; }
             public DateTime CreatedAt { get; set; }
-            public User User { get; set; }
+            public User? User { get; set; }
         }
 
         public class MessageHistory
@@ -236,11 +246,11 @@ namespace AntiSwearingChatBox.App.Services
             public int Id { get; set; }
             public int ThreadId { get; set; }
             public int UserId { get; set; }
-            public string OriginalMessage { get; set; }
-            public string ModeratedMessage { get; set; }
+            public string? OriginalMessage { get; set; }
+            public string? ModeratedMessage { get; set; }
             public DateTime CreatedAt { get; set; }
-            public User User { get; set; }
-            public Message Message { get; set; }
+            public User? User { get; set; }
+            public Message? Message { get; set; }
         }
     }
 } 
