@@ -10,8 +10,9 @@ namespace AntiSwearingChatBox.CLI
     public class ApiClient
     {
         private readonly HttpClient _httpClient;
-        private string _token;
-        private User _currentUser;
+        private string? _token;
+        private User? _currentUser;
+        private readonly JsonSerializerSettings _jsonSettings;
 
         public ApiClient(string baseUrl)
         {
@@ -21,9 +22,18 @@ namespace AntiSwearingChatBox.CLI
             };
             _httpClient.DefaultRequestHeaders.Accept.Clear();
             _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            
+            // Configure JSON settings to handle preserved references
+            _jsonSettings = new JsonSerializerSettings
+            {
+                PreserveReferencesHandling = PreserveReferencesHandling.Objects,
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                TypeNameHandling = TypeNameHandling.None,
+                MaxDepth = 64
+            };
         }
 
-        public User CurrentUser => _currentUser;
+        public User? CurrentUser => _currentUser;
         public bool IsAuthenticated => _currentUser != null;
 
         public void SetAuthToken(string token)
@@ -44,21 +54,22 @@ namespace AntiSwearingChatBox.CLI
             {
                 var responseJson = await response.Content.ReadAsStringAsync();
                 var result = JsonConvert.DeserializeAnonymousType(responseJson, 
-                    new { Success = false, Message = "", Token = "", User = new User() });
+                    new { Success = false, Message = "", Token = "", User = new User() },
+                    _jsonSettings);
 
-                if (result.Success)
+                if (result!.Success)
                 {
                     _currentUser = result.User;
                     SetAuthToken(result.Token);
                     return (true, result.Message, result.User);
                 }
-                return (false, result.Message, null);
+                return (false, result.Message, null)!;
             }
             else
             {
                 var errorJson = await response.Content.ReadAsStringAsync();
                 var error = JsonConvert.DeserializeAnonymousType(errorJson, new { Success = false, Message = "" });
-                return (false, error?.Message ?? "Unknown error", null);
+                return (false, error?.Message ?? "Unknown error", null)!;
             }
         }
 
@@ -73,7 +84,7 @@ namespace AntiSwearingChatBox.CLI
             var responseJson = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeAnonymousType(responseJson, new { Success = false, Message = "" });
 
-            return (result.Success, result.Message);
+            return (result!.Success, result.Message);
         }
 
         public async Task<User[]> GetAllUsersAsync()
@@ -83,7 +94,7 @@ namespace AntiSwearingChatBox.CLI
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<User[]>(json);
+                return JsonConvert.DeserializeObject<User[]>(json, _jsonSettings)!;
             }
             
             return Array.Empty<User>();
@@ -96,7 +107,7 @@ namespace AntiSwearingChatBox.CLI
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<ChatThread[]>(json);
+                return JsonConvert.DeserializeObject<ChatThread[]>(json, _jsonSettings)!;
             }
             
             return Array.Empty<ChatThread>();
@@ -109,10 +120,10 @@ namespace AntiSwearingChatBox.CLI
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<ChatThread>(json);
+                return JsonConvert.DeserializeObject<ChatThread>(json, _jsonSettings)!;
             }
             
-            return null;
+            return null!;
         }
 
         public async Task<EnrichedMessage[]> GetThreadMessagesAsync(int threadId)
@@ -122,13 +133,13 @@ namespace AntiSwearingChatBox.CLI
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<EnrichedMessage[]>(json);
+                return JsonConvert.DeserializeObject<EnrichedMessage[]>(json, _jsonSettings)!;
             }
             
             return Array.Empty<EnrichedMessage>();
         }
 
-        public async Task<(bool success, string message, MessageHistory message)> SendMessageAsync(int threadId, int userId, string text)
+        public async Task<(bool success, string message, MessageHistory MessageHistory)> SendMessageAsync(int threadId, int userId, string text)
         {
             var messageData = new { UserId = userId, Message = text };
             var json = JsonConvert.SerializeObject(messageData);
@@ -138,9 +149,10 @@ namespace AntiSwearingChatBox.CLI
 
             var responseJson = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeAnonymousType(responseJson, 
-                new { Success = false, Message = "", MessageHistory = new MessageHistory(), WasModerated = false });
+                new { Success = false, Message = "", MessageHistory = new MessageHistory(), WasModerated = false },
+                _jsonSettings);
 
-            return (result.Success, result.Message, result.MessageHistory);
+            return (result!.Success, result.Message, result.MessageHistory);
         }
 
         public async Task<EnrichedParticipant[]> GetThreadParticipantsAsync(int threadId)
@@ -150,7 +162,7 @@ namespace AntiSwearingChatBox.CLI
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<EnrichedParticipant[]>(json);
+                return JsonConvert.DeserializeObject<EnrichedParticipant[]>(json, _jsonSettings)!;
             }
             
             return Array.Empty<EnrichedParticipant>();
@@ -166,9 +178,10 @@ namespace AntiSwearingChatBox.CLI
 
             var responseJson = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeAnonymousType(responseJson, 
-                new { Success = false, Message = "", Thread = new ChatThread() });
+                new { Success = false, Message = "", Thread = new ChatThread() },
+                _jsonSettings);
 
-            return (result.Success, result.Message, result.Thread);
+            return (result!.Success, result.Message, result.Thread);
         }
 
         public async Task<(bool success, string message)> AddParticipantAsync(int threadId, int userId, int requestedByUserId)
@@ -182,7 +195,7 @@ namespace AntiSwearingChatBox.CLI
             var responseJson = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeAnonymousType(responseJson, new { Success = false, Message = "" });
 
-            return (result.Success, result.Message);
+            return (result!.Success, result.Message);
         }
 
         public async Task<(bool success, string message)> RemoveParticipantAsync(int threadId, int userId, int requestedByUserId)
@@ -193,7 +206,7 @@ namespace AntiSwearingChatBox.CLI
             var responseJson = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeAnonymousType(responseJson, new { Success = false, Message = "" });
 
-            return (result.Success, result.Message);
+            return (result!.Success, result.Message);
         }
 
         public async Task<(bool success, bool found, ChatThread thread)> FindPersonalChatAsync(int userId, int otherUserId)
@@ -204,9 +217,40 @@ namespace AntiSwearingChatBox.CLI
             {
                 var json = await response.Content.ReadAsStringAsync();
                 var result = JsonConvert.DeserializeAnonymousType(json, 
-                    new { Success = false, Found = false, Thread = new ChatThread() });
+                    new { Success = false, Found = false, Thread = new ChatThread() },
+                    _jsonSettings);
 
-                return (result.Success, result.Found, result.Thread);
+                return (result!.Success, result.Found, result.Thread);
+            }
+            
+            return (false, false, null)!;
+        }
+
+        public async Task<User?> GetUserByUsernameAsync(string username)
+        {
+            var response = await _httpClient.GetAsync($"api/users/find?username={username}");
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<User>(json, _jsonSettings);
+            }
+            
+            return null;
+        }
+
+        public async Task<(bool success, bool found, ChatThread[]? threads)> FindThreadsByNameAsync(string name, int userId)
+        {
+            var response = await _httpClient.GetAsync($"api/chat/find-by-name?name={name}&userId={userId}");
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                var result = JsonConvert.DeserializeAnonymousType(json, 
+                    new { Success = false, Found = false, Threads = new ChatThread[] {} },
+                    _jsonSettings);
+
+                return (result?.Success ?? false, result?.Found ?? false, result?.Threads);
             }
             
             return (false, false, null);
@@ -222,9 +266,10 @@ namespace AntiSwearingChatBox.CLI
 
             var responseJson = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeAnonymousType(responseJson, 
-                new { Success = false, OriginalText = "", FilteredText = "", WasModified = false });
+                new { Success = false, OriginalText = "", FilteredText = "", WasModified = false },
+                _jsonSettings);
 
-            return (result.FilteredText, result.WasModified);
+            return (result!.FilteredText, result.WasModified);
         }
 
         public void Logout()
@@ -238,9 +283,9 @@ namespace AntiSwearingChatBox.CLI
     public class User
     {
         public int UserId { get; set; }
-        public string Username { get; set; }
-        public string Email { get; set; }
-        public string Role { get; set; }
+        public string? Username { get; set; }
+        public string? Email { get; set; }
+        public string? Role { get; set; }
         public bool IsActive { get; set; }
         public bool IsVerified { get; set; }
         public DateTime CreatedAt { get; set; }
@@ -249,7 +294,7 @@ namespace AntiSwearingChatBox.CLI
     public class ChatThread
     {
         public int ThreadId { get; set; }
-        public string Title { get; set; }
+        public string? Title { get; set; }
         public bool IsPrivate { get; set; }
         public bool IsActive { get; set; }
         public bool ModerationEnabled { get; set; }
@@ -257,34 +302,37 @@ namespace AntiSwearingChatBox.CLI
         public DateTime LastMessageAt { get; set; }
     }
 
+    public class EnrichedMessage
+    {
+        public MessageHistory? Message { get; set; }
+        public User? User { get; set; }
+    }
+
     public class MessageHistory
     {
         public int MessageId { get; set; }
         public int ThreadId { get; set; }
         public int UserId { get; set; }
-        public string OriginalMessage { get; set; }
-        public string ModeratedMessage { get; set; }
+        public string? OriginalMessage { get; set; }
+        public string? ModeratedMessage { get; set; }
         public bool WasModified { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 
-    public class ThreadParticipant
+    public class EnrichedParticipant
     {
-        public int ParticipantId { get; set; }
-        public int ThreadId { get; set; }
+        public ThreadParticipant? Participant { get; set; }
+        public User? User { get; set; }
+        
+        // New properties to match server DTO
         public int UserId { get; set; }
         public DateTime JoinedAt { get; set; }
     }
 
-    public class EnrichedMessage
+    public class ThreadParticipant
     {
-        public MessageHistory Message { get; set; }
-        public User User { get; set; }
-    }
-
-    public class EnrichedParticipant
-    {
-        public ThreadParticipant Participant { get; set; }
-        public User User { get; set; }
+        public int ThreadId { get; set; }
+        public int UserId { get; set; }
+        public DateTime JoinedAt { get; set; }
     }
 } 

@@ -8,7 +8,7 @@ namespace AntiSwearingChatBox.CLI
 {
     class Program
     {
-        private static ApiClient _apiClient;
+        private static ApiClient? _apiClient;
         private static bool _isRunning = true;
         
         // App color palette
@@ -75,7 +75,7 @@ namespace AntiSwearingChatBox.CLI
         
         private static void DisplayPrompt()
         {
-            string prompt = _apiClient.IsAuthenticated ? _apiClient.CurrentUser.Username : "Guest";
+            string prompt = _apiClient?.IsAuthenticated == true ? _apiClient.CurrentUser?.Username ?? "Guest" : "Guest";
             ColorWrite($"{prompt}> ", Colors.Primary);
         }
         
@@ -123,17 +123,20 @@ namespace AntiSwearingChatBox.CLI
                 case "chat":
                     if (parts.Length < 2)
                     {
-                        ColorWriteLine("Usage: chat <groupId|userId>", Colors.Warning);
+                        ColorWriteLine("Usage: chat <groupId|username>", Colors.Warning);
                         return;
                     }
                     
                     if (int.TryParse(parts[1], out int chatId))
                     {
+                        // Numeric ID - treat as a group ID
                         await EnterChatAsync(chatId);
                     }
                     else
                     {
-                        ColorWriteLine("Invalid ID format. Must be a number.", Colors.Error);
+                        // String - treat as a username
+                        string targetName = parts[1];
+                        await EnterChatAsyncByUsername(targetName);
                     }
                     break;
                     
@@ -164,7 +167,7 @@ namespace AntiSwearingChatBox.CLI
             Console.WriteLine("  list messages <groupId>             - List messages in a group");
             Console.WriteLine("  create group <name>                 - Create a group chat (3+ members)");
             Console.WriteLine("  chat <groupId>                      - Enter real-time chat session with a group");
-            Console.WriteLine("  chat <userId>                       - Start or continue a personal chat with a user");
+            Console.WriteLine("  chat <username>                     - Start or continue a personal chat with a user");
             Console.WriteLine("  add <groupId> <userId>              - Add a user to a group (non-personal chats only)");
             Console.WriteLine("  remove <groupId> <userId>           - Remove a user from a group");
             Console.WriteLine();
@@ -172,7 +175,7 @@ namespace AntiSwearingChatBox.CLI
         
         private static async Task LoginAsync(string[] parts)
         {
-            if (_apiClient.IsAuthenticated)
+            if (_apiClient?.IsAuthenticated == true)
             {
                 ColorWriteLine("You are already logged in. Please logout first.", Colors.Warning);
                 return;
@@ -189,11 +192,11 @@ namespace AntiSwearingChatBox.CLI
             
             try
             {
-                var (success, message, user) = await _apiClient.LoginAsync(username, password);
+                var (success, message, user) = await _apiClient!.LoginAsync(username, password);
                 
-                if (success)
+                if (success && user != null)
                 {
-                    ColorWriteLine($"Welcome, {user.Username}!", Colors.Success);
+                    ColorWriteLine($"Welcome, {user.Username ?? "User"}!", Colors.Success);
                 }
                 else
                 {
@@ -208,7 +211,7 @@ namespace AntiSwearingChatBox.CLI
         
         private static async Task RegisterAsync(string[] parts)
         {
-            if (_apiClient.IsAuthenticated)
+            if (_apiClient?.IsAuthenticated == true)
             {
                 ColorWriteLine("You are already logged in. Please logout first to register a new account.", Colors.Warning);
                 return;
@@ -226,7 +229,7 @@ namespace AntiSwearingChatBox.CLI
             
             try
             {
-                var (success, message) = await _apiClient.RegisterAsync(username, email, password);
+                var (success, message) = await _apiClient!.RegisterAsync(username, email, password);
                 
                 if (success)
                 {
@@ -245,20 +248,20 @@ namespace AntiSwearingChatBox.CLI
         
         private static void Logout()
         {
-            if (!_apiClient.IsAuthenticated)
+            if (_apiClient?.IsAuthenticated != true)
             {
                 ColorWriteLine("You are not logged in.", Colors.Warning);
                 return;
             }
             
-            string username = _apiClient.CurrentUser.Username;
+            string username = _apiClient.CurrentUser?.Username ?? "User";
             _apiClient.Logout();
             ColorWriteLine($"Logged out {username} successfully.", Colors.Success);
         }
         
         private static async Task ListItemsAsync(string[] parts)
         {
-            if (!_apiClient.IsAuthenticated)
+            if (_apiClient?.IsAuthenticated != true)
             {
                 ColorWriteLine("You must be logged in to use this command.", Colors.Warning);
                 return;
@@ -301,7 +304,7 @@ namespace AntiSwearingChatBox.CLI
         {
             try
             {
-                var threads = await _apiClient.GetUserThreadsAsync(_apiClient.CurrentUser.UserId);
+                var threads = await _apiClient!.GetUserThreadsAsync(_apiClient.CurrentUser?.UserId ?? 0) ?? Array.Empty<ChatThread>();
                 
                 // Filter non-private threads (group chats)
                 var groupThreads = threads.Where(t => !t.IsPrivate).ToList();
@@ -318,7 +321,7 @@ namespace AntiSwearingChatBox.CLI
                 
                 foreach (var thread in groupThreads)
                 {
-                    Console.WriteLine($"{thread.ThreadId} | {thread.Title} | {thread.CreatedAt:g} | {thread.LastMessageAt:g}");
+                    Console.WriteLine($"{thread.ThreadId} | {thread.Title ?? "Unnamed"} | {thread.CreatedAt:g} | {thread.LastMessageAt:g}");
                 }
                 
                 Console.WriteLine();
@@ -333,7 +336,7 @@ namespace AntiSwearingChatBox.CLI
         {
             try
             {
-                var users = await _apiClient.GetAllUsersAsync();
+                var users = await _apiClient?.GetAllUsersAsync()! ?? Array.Empty<User>();
                 
                 ColorWriteLine("\nUsers:", Colors.Secondary);
                 ColorWriteLine("ID | Username | Email | Role | Active", Colors.Secondary);
@@ -341,7 +344,7 @@ namespace AntiSwearingChatBox.CLI
                 
                 foreach (var user in users)
                 {
-                    Console.WriteLine($"{user.UserId} | {user.Username} | {user.Email} | {user.Role} | {(user.IsActive ? "Yes" : "No")}");
+                    Console.WriteLine($"{user.UserId} | {user.Username ?? "Unknown"} | {user.Email ?? "No email"} | {user.Role ?? "User"} | {(user.IsActive ? "Yes" : "No")}");
                 }
                 
                 Console.WriteLine();
@@ -357,7 +360,7 @@ namespace AntiSwearingChatBox.CLI
             try
             {
                 // First verify thread exists and user is a participant
-                var thread = await _apiClient.GetThreadByIdAsync(groupId);
+                var thread = await _apiClient!.GetThreadByIdAsync(groupId);
                 if (thread == null)
                 {
                     ColorWriteLine("Group not found.", Colors.Error);
@@ -365,7 +368,7 @@ namespace AntiSwearingChatBox.CLI
                 }
                 
                 // Get messages
-                var messages = await _apiClient.GetThreadMessagesAsync(groupId);
+                var messages = await _apiClient!.GetThreadMessagesAsync(groupId) ?? Array.Empty<EnrichedMessage>();
                 
                 if (messages.Length == 0)
                 {
@@ -373,7 +376,7 @@ namespace AntiSwearingChatBox.CLI
                     return;
                 }
                 
-                ColorWriteLine($"\nMessages in {thread.Title}:", Colors.Secondary);
+                ColorWriteLine($"\nMessages in {thread.Title ?? "Unnamed Chat"}:", Colors.Secondary);
                 ColorWriteLine("Time          User          Message", Colors.Secondary);
                 ColorWriteLine("---------------------------------------", Colors.Secondary);
                 
@@ -390,13 +393,21 @@ namespace AntiSwearingChatBox.CLI
             }
         }
         
-        private static void PrintFormattedMessage(EnrichedMessage msg)
+        private static void PrintFormattedMessage(EnrichedMessage? msg)
         {
+            if (msg == null)
+            {
+                Console.WriteLine("(null message)");
+                return;
+            }
+            
             var sender = msg.User?.Username ?? "Unknown";
-            string displayMessage = msg.Message.WasModified ? msg.Message.ModeratedMessage : msg.Message.OriginalMessage;
+            string displayMessage = msg.Message?.WasModified == true 
+                ? msg.Message.ModeratedMessage ?? "No message content" 
+                : msg.Message?.OriginalMessage ?? "No message content";
             
             // Format time
-            ColorWrite($"{msg.Message.CreatedAt:HH:mm:ss}  ", Colors.Timestamp);
+            ColorWrite($"{msg.Message?.CreatedAt.ToString("HH:mm:ss") ?? "??:??:??"}  ", Colors.Timestamp);
             
             // Format username with padding to align messages
             string paddedUsername = sender.PadRight(14);
@@ -408,7 +419,7 @@ namespace AntiSwearingChatBox.CLI
         
         private static async Task CreateItemAsync(string[] parts)
         {
-            if (!_apiClient.IsAuthenticated)
+            if (_apiClient?.IsAuthenticated != true)
             {
                 ColorWriteLine("You must be logged in to use this command.", Colors.Warning);
                 return;
@@ -438,10 +449,10 @@ namespace AntiSwearingChatBox.CLI
         {
             try
             {
-                var (success, message, thread) = await _apiClient.CreateThreadAsync(
-                    name, false, _apiClient.CurrentUser.UserId);
+                var (success, message, thread) = await _apiClient!.CreateThreadAsync(
+                    name, false, _apiClient.CurrentUser?.UserId ?? 0);
                 
-                if (success)
+                if (success && thread != null)
                 {
                     ColorWriteLine($"Group '{name}' created successfully with ID {thread.ThreadId}", Colors.Success);
                     ColorWriteLine($"Remember to add at least 2 more members for a proper group chat.", Colors.Warning);
@@ -459,7 +470,7 @@ namespace AntiSwearingChatBox.CLI
         
         private static async Task AddMemberAsync(string[] parts)
         {
-            if (!_apiClient.IsAuthenticated)
+            if (_apiClient?.IsAuthenticated != true)
             {
                 ColorWriteLine("You must be logged in to use this command.", Colors.Warning);
                 return;
@@ -474,7 +485,7 @@ namespace AntiSwearingChatBox.CLI
             try
             {
                 var (success, message) = await _apiClient.AddParticipantAsync(
-                    groupId, userId, _apiClient.CurrentUser.UserId);
+                    groupId, userId, _apiClient.CurrentUser?.UserId ?? 0);
                 
                 if (success)
                 {
@@ -493,7 +504,7 @@ namespace AntiSwearingChatBox.CLI
         
         private static async Task RemoveMemberAsync(string[] parts)
         {
-            if (!_apiClient.IsAuthenticated)
+            if (_apiClient?.IsAuthenticated != true)
             {
                 ColorWriteLine("You must be logged in to use this command.", Colors.Warning);
                 return;
@@ -508,7 +519,7 @@ namespace AntiSwearingChatBox.CLI
             try
             {
                 var (success, message) = await _apiClient.RemoveParticipantAsync(
-                    groupId, userId, _apiClient.CurrentUser.UserId);
+                    groupId, userId, _apiClient.CurrentUser?.UserId ?? 0);
                 
                 if (success)
                 {
@@ -527,7 +538,7 @@ namespace AntiSwearingChatBox.CLI
         
         private static async Task EnterChatAsync(int chatId)
         {
-            if (!_apiClient.IsAuthenticated)
+            if (_apiClient?.IsAuthenticated != true)
             {
                 ColorWriteLine("You must be logged in to use this command.", Colors.Error);
                 return;
@@ -535,56 +546,23 @@ namespace AntiSwearingChatBox.CLI
             
             try
             {
-                // Check if it's a user ID or a group ID
-                var users = await _apiClient.GetAllUsersAsync();
-                var isUser = users.Any(u => u.UserId == chatId);
-                
-                int threadId;
-                
-                if (isUser)
+                // We're treating this as a thread ID for a group chat
+                var thread = await _apiClient.GetThreadByIdAsync(chatId);
+                if (thread == null)
                 {
-                    // It's a user ID, find or create personal chat
-                    var (success, found, thread) = await _apiClient.FindPersonalChatAsync(
-                        _apiClient.CurrentUser.UserId, chatId);
-                    
-                    if (success && found)
-                    {
-                        threadId = thread.ThreadId;
-                        ColorWriteLine($"Continuing existing chat with {users.First(u => u.UserId == chatId).Username}...", Colors.Success);
-                    }
-                    else
-                    {
-                        // Create new personal chat
-                        var otherUser = users.First(u => u.UserId == chatId);
-                        var title = $"Chat between {_apiClient.CurrentUser.Username} and {otherUser.Username}";
-                        
-                        var createResult = await _apiClient.CreateThreadAsync(
-                            title, true, _apiClient.CurrentUser.UserId, chatId);
-                        
-                        if (!createResult.success)
-                        {
-                            ColorWriteLine($"Failed to create personal chat: {createResult.message}", Colors.Error);
-                            return;
-                        }
-                        
-                        threadId = createResult.thread.ThreadId;
-                        ColorWriteLine($"Started new chat with {otherUser.Username}.", Colors.Success);
-                    }
-                }
-                else
-                {
-                    // It's a thread ID, verify thread exists
-                    var thread = await _apiClient.GetThreadByIdAsync(chatId);
-                    if (thread == null)
-                    {
-                        ColorWriteLine("Chat group not found.", Colors.Error);
-                        return;
-                    }
-                    
-                    threadId = chatId;
+                    ColorWriteLine("Chat group not found.", Colors.Error);
+                    return;
                 }
                 
-                await EnterChatSessionAsync(threadId);
+                // Verify the user is a participant
+                var participants = await _apiClient.GetThreadParticipantsAsync(chatId);
+                if (!participants.Any(p => p?.User?.UserId == _apiClient.CurrentUser?.UserId))
+                {
+                    ColorWriteLine("You are not a member of this chat group.", Colors.Error);
+                    return;
+                }
+                
+                await EnterChatSessionAsync(chatId);
             }
             catch (Exception ex)
             {
@@ -597,7 +575,7 @@ namespace AntiSwearingChatBox.CLI
             try
             {
                 // Get thread details
-                var thread = await _apiClient.GetThreadByIdAsync(threadId);
+                var thread = await _apiClient!.GetThreadByIdAsync(threadId);
                 if (thread == null)
                 {
                     ColorWriteLine("Chat not found.", Colors.Error);
@@ -608,7 +586,7 @@ namespace AntiSwearingChatBox.CLI
                 var participants = await _apiClient.GetThreadParticipantsAsync(threadId);
                 
                 // Check if current user is a participant
-                if (!participants.Any(p => p.User.UserId == _apiClient.CurrentUser.UserId))
+                if (!participants.Any(p => p?.User?.UserId == _apiClient?.CurrentUser?.UserId))
                 {
                     ColorWriteLine("You are not a member of this chat.", Colors.Error);
                     return;
@@ -619,7 +597,7 @@ namespace AntiSwearingChatBox.CLI
                 
                 // Clear the console for a clean chat interface
                 Console.Clear();
-                ColorWriteLine($"=== {chatType}: {thread.Title} ===", Colors.Primary);
+                ColorWriteLine($"=== {chatType}: {thread.Title ?? "Unnamed Chat"} ===", Colors.Primary);
                 ColorWriteLine("Type your message and press Enter to send. Type /exit to leave the chat.", Colors.Secondary);
                 ColorWriteLine("---------------------------------------", Colors.Secondary);
                 
@@ -641,7 +619,7 @@ namespace AntiSwearingChatBox.CLI
                 while (inChatSession)
                 {
                     // Display prompt
-                    ColorWrite($"{_apiClient.CurrentUser.Username}> ", Colors.Primary);
+                    ColorWrite($"{_apiClient?.CurrentUser?.Username ?? "User"}> ", Colors.Primary);
                     string userInput = Console.ReadLine() ?? string.Empty;
                     
                     // Check if user wants to exit
@@ -656,8 +634,8 @@ namespace AntiSwearingChatBox.CLI
                     // Send the message if not empty
                     if (!string.IsNullOrWhiteSpace(userInput))
                     {
-                        var (success, message, _) = await _apiClient.SendMessageAsync(
-                            threadId, _apiClient.CurrentUser.UserId, userInput);
+                        var (success, message, _) = await _apiClient!.SendMessageAsync(
+                            threadId, _apiClient?.CurrentUser?.UserId ?? 0, userInput);
                         
                         if (!success)
                         {
@@ -686,6 +664,8 @@ namespace AntiSwearingChatBox.CLI
         
         private static async Task StartMessagePollingAsync(int threadId, DateTime lastMessageTime, CancellationToken cancellationToken)
         {
+            if (_apiClient == null) return;
+            
             // Get the polling interval from configuration or use default
             int pollingIntervalMs = 1000; // Default to 1 second
             
@@ -697,13 +677,13 @@ namespace AntiSwearingChatBox.CLI
                     await Task.Delay(pollingIntervalMs, cancellationToken);
                     
                     // Get messages
-                    var allMessages = await _apiClient.GetThreadMessagesAsync(threadId);
+                    var allMessages = await _apiClient.GetThreadMessagesAsync(threadId) ?? Array.Empty<EnrichedMessage>();
                     
                     // Find new messages from other users
                     var newMessages = allMessages
-                        .Where(m => m.Message.CreatedAt > lastMessageTime && 
-                               m.User.UserId != _apiClient.CurrentUser.UserId)
-                        .OrderBy(m => m.Message.CreatedAt)
+                        .Where(m => m?.Message?.CreatedAt > lastMessageTime && 
+                               m?.User?.UserId != _apiClient.CurrentUser?.UserId)
+                        .OrderBy(m => m?.Message?.CreatedAt)
                         .ToList();
                     
                     if (newMessages.Any())
@@ -727,10 +707,14 @@ namespace AntiSwearingChatBox.CLI
                         }
                         
                         // Redisplay the prompt
-                        ColorWrite($"{_apiClient.CurrentUser.Username}> ", Colors.Primary);
+                        ColorWrite($"{_apiClient.CurrentUser?.Username ?? "User"}> ", Colors.Primary);
                         
                         // Update the last message time
-                        lastMessageTime = newMessages.Last().Message.CreatedAt;
+                        var lastMsg = newMessages.LastOrDefault();
+                        if (lastMsg?.Message?.CreatedAt != null)
+                        {
+                            lastMessageTime = lastMsg.Message.CreatedAt;
+                        }
                     }
                 }
                 catch (OperationCanceledException)
@@ -744,6 +728,73 @@ namespace AntiSwearingChatBox.CLI
                     ColorWriteLine($"Error checking for messages: {ex.Message}", Colors.Error);
                     await Task.Delay(pollingIntervalMs * 2, cancellationToken); // Wait longer on error
                 }
+            }
+        }
+        
+        private static async Task EnterChatAsyncByUsername(string username)
+        {
+            if (_apiClient?.IsAuthenticated != true)
+            {
+                ColorWriteLine("You must be logged in to use this command.", Colors.Error);
+                return;
+            }
+            
+            try
+            {
+                // Get all users and check if the username exists
+                var users = await _apiClient.GetAllUsersAsync();
+                var targetUser = users.FirstOrDefault(u => u?.Username?.Equals(username, StringComparison.OrdinalIgnoreCase) == true);
+                
+                if (targetUser == null)
+                {
+                    // Try to find a chat group with this name
+                    var (success, found, matchingThreads) = await _apiClient.FindThreadsByNameAsync(username, _apiClient.CurrentUser?.UserId ?? 0);
+                    
+                    if (success && found && matchingThreads?.Length > 0)
+                    {
+                        // If there are multiple matches, take the exact match if available, otherwise take the first match
+                        var exactMatch = matchingThreads.FirstOrDefault(t => t?.Title?.Equals(username, StringComparison.OrdinalIgnoreCase) == true);
+                        var threadToUse = exactMatch ?? matchingThreads[0];
+                        
+                        ColorWriteLine($"Found group chat with name '{threadToUse.Title}'.", Colors.Success);
+                        await EnterChatSessionAsync(threadToUse.ThreadId);
+                        return;
+                    }
+                    
+                    ColorWriteLine($"No user or chat group found with name '{username}'.", Colors.Error);
+                    return;
+                }
+                
+                // It's a user, find or create personal chat
+                var (chatSuccess, chatFound, thread) = await _apiClient.FindPersonalChatAsync(
+                    _apiClient.CurrentUser?.UserId ?? 0, targetUser.UserId);
+                
+                if (chatSuccess && chatFound && thread != null)
+                {
+                    ColorWriteLine($"Continuing existing chat with {targetUser.Username}...", Colors.Success);
+                    await EnterChatSessionAsync(thread.ThreadId);
+                }
+                else
+                {
+                    // Create new personal chat
+                    var title = $"Chat between {_apiClient.CurrentUser?.Username ?? "User"} and {targetUser.Username ?? "Unknown"}";
+                    
+                    var createResult = await _apiClient.CreateThreadAsync(
+                        title, true, _apiClient.CurrentUser?.UserId ?? 0, targetUser.UserId);
+                    
+                    if (!createResult.success || createResult.thread == null)
+                    {
+                        ColorWriteLine($"Failed to create personal chat: {createResult.message}", Colors.Error);
+                        return;
+                    }
+                    
+                    ColorWriteLine($"Started new chat with {targetUser.Username}.", Colors.Success);
+                    await EnterChatSessionAsync(createResult.thread.ThreadId);
+                }
+            }
+            catch (Exception ex)
+            {
+                ColorWriteLine($"Error entering chat: {ex.Message}", Colors.Error);
             }
         }
     }

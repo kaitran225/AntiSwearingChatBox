@@ -23,14 +23,14 @@ namespace AntiSwearingChatBox.App.Views
             this.Loaded += Page_Loaded;
             
             // Hook up events from UI components
-            ChatView.MessageSent += ChatView_MessageSent;
-            ChatView.MenuRequested += ChatView_MenuRequested;
-            ChatView.AttachmentRequested += ChatView_AttachmentRequested;
+            ChatView.MessageSent += ChatView_MessageSent!;
+            ChatView.MenuRequested += ChatView_MenuRequested!;
+            ChatView.AttachmentRequested += ChatView_AttachmentRequested!;
             
-            ConversationList.ConversationSelected += ConversationList_ConversationSelected;
-            ConversationList.NewChatRequested += ConversationList_NewChatRequested;
-            ConversationList.AddConversationRequested += ConversationList_AddConversationRequested;
-            ConversationList.AdminDashboardRequested += ConversationList_AdminDashboardRequested;
+            ConversationList.ConversationSelected += ConversationList_ConversationSelected!;
+            ConversationList.NewChatRequested += ConversationList_NewChatRequested!;
+            ConversationList.AddConversationRequested += ConversationList_AddConversationRequested!;
+            ConversationList.AdminDashboardRequested += ConversationList_AdminDashboardRequested!;
             
             if (CloseAdminDashboardButton != null)
             {

@@ -9,6 +9,46 @@ using AntiSwearingChatBox.AI.Interfaces;
 
 namespace AntiSwearingChatBox.Server.Controllers
 {
+    // DTO classes to prevent circular references
+    public class ThreadDto
+    {
+        public int ThreadId { get; set; }
+        public string Title { get; set; }
+        public bool IsPrivate { get; set; }
+        public bool IsActive { get; set; }
+        public bool ModerationEnabled { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime LastMessageAt { get; set; }
+    }
+    
+    public class ParticipantDto
+    {
+        public int UserId { get; set; }
+        public DateTime JoinedAt { get; set; }
+        public UserDto User { get; set; }
+    }
+    
+    public class UserDto
+    {
+        public int UserId { get; set; }
+        public string Username { get; set; }
+        public string Email { get; set; }
+        public string Role { get; set; }
+        public bool IsActive { get; set; }
+    }
+    
+    public class MessageDto
+    {
+        public int MessageId { get; set; }
+        public int ThreadId { get; set; }
+        public int UserId { get; set; }
+        public string OriginalMessage { get; set; }
+        public string ModeratedMessage { get; set; }
+        public bool WasModified { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public UserDto User { get; set; }
+    }
+    
     [ApiController]
     [Route("api/[controller]")]
     public class ChatController : ControllerBase
@@ -45,7 +85,19 @@ namespace AntiSwearingChatBox.Server.Controllers
                     .Where(t => threadIds.Contains(t.ThreadId))
                     .ToList();
                 
-                return Ok(threads);
+                // Map to DTOs to prevent circular references
+                var threadDtos = threads.Select(t => new ThreadDto
+                {
+                    ThreadId = t.ThreadId,
+                    Title = t.Title,
+                    IsPrivate = t.IsPrivate,
+                    IsActive = t.IsActive,
+                    ModerationEnabled = t.ModerationEnabled,
+                    CreatedAt = t.CreatedAt,
+                    LastMessageAt = t.LastMessageAt
+                }).ToList();
+                
+                return Ok(threadDtos);
             }
             catch (Exception ex)
             {
@@ -65,7 +117,19 @@ namespace AntiSwearingChatBox.Server.Controllers
                     return NotFound(new { Success = false, Message = "Thread not found" });
                 }
                 
-                return Ok(thread);
+                // Map to DTO to prevent circular references
+                var threadDto = new ThreadDto
+                {
+                    ThreadId = thread.ThreadId,
+                    Title = thread.Title,
+                    IsPrivate = thread.IsPrivate,
+                    IsActive = thread.IsActive,
+                    ModerationEnabled = thread.ModerationEnabled,
+                    CreatedAt = thread.CreatedAt,
+                    LastMessageAt = thread.LastMessageAt
+                };
+                
+                return Ok(threadDto);
             }
             catch (Exception ex)
             {
@@ -118,10 +182,22 @@ namespace AntiSwearingChatBox.Server.Controllers
                     _threadParticipantService.Add(otherUserParticipant);
                 }
                 
+                // Create DTO for response
+                var threadDto = new ThreadDto
+                {
+                    ThreadId = chatThread.ThreadId,
+                    Title = chatThread.Title,
+                    IsPrivate = chatThread.IsPrivate,
+                    IsActive = chatThread.IsActive,
+                    ModerationEnabled = chatThread.ModerationEnabled,
+                    CreatedAt = chatThread.CreatedAt,
+                    LastMessageAt = chatThread.LastMessageAt
+                };
+                
                 return Ok(new { 
                     Success = true, 
                     Message = "Thread created successfully",
-                    Thread = chatThread
+                    Thread = threadDto
                 });
             }
             catch (Exception ex)
@@ -137,14 +213,30 @@ namespace AntiSwearingChatBox.Server.Controllers
             {
                 var messages = _messageHistoryService.GetByThreadId(threadId).ToList();
                 
-                // Enrich with user data
-                var enrichedMessages = messages.Select(msg => new 
-                {
-                    Message = msg,
-                    User = _userService.GetById(msg.UserId)
+                // Enrich with user data and map to DTO
+                var enrichedMessageDtos = messages.Select(msg => {
+                    var user = _userService.GetById(msg.UserId);
+                    return new MessageDto
+                    {
+                        MessageId = msg.MessageId,
+                        ThreadId = msg.ThreadId,
+                        UserId = msg.UserId,
+                        OriginalMessage = msg.OriginalMessage,
+                        ModeratedMessage = msg.ModeratedMessage,
+                        WasModified = msg.WasModified,
+                        CreatedAt = msg.CreatedAt,
+                        User = user != null ? new UserDto
+                        {
+                            UserId = user.UserId,
+                            Username = user.Username,
+                            Email = user.Email,
+                            Role = user.Role,
+                            IsActive = user.IsActive
+                        } : null
+                    };
                 }).ToList();
                 
-                return Ok(enrichedMessages);
+                return Ok(enrichedMessageDtos);
             }
             catch (Exception ex)
             {
@@ -157,21 +249,21 @@ namespace AntiSwearingChatBox.Server.Controllers
         {
             try
             {
-                // Verify thread exists
+                // Validate that thread exists
                 var thread = _chatThreadService.GetById(threadId);
                 if (thread == null)
                 {
                     return NotFound(new { Success = false, Message = "Thread not found" });
                 }
                 
-                // Verify user is a participant
+                // Validate that user is a participant in the thread
                 var participants = _threadParticipantService.GetByThreadId(threadId);
                 if (!participants.Any(p => p.UserId == model.UserId))
                 {
-                    return BadRequest(new { Success = false, Message = "User is not a member of this thread" });
+                    return BadRequest(new { Success = false, Message = "You are not a participant in this thread" });
                 }
                 
-                // Check if we need to moderate
+                // Filter profanity if moderation is enabled
                 string originalMessage = model.Message;
                 string moderatedMessage = originalMessage;
                 bool wasModified = false;
@@ -181,7 +273,7 @@ namespace AntiSwearingChatBox.Server.Controllers
                     (moderatedMessage, wasModified) = _profanityFilter.FilterProfanity(originalMessage);
                 }
                 
-                // Create and save the message
+                // Create message history record
                 var messageHistory = new MessageHistory
                 {
                     ThreadId = threadId,
@@ -203,10 +295,31 @@ namespace AntiSwearingChatBox.Server.Controllers
                 thread.LastMessageAt = DateTime.UtcNow;
                 _chatThreadService.Update(thread);
                 
+                // Create message DTO for response
+                var user = _userService.GetById(model.UserId);
+                var messageDto = new MessageDto
+                {
+                    MessageId = messageHistory.MessageId,
+                    ThreadId = messageHistory.ThreadId,
+                    UserId = messageHistory.UserId,
+                    OriginalMessage = messageHistory.OriginalMessage,
+                    ModeratedMessage = messageHistory.ModeratedMessage,
+                    WasModified = messageHistory.WasModified,
+                    CreatedAt = messageHistory.CreatedAt,
+                    User = user != null ? new UserDto
+                    {
+                        UserId = user.UserId,
+                        Username = user.Username,
+                        Email = user.Email,
+                        Role = user.Role,
+                        IsActive = user.IsActive
+                    } : null
+                };
+                
                 return Ok(new { 
                     Success = true, 
                     Message = "Message sent successfully",
-                    MessageHistory = messageHistory,
+                    MessageHistory = messageDto,
                     WasModerated = wasModified
                 });
             }
@@ -223,14 +336,25 @@ namespace AntiSwearingChatBox.Server.Controllers
             {
                 var participants = _threadParticipantService.GetByThreadId(threadId);
                 
-                // Enrich with user data
-                var enrichedParticipants = participants.Select(p => new 
-                {
-                    Participant = p,
-                    User = _userService.GetById(p.UserId)
+                // Enrich with user data and map to DTO
+                var enrichedParticipantDtos = participants.Select(p => {
+                    var user = _userService.GetById(p.UserId);
+                    return new ParticipantDto
+                    {
+                        UserId = p.UserId,
+                        JoinedAt = p.JoinedAt,
+                        User = user != null ? new UserDto
+                        {
+                            UserId = user.UserId,
+                            Username = user.Username,
+                            Email = user.Email,
+                            Role = user.Role,
+                            IsActive = user.IsActive
+                        } : null
+                    };
                 }).ToList();
                 
-                return Ok(enrichedParticipants);
+                return Ok(enrichedParticipantDtos);
             }
             catch (Exception ex)
             {
@@ -372,17 +496,17 @@ namespace AntiSwearingChatBox.Server.Controllers
         {
             try
             {
-                // Get threads where both users are participants
+                // Get all threads the user participates in
                 var userThreads = _threadParticipantService.GetByUserId(userId);
                 var otherUserThreads = _threadParticipantService.GetByUserId(otherUserId);
                 
-                // Get the intersection of thread IDs
-                var sharedThreadIds = userThreads.Select(t => t.ThreadId)
+                // Find common threads (threads both users participate in)
+                var commonThreadIds = userThreads.Select(t => t.ThreadId)
                     .Intersect(otherUserThreads.Select(t => t.ThreadId))
                     .ToList();
                 
-                // Find personal chats among shared threads
-                foreach (var threadId in sharedThreadIds)
+                // Check for private chats among common threads
+                foreach (var threadId in commonThreadIds)
                 {
                     var thread = _chatThreadService.GetById(threadId);
                     if (thread != null && thread.IsPrivate && thread.IsActive)
@@ -391,16 +515,72 @@ namespace AntiSwearingChatBox.Server.Controllers
                         var participants = _threadParticipantService.GetByThreadId(threadId);
                         if (participants.Count() == 2)
                         {
+                            // Map to DTO to prevent circular references
+                            var threadDto = new ThreadDto
+                            {
+                                ThreadId = thread.ThreadId,
+                                Title = thread.Title,
+                                IsPrivate = thread.IsPrivate,
+                                IsActive = thread.IsActive,
+                                ModerationEnabled = thread.ModerationEnabled,
+                                CreatedAt = thread.CreatedAt,
+                                LastMessageAt = thread.LastMessageAt
+                            };
+                            
                             return Ok(new { 
                                 Success = true, 
                                 Found = true,
-                                Thread = thread
+                                Thread = threadDto
                             });
                         }
                     }
                 }
                 
                 // No existing personal chat found
+                return Ok(new { Success = true, Found = false });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Success = false, Message = $"An error occurred: {ex.Message}" });
+            }
+        }
+
+        [HttpGet("find-by-name")]
+        public IActionResult FindThreadByName([FromQuery] string name, [FromQuery] int userId)
+        {
+            try
+            {
+                // Get all threads the user participates in
+                var userParticipations = _threadParticipantService.GetByUserId(userId);
+                var userThreadIds = userParticipations.Select(p => p.ThreadId).ToList();
+                
+                // Find threads matching the name (case-insensitive)
+                var matchingThreads = _chatThreadService.GetAll()
+                    .Where(t => t.Title.ToLower().Contains(name.ToLower()) && userThreadIds.Contains(t.ThreadId))
+                    .ToList();
+                
+                if (matchingThreads.Any())
+                {
+                    // Map to DTOs to prevent circular references
+                    var threadDtos = matchingThreads.Select(t => new ThreadDto
+                    {
+                        ThreadId = t.ThreadId,
+                        Title = t.Title,
+                        IsPrivate = t.IsPrivate,
+                        IsActive = t.IsActive,
+                        ModerationEnabled = t.ModerationEnabled,
+                        CreatedAt = t.CreatedAt,
+                        LastMessageAt = t.LastMessageAt
+                    }).ToList();
+                    
+                    return Ok(new { 
+                        Success = true, 
+                        Found = true,
+                        Threads = threadDtos
+                    });
+                }
+                
+                // No matching threads found
                 return Ok(new { Success = true, Found = false });
             }
             catch (Exception ex)
