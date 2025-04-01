@@ -16,7 +16,9 @@
 # Mono auto generated files
 mono_crash.*
 
+sample
 sample/
+sample/**
 
 # Build results
 [Dd]ebug/
