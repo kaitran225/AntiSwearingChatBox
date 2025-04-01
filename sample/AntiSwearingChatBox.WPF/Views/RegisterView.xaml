@@ -1,0 +1,67 @@
+<Window x:Class="AntiSwearingChatBox.WPF.Views.RegisterView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:AntiSwearingChatBox.WPF.Views"
+        xmlns:converters="clr-namespace:AntiSwearingChatBox.WPF.Converters"
+        mc:Ignorable="d"
+        Title="Register" Height="450" Width="800"
+        WindowStartupLocation="CenterScreen">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="1" 
+                    Width="300" 
+                    VerticalAlignment="Center" 
+                    Margin="20">
+            <TextBlock Text="Create New Account"
+                       FontSize="24"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,20"/>
+
+            <TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
+                     Style="{StaticResource PlaceholderTextBoxStyle}"
+                     Tag="Username"
+                     Margin="0,0,0,10"
+                     Padding="5"/>
+
+            <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}"
+                     Style="{StaticResource PlaceholderTextBoxStyle}"
+                     Tag="Email"
+                     Margin="0,0,0,10"
+                     Padding="5"/>
+
+            <PasswordBox x:Name="PasswordBox"
+                        Margin="0,0,0,10"
+                        Padding="5"
+                        PasswordChanged="PasswordBox_PasswordChanged"/>
+
+            <PasswordBox x:Name="ConfirmPasswordBox"
+                        Margin="0,0,0,10"
+                        Padding="5"
+                        PasswordChanged="ConfirmPasswordBox_PasswordChanged"/>
+
+            <TextBlock Text="{Binding ErrorMessage}"
+                       Foreground="Red"
+                       TextWrapping="Wrap"
+                       Margin="0,0,0,10"
+                       Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}"/>
+
+            <Button Content="Register"
+                    Command="{Binding RegisterCommand}"
+                    Height="35"
+                    Margin="0,0,0,10"/>
+
+            <Button Content="Back to Login"
+                    Command="{Binding NavigateToLoginCommand}"
+                    Height="35"
+                    Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"/>
+        </StackPanel>
+    </Grid>
+</Window> 
