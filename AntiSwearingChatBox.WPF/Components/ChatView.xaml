@@ -10,6 +10,11 @@
     mc:Ignorable="d"
     d:DesignHeight="450" d:DesignWidth="800">
 
+    <UserControl.Resources>
+        <converters:BoolToColumnConverter x:Key="BoolToColumnConverter"/>
+        <converters:BoolToAlignmentConverter x:Key="BoolToAlignmentConverter"/>
+    </UserControl.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -60,7 +65,7 @@
                             </Grid.ColumnDefinitions>
 
                             <!-- Avatar (for received messages) -->
-                            <Border Grid.Column="{Binding IsSent, Converter={StaticResource converters:BoolToColumnConverter}}"
+                            <Border Grid.Column="{Binding IsSent, Converter={StaticResource BoolToColumnConverter}}"
                                     Width="32" Height="32"
                                     Background="{Binding Background}"
                                     BorderBrush="{Binding BorderBrush}"
@@ -80,7 +85,7 @@
                                     BorderThickness="1"
                                     CornerRadius="8"
                                     Padding="12,8"
-                                    HorizontalAlignment="{Binding IsSent, Converter={StaticResource converters:BoolToAlignmentConverter}}">
+                                    HorizontalAlignment="{Binding IsSent, Converter={StaticResource BoolToAlignmentConverter}}">
                                 <StackPanel>
                                     <TextBlock Text="{Binding Text}"
                                              Foreground="{StaticResource PrimaryTextBrush}"
