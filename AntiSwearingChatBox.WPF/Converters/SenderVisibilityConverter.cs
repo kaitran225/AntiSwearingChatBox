@@ -12,8 +12,8 @@ namespace AntiSwearingChatBox.WPF.Converters
             if (values == null || values.Length < 2 || values[0] == null || values[1] == null)
                 return Visibility.Visible;
 
-            string messageSender = values[0].ToString();
-            string currentUser = values[1].ToString();
+            string messageSender = values[0].ToString()!;
+            string currentUser = values[1].ToString()!;
 
             bool isCurrentUser = string.Equals(messageSender, currentUser, StringComparison.OrdinalIgnoreCase);
             

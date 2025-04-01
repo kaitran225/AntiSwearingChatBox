@@ -1,0 +1,81 @@
+﻿<UserControl x:Class="AntiSwearingChatBox.WPF.Components.Login"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:local="clr-namespace:AntiSwearingChatBox.WPF.Components"
+             Height="Auto"
+             Width="400">
+    
+    <Border Background="{StaticResource PrimaryBackgroundBrush}" CornerRadius="0">
+        <!-- Form Content -->
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            
+            <!-- Green Accent Bar -->
+            <Border Height="4" Background="{StaticResource PrimaryGreenBrush}" VerticalAlignment="Top"/>
+            
+            <!-- Form Content -->
+            <StackPanel Grid.Row="1" Width="320" VerticalAlignment="Center" Margin="0,40,0,40">
+                <!-- Logo Placeholder -->
+
+                <TextBlock Text="Welcome back" Style="{StaticResource HeadingTextStyle}" FontSize="36" Margin="0,0,0,8"/>
+                <TextBlock Text="Enter your account details to continue" Style="{StaticResource BodyTextStyle}" Margin="0,0,0,32" TextWrapping="Wrap"/>
+
+                <!-- Email Input -->
+                <TextBox x:Name="txtUsername" Style="{StaticResource StandardInputStyle}"
+                     materialDesign:HintAssist.Hint="Email or Username"
+                     materialDesign:TextFieldAssist.HasClearButton="True"/>
+
+                <!-- Password Input -->
+                <PasswordBox x:Name="txtPassword" Style="{StaticResource StandardPasswordStyle}"
+                         materialDesign:HintAssist.Hint="Password"/>
+
+                <!-- Remember Me & Forgot Password -->
+                <Grid Margin="0,8,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <CheckBox Content="Remember me" Foreground="{StaticResource TertiaryTextBrush}" Margin="0,0,0,0" FontSize="13"
+                          BorderBrush="{StaticResource PrimaryGreenBrush}" Background="Transparent"/>
+
+                    <TextBlock Grid.Column="1" Text="Forgot password?" Style="{StaticResource LinkTextStyle}"
+                           VerticalAlignment="Center"/>
+                </Grid>
+
+                <!-- Login Button with Green Color -->
+                <Grid>
+                    <Button x:Name="btnLogin" Content="Sign In" Style="{StaticResource PrimaryButtonStyle}"/>
+                    <ProgressBar
+                        x:Name="loadingIndicator"
+                        IsIndeterminate="True"
+                        Visibility="Collapsed"
+                        Height="4"
+                        VerticalAlignment="Bottom"/>
+                </Grid>
+
+                <!-- Register Link -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,28,0,0">
+                    <TextBlock Text="Don't have an account?" Foreground="{StaticResource TertiaryTextBrush}" FontSize="13"/>
+                    <TextBlock x:Name="btnRegister" Text="Create account" Style="{StaticResource LinkTextStyle}" 
+                           FontSize="13" Margin="6,0,0,0"/>
+                </StackPanel>
+                
+                <!-- Colorful Cards Design Element (Inspired by Dribbble) -->
+                <Grid Margin="0,48,0,0" Height="80">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                </Grid>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

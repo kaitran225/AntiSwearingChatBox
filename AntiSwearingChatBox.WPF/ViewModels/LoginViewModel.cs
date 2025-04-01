@@ -1,103 +1,129 @@
 using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using AntiSwearingChatBox.WPF.Commands;
 using AntiSwearingChatBox.WPF.Services;
-using AntiSwearingChatBox.WPF.Views;
 
 namespace AntiSwearingChatBox.WPF.ViewModels
 {
-    public class LoginViewModel : ViewModelBase
+    public class LoginViewModel : INotifyPropertyChanged
     {
+        private readonly ApiService _apiService;
         private string _username = string.Empty;
         private string _password = string.Empty;
+        private bool _isLoggingIn;
         private string _errorMessage = string.Empty;
-        private bool _isLoading;
 
         public string Username
         {
             get => _username;
-            set => SetProperty(ref _username, value);
+            set
+            {
+                _username = value;
+                OnPropertyChanged();
+            }
         }
 
         public string Password
         {
             get => _password;
-            set => SetProperty(ref _password, value);
+            set
+            {
+                _password = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsLoggingIn
+        {
+            get => _isLoggingIn;
+            set
+            {
+                _isLoggingIn = value;
+                OnPropertyChanged();
+            }
         }
 
         public string ErrorMessage
         {
             get => _errorMessage;
-            set => SetProperty(ref _errorMessage, value);
-        }
-
-        public bool IsLoading
-        {
-            get => _isLoading;
-            set => SetProperty(ref _isLoading, value);
+            set
+            {
+                _errorMessage = value;
+                OnPropertyChanged();
+            }
         }
 
         public ICommand LoginCommand { get; }
-        public ICommand NavigateToRegisterCommand { get; }
+        public ICommand RegisterCommand { get; }
 
         public LoginViewModel()
         {
+            _apiService = ServiceProvider.ApiService;
             LoginCommand = new RelayCommand(ExecuteLoginAsync, CanLogin);
-            NavigateToRegisterCommand = new RelayCommand(ExecuteNavigateToRegister);
+            RegisterCommand = new RelayCommand(ExecuteRegister);
         }
 
         private bool CanLogin()
         {
-            return !IsLoading && !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password);
+            return !string.IsNullOrWhiteSpace(Username) &&
+                   !string.IsNullOrWhiteSpace(Password) &&
+                   !IsLoggingIn;
         }
 
         private async void ExecuteLoginAsync()
         {
             try
             {
+                IsLoggingIn = true;
                 ErrorMessage = string.Empty;
-                IsLoading = true;
 
-                var response = await ServiceProvider.ApiService.LoginAsync(Username, Password);
-
-                if (response.Success)
+                var result = await _apiService.LoginAsync(Username, Password);
+                if (result.success)
                 {
-                    // Open chat window
-                    var chatView = new ChatView(response.Username);
-                    chatView.Show();
-
-                    // Close login window
-                    CloseCurrentWindow();
+                    // Login successful, navigate to chat view
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        // Directly access current window and close it
+                        if (Application.Current.MainWindow is Window currentWindow)
+                        {
+                            currentWindow.Close();
+                        }
+                    });
                 }
                 else
                 {
-                    ErrorMessage = response.Message;
+                    ErrorMessage = result.message;
                 }
             }
             catch (Exception ex)
             {
-                ErrorMessage = $"Login error: {ex.Message}";
+                ErrorMessage = $"Login failed: {ex.Message}";
             }
             finally
             {
-                IsLoading = false;
+                IsLoggingIn = false;
             }
         }
 
-        private void ExecuteNavigateToRegister()
+        private void ExecuteRegister()
         {
-            var registerView = new RegisterView();
-            registerView.Show();
-            CloseCurrentWindow();
-        }
-
-        private void CloseCurrentWindow()
-        {
-            if (Application.Current.MainWindow is Window window)
+            // Navigate to Register view
+            Application.Current.Dispatcher.Invoke(() =>
             {
-                window.Close();
-            }
+                // Open the register window
+                MessageBox.Show("Register functionality not implemented.");
+            });
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 } 

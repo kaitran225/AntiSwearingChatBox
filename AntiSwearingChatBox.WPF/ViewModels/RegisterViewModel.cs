@@ -1,25 +1,32 @@
 using System;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using AntiSwearingChatBox.WPF.Commands;
 using AntiSwearingChatBox.WPF.Services;
-using AntiSwearingChatBox.WPF.Views;
 
 namespace AntiSwearingChatBox.WPF.ViewModels
 {
     public class RegisterViewModel : ViewModelBase
     {
+        private readonly ApiService _apiService;
         private string _username = string.Empty;
+        private string _email = string.Empty;
         private string _password = string.Empty;
         private string _confirmPassword = string.Empty;
-        private string _email = string.Empty;
+        private bool _isRegistering;
         private string _errorMessage = string.Empty;
-        private bool _isLoading;
 
         public string Username
         {
             get => _username;
             set => SetProperty(ref _username, value);
+        }
+
+        public string Email
+        {
+            get => _email;
+            set => SetProperty(ref _email, value);
         }
 
         public string Password
@@ -34,10 +41,10 @@ namespace AntiSwearingChatBox.WPF.ViewModels
             set => SetProperty(ref _confirmPassword, value);
         }
 
-        public string Email
+        public bool IsRegistering
         {
-            get => _email;
-            set => SetProperty(ref _email, value);
+            get => _isRegistering;
+            set => SetProperty(ref _isRegistering, value);
         }
 
         public string ErrorMessage
@@ -46,80 +53,73 @@ namespace AntiSwearingChatBox.WPF.ViewModels
             set => SetProperty(ref _errorMessage, value);
         }
 
-        public bool IsLoading
-        {
-            get => _isLoading;
-            set => SetProperty(ref _isLoading, value);
-        }
-
         public ICommand RegisterCommand { get; }
-        public ICommand NavigateToLoginCommand { get; }
+        public ICommand BackCommand { get; }
 
         public RegisterViewModel()
         {
+            _apiService = ServiceProvider.ApiService;
             RegisterCommand = new RelayCommand(ExecuteRegisterAsync, CanRegister);
-            NavigateToLoginCommand = new RelayCommand(ExecuteNavigateToLogin);
+            BackCommand = new RelayCommand(ExecuteBack);
         }
 
         private bool CanRegister()
         {
-            return !IsLoading &&
-                   !string.IsNullOrWhiteSpace(Username) &&
+            return !string.IsNullOrWhiteSpace(Username) &&
                    !string.IsNullOrWhiteSpace(Email) &&
                    !string.IsNullOrWhiteSpace(Password) &&
-                   !string.IsNullOrWhiteSpace(ConfirmPassword);
+                   !string.IsNullOrWhiteSpace(ConfirmPassword) &&
+                   Password == ConfirmPassword &&
+                   !IsRegistering;
         }
 
         private async void ExecuteRegisterAsync()
         {
             try
             {
-                if (Password != ConfirmPassword)
-                {
-                    ErrorMessage = "Passwords do not match.";
-                    return;
-                }
-
+                IsRegistering = true;
                 ErrorMessage = string.Empty;
-                IsLoading = true;
 
-                var response = await ServiceProvider.ApiService.RegisterAsync(Username, Email, Password);
-
-                if (response.Success)
+                var result = await _apiService.RegisterAsync(Username, Email, Password);
+                if (result.success)
                 {
-                    MessageBox.Show("Registration successful! Please log in.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    // Registration successful, notify the user
+                    MessageBox.Show("Registration successful! You can now log in.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                     
-                    // Navigate to login
-                    ExecuteNavigateToLogin();
+                    // Close the registration window
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        if (Application.Current.MainWindow is Window currentWindow)
+                        {
+                            currentWindow.Close();
+                        }
+                    });
                 }
                 else
                 {
-                    ErrorMessage = response.Message;
+                    ErrorMessage = result.message;
                 }
             }
             catch (Exception ex)
             {
-                ErrorMessage = $"Registration error: {ex.Message}";
+                ErrorMessage = $"Registration failed: {ex.Message}";
             }
             finally
             {
-                IsLoading = false;
+                IsRegistering = false;
             }
         }
 
-        private void ExecuteNavigateToLogin()
+        private void ExecuteBack()
         {
-            var loginView = new LoginView();
-            loginView.Show();
-            CloseCurrentWindow();
-        }
-
-        private void CloseCurrentWindow()
-        {
-            if (Application.Current.Windows[0] is Window window)
+            // Close the registration window
+            Application.Current.Dispatcher.Invoke(() =>
             {
-                window.Close();
-            }
+                if (Application.Current.MainWindow is Window currentWindow)
+                {
+                    currentWindow.Close();
+                }
+            });
         }
     }
 } 

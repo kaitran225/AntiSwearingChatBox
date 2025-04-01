@@ -12,8 +12,8 @@ namespace AntiSwearingChatBox.WPF.Converters
             if (values == null || values.Length < 2 || values[0] == null || values[1] == null)
                 return new SolidColorBrush(Colors.Black);
 
-            string messageSender = values[0].ToString();
-            string currentUser = values[1].ToString();
+            string messageSender = values[0].ToString()!;
+            string currentUser = values[1].ToString()!;
 
             return string.Equals(messageSender, currentUser, StringComparison.OrdinalIgnoreCase)
                 ? new SolidColorBrush(Colors.White) // White text for current user

@@ -1,0 +1,86 @@
+<UserControl
+    x:Class="AntiSwearingChatBox.WPF.Components.ChatBubble"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:local="clr-namespace:AntiSwearingChatBox.WPF.Components"
+    mc:Ignorable="d"
+    d:DesignHeight="100" d:DesignWidth="400">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisConverter" />
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Avatar for Received Messages (Left Side) -->
+        <Border
+            x:Name="ReceivedAvatar"
+            Grid.Column="0"
+            Width="32"
+            Height="32"
+            Background="{StaticResource SecondaryBackgroundBrush}"
+            CornerRadius="16"
+            Visibility="{Binding IsReceived, Converter={StaticResource BoolToVisConverter}}">
+            <TextBlock
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                FontSize="12"
+                FontWeight="SemiBold"
+                Foreground="{StaticResource PrimaryGreenBrush}"
+                Text="{Binding Avatar}" />
+        </Border>
+
+        <!-- Message Bubble -->
+        <Border
+            x:Name="MessageBubble"
+            Grid.Column="{Binding BubbleColumn}"
+            MaxWidth="600"
+            Margin="{Binding BubbleMargin}"
+            Padding="14,10"
+            HorizontalAlignment="{Binding BubbleAlignment}"
+            Background="{Binding BubbleBackground}"
+            BorderBrush="{Binding BubbleBorder}"
+            BorderThickness="1"
+            CornerRadius="4">
+            <StackPanel>
+                <TextBlock
+                    FontSize="13"
+                    Foreground="{StaticResource PrimaryTextBrush}"
+                    Text="{Binding MessageText}"
+                    TextWrapping="Wrap" />
+                <TextBlock
+                    HorizontalAlignment="Right"
+                    Margin="0,4,0,0"
+                    FontSize="10"
+                    Foreground="{StaticResource TertiaryTextBrush}"
+                    Text="{Binding Timestamp}" />
+            </StackPanel>
+        </Border>
+
+        <!-- Avatar for Sent Messages (Right Side) -->
+        <Border
+            x:Name="SentAvatar"
+            Grid.Column="2"
+            Width="32"
+            Height="32"
+            Background="{StaticResource TertiaryBackgroundBrush}"
+            CornerRadius="16"
+            Visibility="{Binding IsSent, Converter={StaticResource BoolToVisConverter}}">
+            <TextBlock
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                FontSize="12"
+                FontWeight="SemiBold"
+                Foreground="{StaticResource PrimaryGreenBrush}"
+                Text="{Binding Avatar}" />
+        </Border>
+    </Grid>
+</UserControl> 

@@ -1,0 +1,38 @@
+<Page x:Class="AntiSwearingChatBox.WPF.View.RegisterPage"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:AntiSwearingChatBox.WPF.View"
+        xmlns:components="clr-namespace:AntiSwearingChatBox.WPF.Components"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        mc:Ignorable="d"
+        Title="Register - Anti-Swearing Chat Box"
+        Background="#0A0A0A"
+        TextElement.Foreground="{StaticResource PrimaryTextBrush}"
+        TextElement.FontWeight="Regular"
+        TextElement.FontSize="13"
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="Auto"
+        FontFamily="Segoe UI">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="56"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="400"/>
+            </Grid.ColumnDefinitions>
+            
+            <!-- Left Side - Illustration/Branding with Background Image -->
+            <components:Branding Grid.Column="0"/>
+            <!-- Right Side - Register Form -->
+            <components:Register x:Name="registerComponent" Grid.Column="1"/>
+        </Grid>
+        <components:Footer Grid.Row="1"/>
+    </Grid>
+</Page> 
