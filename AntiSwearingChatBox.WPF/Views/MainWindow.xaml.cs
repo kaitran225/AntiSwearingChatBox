@@ -10,13 +10,11 @@ namespace AntiSwearingChatBox.WPF.View
         private readonly LoginPage _loginPage;
         private readonly RegisterPage _registerPage;
         private readonly ChatPage _chatPage;
-        private readonly ApiService _apiService;
+
         
         public MainWindow()
         {
             InitializeComponent();
-            
-            _apiService = ServiceProvider.ApiService;
             
             _loginPage = new LoginPage();
             _registerPage = new RegisterPage();
