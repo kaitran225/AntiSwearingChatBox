@@ -291,6 +291,7 @@
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
             <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
             <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+            <converters:IntToBoolConverter x:Key="IntToBoolConverter"/>
             <converters:MessageAlignmentConverter x:Key="MessageAlignmentConverter"/>
             <converters:MessageBackgroundConverter x:Key="MessageBackgroundConverter"/>
             <converters:MessageForegroundConverter x:Key="MessageForegroundConverter"/>
