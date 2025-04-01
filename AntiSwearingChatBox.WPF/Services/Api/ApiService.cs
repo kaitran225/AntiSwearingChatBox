@@ -4,9 +4,10 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using AntiSwearingChatBox.WPF.Models.Api;
+using System.Windows;
 using Microsoft.AspNetCore.SignalR.Client;
 using Newtonsoft.Json;
+using AntiSwearingChatBox.WPF.Models.Api;
 
 namespace AntiSwearingChatBox.WPF.Services.Api
 {
@@ -18,23 +19,24 @@ namespace AntiSwearingChatBox.WPF.Services.Api
         private int _currentUserId;
         private string _currentUsername = string.Empty;
         
+        public UserModel? CurrentUser { get; private set; }
+        
         public event Action<ChatMessage>? OnMessageReceived;
         public event Action<ChatThread>? OnThreadCreated;
         public event Action<int, string>? OnUserJoinedThread;
         
         public ApiService()
         {
-            _httpClient = new HttpClient(new HttpClientHandler
-            {
-                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
-            });
+            _httpClient = new HttpClient();
+            _httpClient.BaseAddress = new Uri(ApiConfig.BaseUrl);
+            _httpClient.DefaultRequestHeaders.Accept.Clear();
+            _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
         
         private void SetAuthorizationHeader(string token)
         {
             _token = token;
-            _httpClient.DefaultRequestHeaders.Authorization = 
-                new AuthenticationHeaderValue("Bearer", token);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
         
         private StringContent CreateJsonContent<T>(T data)
@@ -43,34 +45,39 @@ namespace AntiSwearingChatBox.WPF.Services.Api
             return new StringContent(json, Encoding.UTF8, "application/json");
         }
         
-        // Authentication Methods
         public async Task<AuthResponse> LoginAsync(string username, string password)
         {
             try
             {
-                var request = new LoginRequest
+                var loginRequest = new LoginRequest
                 {
                     Username = username,
                     Password = password
                 };
                 
-                var content = CreateJsonContent(request);
+                var content = CreateJsonContent(loginRequest);
                 var response = await _httpClient.PostAsync(ApiConfig.LoginEndpoint, content);
                 
                 if (response.IsSuccessStatusCode)
                 {
                     var responseContent = await response.Content.ReadAsStringAsync();
-                    var authResponse = JsonConvert.DeserializeObject<AuthResponse>(responseContent);
+                    var result = JsonConvert.DeserializeObject<AuthResponse>(responseContent);
                     
-                    if (authResponse != null && authResponse.Success)
+                    if (result != null && result.Success)
                     {
-                        SetAuthorizationHeader(authResponse.Token);
-                        _currentUserId = authResponse.UserId;
-                        _currentUsername = authResponse.Username;
-                        CurrentUser = authResponse.User;
+                        _currentUserId = result.UserId;
+                        _currentUsername = username;
+                        SetAuthorizationHeader(result.Token);
+                        
+                        // Set current user
+                        CurrentUser = new UserModel
+                        {
+                            UserId = result.UserId,
+                            Username = username
+                        };
                     }
                     
-                    return authResponse ?? new AuthResponse { Success = false, Message = "Failed to parse response" };
+                    return result ?? new AuthResponse { Success = false, Message = "Failed to deserialize response" };
                 }
                 
                 return new AuthResponse
@@ -93,22 +100,21 @@ namespace AntiSwearingChatBox.WPF.Services.Api
         {
             try
             {
-                var request = new RegisterRequest
+                var registerRequest = new RegisterRequest
                 {
                     Username = username,
                     Email = email,
                     Password = password
                 };
                 
-                var content = CreateJsonContent(request);
+                var content = CreateJsonContent(registerRequest);
                 var response = await _httpClient.PostAsync(ApiConfig.RegisterEndpoint, content);
                 
                 if (response.IsSuccessStatusCode)
                 {
                     var responseContent = await response.Content.ReadAsStringAsync();
-                    var authResponse = JsonConvert.DeserializeObject<AuthResponse>(responseContent);
-                    
-                    return authResponse ?? new AuthResponse { Success = false, Message = "Failed to parse response" };
+                    return JsonConvert.DeserializeObject<AuthResponse>(responseContent) ?? 
+                           new AuthResponse { Success = false, Message = "Failed to deserialize response" };
                 }
                 
                 return new AuthResponse
@@ -127,7 +133,6 @@ namespace AntiSwearingChatBox.WPF.Services.Api
             }
         }
         
-        // Chat Thread Methods
         public async Task<List<ChatThread>> GetThreadsAsync()
         {
             try
@@ -158,7 +163,7 @@ namespace AntiSwearingChatBox.WPF.Services.Api
                     Title = name,
                     IsPrivate = false,
                     CreatorUserId = _currentUserId,
-                    OtherUserId = (int?)null // For personal chats
+                    OtherUserId = (int?)null
                 };
                 
                 var content = CreateJsonContent(request);
@@ -207,7 +212,6 @@ namespace AntiSwearingChatBox.WPF.Services.Api
             }
         }
         
-        // Chat Message Methods
         public async Task<List<ChatMessage>> GetMessagesAsync(int threadId)
         {
             try
@@ -231,7 +235,6 @@ namespace AntiSwearingChatBox.WPF.Services.Api
                     {
                         foreach (var msg in messages)
                         {
-                            // Make sure Content and Username are properly set
                             Console.WriteLine($"Message: {msg.OriginalMessage} from {msg.SenderName} at {msg.Timestamp}");
                         }
                     }
@@ -292,7 +295,6 @@ namespace AntiSwearingChatBox.WPF.Services.Api
             }
         }
         
-        // SignalR Hub Methods
         public async Task ConnectToHubAsync()
         {
             if (string.IsNullOrEmpty(_token))
@@ -313,9 +315,12 @@ namespace AntiSwearingChatBox.WPF.Services.Api
                     {
                         var chatMessage = new ChatMessage
                         {
-                            User = new UserModel { Username = username },
-                            ModeratedMessage = message,
                             UserId = userId,
+                            User = new UserModel { 
+                                Username = username
+                            },
+                            OriginalMessage = message,
+                            ModeratedMessage = message,
                             CreatedAt = timestamp
                         };
                         
@@ -331,29 +336,22 @@ namespace AntiSwearingChatBox.WPF.Services.Api
                 {
                     OnUserJoinedThread?.Invoke(userId, username);
                 });
-            
+
                 await _hubConnection.StartAsync();
-            
-                // Once connected, join the chat with our user info
-                await _hubConnection.InvokeAsync("JoinChat", _currentUsername, _currentUserId);
-            
-                Console.WriteLine("Successfully connected to SignalR hub");
+                Console.WriteLine("Connected to SignalR hub");
             }
             catch (Exception ex) {
-                Console.WriteLine($"SignalR connection error: {ex.Message}");
+                Console.WriteLine($"Error connecting to hub: {ex.Message}");
             }
         }
-
+        
         public async Task DisconnectFromHubAsync()
         {
             if (_hubConnection != null)
             {
-                await _hubConnection.StopAsync();
                 await _hubConnection.DisposeAsync();
                 _hubConnection = null;
             }
         }
-
-        public UserModel? CurrentUser { get; private set; }
     }
 } 

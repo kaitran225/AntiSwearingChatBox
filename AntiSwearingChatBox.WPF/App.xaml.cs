@@ -3,6 +3,7 @@ using System.Data;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using AntiSwearingChatBox.WPF.Services;
+using AntiSwearingChatBox.WPF.Services.Api;
 
 namespace AntiSwearingChatBox.WPF;
 
@@ -23,7 +24,7 @@ public partial class App : Application
     private void ConfigureServices(ServiceCollection services)
     {
         // Register services
-        services.AddSingleton<ApiService>();
+        services.AddSingleton<IApiService, ApiService>();
     }
 }
 

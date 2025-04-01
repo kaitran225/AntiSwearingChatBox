@@ -107,14 +107,14 @@ namespace AntiSwearingChatBox.WPF.View
                 // Add each thread to the UI
                 foreach (var thread in threads)
                 {
-                    Console.WriteLine($"Adding thread: ID={thread.Id}, Title={thread.Title ?? "Untitled"}");
+                    Console.WriteLine($"Adding thread: ID={thread.ThreadId}, Title={thread.Name ?? "Untitled"}");
                     
                     string lastMessage = "No messages yet";
-                    string lastMessageTime = thread.LastMessageAt.ToString("g");
+                    string lastMessageTime = thread.CreatedAt.ToString("g");
                     
                     AddConversation(
-                        thread.Id.ToString(), 
-                        thread.Title ?? $"Chat {thread.Id}",
+                        thread.ThreadId.ToString(), 
+                        thread.Name ?? $"Chat {thread.ThreadId}",
                         lastMessage,
                         lastMessageTime
                     );
@@ -123,8 +123,8 @@ namespace AntiSwearingChatBox.WPF.View
                 // If there are threads, select the first one
                 if (threads.Count > 0)
                 {
-                    Console.WriteLine($"Selecting first thread: {threads[0].Id}");
-                    SelectChatThread(threads[0].Id.ToString());
+                    Console.WriteLine($"Selecting first thread: {threads[0].ThreadId}");
+                    SelectChatThread(threads[0].ThreadId.ToString());
                 }
                 else
                 {
