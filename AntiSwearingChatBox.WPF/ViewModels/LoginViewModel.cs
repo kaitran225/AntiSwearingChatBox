@@ -86,6 +86,17 @@ namespace AntiSwearingChatBox.WPF.ViewModels
                 var result = await _apiService.LoginAsync(Username, Password);
                 if (result.Success)
                 {
+                    try
+                    {
+                        // Try to connect to the SignalR hub
+                        await _apiService.ConnectToHubAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log but continue - we don't want to block login if real-time isn't available
+                        Console.WriteLine($"Warning: Could not connect to chat hub: {ex.Message}");
+                    }
+                    
                     // Login successful, navigate to chat view
                     Application.Current.Dispatcher.Invoke(() =>
                     {

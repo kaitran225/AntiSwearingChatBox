@@ -7,6 +7,9 @@ namespace AntiSwearingChatBox.WPF.Services.Api
 {
     public interface IApiService
     {
+        // User information
+        UserModel? CurrentUser { get; }
+        
         // Authentication
         Task<AuthResponse> LoginAsync(string username, string password);
         Task<AuthResponse> RegisterAsync(string username, string email, string password);

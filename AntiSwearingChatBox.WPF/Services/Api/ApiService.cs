@@ -67,6 +67,7 @@ namespace AntiSwearingChatBox.WPF.Services.Api
                         SetAuthorizationHeader(authResponse.Token);
                         _currentUserId = authResponse.UserId;
                         _currentUsername = authResponse.Username;
+                        CurrentUser = authResponse.User;
                     }
                     
                     return authResponse ?? new AuthResponse { Success = false, Message = "Failed to parse response" };
@@ -352,5 +353,7 @@ namespace AntiSwearingChatBox.WPF.Services.Api
                 _hubConnection = null;
             }
         }
+
+        public UserModel? CurrentUser { get; private set; }
     }
 } 

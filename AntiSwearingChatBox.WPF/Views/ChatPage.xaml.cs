@@ -4,19 +4,21 @@ using System.Windows;
 using System.Windows.Controls;
 using Microsoft.AspNetCore.SignalR.Client;
 using AntiSwearingChatBox.WPF.Services;
+using AntiSwearingChatBox.WPF.Services.Api;
 using Microsoft.Extensions.DependencyInjection;
 using System.Linq;
 using System.Collections.Generic;
 using System.Windows.Media;
 using AntiSwearingChatBox.WPF.Models;
 using AntiSwearingChatBox.WPF.Components;
+using AntiSwearingChatBox.WPF.Models.Api;
 
 namespace AntiSwearingChatBox.WPF.View
 {
     public partial class ChatPage : Page
     {
         private HubConnection? _connection;
-        private readonly ApiService _apiService;
+        private readonly IApiService _apiService;
         private int _currentThreadId;
         private string _currentUsername = string.Empty;
         
@@ -24,8 +26,8 @@ namespace AntiSwearingChatBox.WPF.View
         {
             InitializeComponent();
             
-            // Get the ApiService from the DI container
-            _apiService = ((App)Application.Current).ServiceProvider.GetService<ApiService>()!;
+            // Get the ApiService from our ServiceProvider
+            _apiService = AntiSwearingChatBox.WPF.Services.ServiceProvider.ApiService;
             
             // Initialize events
             InitializeEvents();
@@ -51,7 +53,7 @@ namespace AntiSwearingChatBox.WPF.View
             }
         }
         
-        private async void LoadCurrentUser()
+        private void LoadCurrentUser()
         {
             if (_apiService.CurrentUser != null)
             {
@@ -61,6 +63,7 @@ namespace AntiSwearingChatBox.WPF.View
             else
             {
                 // If no user is logged in, redirect to login page
+                MessageBox.Show("No user is logged in. Please login again.", "Session Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 if (Window.GetWindow(this) is MainWindow mainWindow)
                 {
                     mainWindow.NavigateToLogin();
@@ -98,7 +101,7 @@ namespace AntiSwearingChatBox.WPF.View
                 Console.WriteLine("Cleared existing conversations");
                 
                 // Get chat threads from API
-                var threads = await _apiService.GetUserThreadsAsync(_apiService.CurrentUser.UserId);
+                var threads = await _apiService.GetThreadsAsync();
                 Console.WriteLine($"Retrieved {threads.Count} threads from API");
                 
                 // Add each thread to the UI
@@ -159,9 +162,9 @@ namespace AntiSwearingChatBox.WPF.View
             {
                 Console.WriteLine("Initializing SignalR connection...");
                 
-                // Create SignalR connection for real-time messages
+                // Use the hub URL from ApiConfig
                 _connection = new HubConnectionBuilder()
-                    .WithUrl("http://localhost:5000/hubs/chat")  // Updated hub URL
+                    .WithUrl(ApiConfig.ChatHubUrl)
                     .WithAutomaticReconnect(new[] { TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(10) })
                     .Build();
                 
@@ -196,19 +199,23 @@ namespace AntiSwearingChatBox.WPF.View
                             });
                         });
                     }
-                    
-                    // Update conversation list with latest message
-                    UpdateConversationLastMessage(threadId.ToString(), message, timestamp);
                 });
                 
-                Console.WriteLine("Starting SignalR connection...");
+                // Connect to the hub
                 await _connection.StartAsync();
                 Console.WriteLine("SignalR connection established successfully");
+                
+                // Join the hub with the current user
+                if (_apiService.CurrentUser != null)
+                {
+                    await _connection.InvokeAsync("JoinChat", _currentUsername, _apiService.CurrentUser.UserId);
+                    Console.WriteLine($"Joined chat as {_currentUsername}");
+                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error initializing SignalR connection: {ex}");
-                MessageBox.Show($"Failed to connect to chat server: {ex.Message}", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Error connecting to chat server: {ex.Message}", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
         
@@ -250,7 +257,7 @@ namespace AntiSwearingChatBox.WPF.View
                 ChatView.Messages.Clear();
                 
                 // Load messages for the selected thread
-                var messages = await _apiService.GetThreadMessagesAsync(_currentThreadId);
+                var messages = await _apiService.GetMessagesAsync(int.Parse(threadId));
                 
                 // Add messages to the chat view
                 foreach (var message in messages)
@@ -262,7 +269,7 @@ namespace AntiSwearingChatBox.WPF.View
                     ChatView.Messages.Add(new ChatMessageViewModel
                     {
                         IsSent = isSent,
-                        Text = message.ModeratedText ?? message.Text,
+                        Text = message.ModeratedMessage ?? message.OriginalMessage,
                         Timestamp = message.CreatedAt.ToString("h:mm tt"),
                         Avatar = avatar,
                         Background = new SolidColorBrush(isSent ? Color.FromRgb(220, 248, 198) : Color.FromRgb(255, 255, 255)),
@@ -282,9 +289,10 @@ namespace AntiSwearingChatBox.WPF.View
             try
             {
                 var result = await _apiService.SendMessageAsync(_currentThreadId, message);
-                if (!result.success)
+                if (result != null)
                 {
-                    MessageBox.Show(result.message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    // Sent successfully
+                    Console.WriteLine("Message sent successfully");
                 }
             }
             catch (Exception ex)

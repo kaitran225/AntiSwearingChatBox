@@ -63,6 +63,17 @@ namespace AntiSwearingChatBox.WPF.Components
                 
                 if (response.Success)
                 {
+                    try
+                    {
+                        // Try to connect to the SignalR hub
+                        await _apiService.ConnectToHubAsync();
+                    }
+                    catch (Exception hubEx)
+                    {
+                        Console.WriteLine($"Warning: Could not connect to chat hub: {hubEx.Message}");
+                        // Continue despite hub connection failure
+                    }
+                    
                     // Successfully logged in
                     LoginSuccessful?.Invoke(this, EventArgs.Empty);
                 }
