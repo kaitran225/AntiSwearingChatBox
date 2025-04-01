@@ -11,7 +11,7 @@ namespace AntiSwearingChatBox.WPF.Components
     /// </summary>
     public partial class ConversationItem : UserControl
     {
-        public event EventHandler<string> Selected;
+        public event EventHandler<string>? Selected;
 
         public ConversationItem()
         {
@@ -88,33 +88,33 @@ namespace AntiSwearingChatBox.WPF.Components
         }
 
         // Background property
-        public static readonly DependencyProperty BackgroundProperty =
+        public static new readonly DependencyProperty? BackgroundProperty =
             DependencyProperty.Register("Background", typeof(Brush), typeof(ConversationItem),
                 new PropertyMetadata(null));
 
-        public Brush Background
+        public new Brush Background
         {
             get { return (Brush)GetValue(BackgroundProperty); }
             set { SetValue(BackgroundProperty, value); }
         }
 
         // Border brush property
-        public static readonly DependencyProperty BorderBrushProperty =
+        public static new readonly DependencyProperty BorderBrushProperty =
             DependencyProperty.Register("BorderBrush", typeof(Brush), typeof(ConversationItem),
                 new PropertyMetadata(null));
 
-        public Brush BorderBrush
+        public new Brush BorderBrush
         {
             get { return (Brush)GetValue(BorderBrushProperty); }
             set { SetValue(BorderBrushProperty, value); }
         }
 
         // Border thickness property
-        public static readonly DependencyProperty BorderThicknessProperty =
+        public static new readonly DependencyProperty BorderThicknessProperty =
             DependencyProperty.Register("BorderThickness", typeof(Thickness), typeof(ConversationItem),
                 new PropertyMetadata(new Thickness(0)));
 
-        public Thickness BorderThickness
+        public new Thickness BorderThickness
         {
             get { return (Thickness)GetValue(BorderThicknessProperty); }
             set { SetValue(BorderThicknessProperty, value); }
@@ -175,15 +175,15 @@ namespace AntiSwearingChatBox.WPF.Components
                 if ((bool)e.NewValue)
                 {
                     // Selected appearance
-                    item.Background = Application.Current.Resources["SecondaryBackgroundBrush"] as SolidColorBrush;
-                    item.BorderBrush = Application.Current.Resources["PrimaryGreenBrush"] as SolidColorBrush;
+                    item.Background = (Application.Current.Resources["SecondaryBackgroundBrush"] as SolidColorBrush)!;
+                    item.BorderBrush = (Application.Current.Resources["PrimaryGreenBrush"] as SolidColorBrush)!;
                     item.BorderThickness = new Thickness(0, 0, 5, 0);
                 }
                 else
                 {
                     // Normal appearance
-                    item.Background = null;
-                    item.BorderBrush = Application.Current.Resources["BorderBrush"] as SolidColorBrush;
+                    item.Background = null!;
+                    item.BorderBrush = (Application.Current.Resources["BorderBrush"] as SolidColorBrush)!;
                     item.BorderThickness = new Thickness(0);
                 }
             }
@@ -192,21 +192,19 @@ namespace AntiSwearingChatBox.WPF.Components
         private void UserControl_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             IsSelected = true;
-            Selected?.Invoke(this, Tag as string);
+            string? e1 = Tag as string;
+            Selected?.Invoke(this, e1!);
         }
 
         #endregion
         
         // Define UnreadBadge as a property since it's missing from the XAML
-        private TextBlock _unreadBadge;
+        private TextBlock? _unreadBadge;
         public TextBlock UnreadBadge
         {
             get
             {
-                if (_unreadBadge == null)
-                {
-                    _unreadBadge = new TextBlock();
-                }
+                _unreadBadge ??= new TextBlock();
                 return _unreadBadge;
             }
         }

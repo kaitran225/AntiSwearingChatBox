@@ -7,7 +7,7 @@ namespace AntiSwearingChatBox.WPF.Components
     /// <summary>
     /// ViewModel for Contact information in the chat view
     /// </summary>
-    public class ContactViewModel : INotifyPropertyChanged
+    public class ContactInfoViewModel : INotifyPropertyChanged
     {
         private string _id = string.Empty;
         private string _name = string.Empty;

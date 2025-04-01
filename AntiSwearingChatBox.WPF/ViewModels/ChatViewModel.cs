@@ -12,47 +12,47 @@ namespace AntiSwearingChatBox.WPF.ViewModels
 {
     public class ChatViewModel : ViewModelBase
     {
-        private string _messageText = string.Empty;
-        private string _currentUser = string.Empty;
-        private ObservableCollection<ChatMessage> _messages;
-        private ObservableCollection<ChatThread> _threads;
-        private ChatThread _selectedThread;
+        private string? _messageText = string.Empty;
+        private string? _currentUser = string.Empty;
+        private ObservableCollection<ChatMessage>? _messages;
+        private ObservableCollection<ChatThread>? _threads;
+        private ChatThread? _selectedThread;
         private bool _isConnected;
         private bool _isLoading;
         
         public string MessageText
         {
-            get => _messageText;
+            get => _messageText!;
             set => SetProperty(ref _messageText, value);
         }
         
         public string CurrentUser
         {
-            get => _currentUser;
+            get => _currentUser!;
             set => SetProperty(ref _currentUser, value);
         }
         
         public ObservableCollection<ChatMessage> Messages
         {
-            get => _messages;
+            get => _messages!;
             set => SetProperty(ref _messages, value);
         }
         
         public ObservableCollection<ChatThread> Threads
         {
-            get => _threads;
+            get => _threads!;
             set => SetProperty(ref _threads, value);
         }
         
         public ChatThread SelectedThread
         {
-            get => _selectedThread;
+            get => _selectedThread!;
             set
             {
                 if (SetProperty(ref _selectedThread, value) && value != null)
                 {
                     // Load messages for the selected thread
-                    LoadMessagesAsync(value.ThreadId);
+                    Task.Run(async () => await LoadMessagesAsync(value.ThreadId));
                 }
             }
         }
@@ -225,6 +225,7 @@ namespace AntiSwearingChatBox.WPF.ViewModels
             }
             catch (Exception ex) {
                 // Fallback if Microsoft.VisualBasic is not available
+                Console.WriteLine($"Failed to display input dialog: {ex.Message}");
                 threadName = "New Thread";
                 MessageBox.Show("Could not display input dialog. Created default thread name.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
             }

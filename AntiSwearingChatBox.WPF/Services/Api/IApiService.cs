@@ -21,6 +21,7 @@ namespace AntiSwearingChatBox.WPF.Services.Api
         
         // Messages
         Task<List<ChatMessage>> GetMessagesAsync(int threadId);
+        Task<List<ChatMessage>> GetMessagesAsync(int threadId, int limit);
         Task<ChatMessage> SendMessageAsync(int threadId, string content);
         
         // Real-time connection

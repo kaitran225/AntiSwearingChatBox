@@ -29,6 +29,7 @@
             <Color x:Key="BackgroundLightColor">#F8F5FF</Color>
             <Color x:Key="WhiteColor">#FFFFFF</Color>
             <Color x:Key="ErrorColor">#FF4D4D</Color>
+            <Color x:Key="WarningColor">#FFB940</Color>
             <Color x:Key="MatchaGreenColor">#BCD9B4</Color>
 
             <!-- Text Colors -->
@@ -67,6 +68,7 @@
             <SolidColorBrush x:Key="BackgroundLightBrush" Color="{StaticResource BackgroundLightColor}"/>
             <SolidColorBrush x:Key="WhiteBrush" Color="{StaticResource WhiteColor}"/>
             <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource ErrorColor}"/>
+            <SolidColorBrush x:Key="WarningTextBrush" Color="{StaticResource WarningColor}"/>
             <SolidColorBrush x:Key="MatteBlackBrush" Color="{StaticResource MatteBlackColor}"/>
             <SolidColorBrush x:Key="MatchaGreenBrush" Color="{StaticResource MatchaGreenColor}"/>
             <SolidColorBrush x:Key="PrimaryAccentColor" Color="{StaticResource PrimaryGreenColor}"/>
@@ -292,7 +294,7 @@
             <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
             <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
             <converters:IntToBoolConverter x:Key="IntToBoolConverter"/>
-            <converters:MessageAlignmentConverter x:Key="MessageAlignmentConverter"/>
+            <converters:BoolToAlignmentConverter x:Key="BoolToAlignmentConverter"/>
             <converters:MessageBackgroundConverter x:Key="MessageBackgroundConverter"/>
             <converters:MessageForegroundConverter x:Key="MessageForegroundConverter"/>
             <converters:SenderVisibilityConverter x:Key="SenderVisibilityConverter"/>

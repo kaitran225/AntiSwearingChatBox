@@ -5,6 +5,9 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Collections.Generic;
+using System.Windows.Media;
+using AntiSwearingChatBox.WPF.Utilities;
 
 namespace AntiSwearingChatBox.WPF.Components
 {
@@ -13,7 +16,7 @@ namespace AntiSwearingChatBox.WPF.Components
     /// </summary>
     public partial class ConversationList : UserControl, INotifyPropertyChanged
     {
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         public ConversationList()
         {
@@ -21,8 +24,8 @@ namespace AntiSwearingChatBox.WPF.Components
             this.DataContext = this;
             
             // Initialize collections
-            Conversations = new ObservableCollection<ConversationItemViewModel>();
-            Groups = new ObservableCollection<string>();
+            Conversations = [];
+            Groups = [];
             
             // Hook up event handlers
             AdminDashboardButton.Click += AdminDashboard_Click;
@@ -30,10 +33,10 @@ namespace AntiSwearingChatBox.WPF.Components
 
         #region Properties
 
-        private ObservableCollection<ConversationItemViewModel> _conversations;
+        private ObservableCollection<ConversationItemViewModel>? _conversations;
         public ObservableCollection<ConversationItemViewModel> Conversations
         {
-            get { return _conversations; }
+            get { return _conversations!; }
             set
             {
                 _conversations = value;
@@ -41,10 +44,10 @@ namespace AntiSwearingChatBox.WPF.Components
             }
         }
 
-        private ObservableCollection<string> _groups;
+        private ObservableCollection<string>? _groups;
         public ObservableCollection<string> Groups
         {
-            get { return _groups; }
+            get { return _groups!; }
             set
             {
                 _groups = value;
@@ -70,10 +73,10 @@ namespace AntiSwearingChatBox.WPF.Components
 
         #region Events
 
-        public event EventHandler<string> ConversationSelected;
-        public event EventHandler NewChatRequested;
-        public event EventHandler AddConversationRequested;
-        public event EventHandler AdminDashboardRequested;
+        public event EventHandler<string>? ConversationSelected;
+        public event EventHandler? NewChatRequested;
+        public event EventHandler? AddConversationRequested;
+        public event EventHandler? AdminDashboardRequested;
 
         #endregion
 
@@ -181,6 +184,39 @@ namespace AntiSwearingChatBox.WPF.Components
                 {
                     conversation.UnreadCount++;
                 }
+            }
+        }
+
+        protected override void OnInitialized(EventArgs e)
+        {
+            base.OnInitialized(e);
+            
+            // Subscribe to the Loaded event to ensure all child controls are loaded
+            this.Loaded += (s, args) =>
+            {
+                // Make sure ConversationItems are connected to events
+                RefreshItemEventHandlers();
+            };
+            
+            // Also subscribe to the CollectionChanged event for Conversations
+            Conversations.CollectionChanged += (s, args) =>
+            {
+                // When items are added, make sure they're connected
+                RefreshItemEventHandlers();
+            };
+        }
+
+        private void RefreshItemEventHandlers()
+        {
+            // Find all conversation items in the visual tree and attach event handlers
+            var conversationItems = this.ConversationsItemsControl.FindVisualChildren<ConversationItem>();
+            foreach (var item in conversationItems)
+            {
+                // Remove existing handlers to prevent duplicates
+                item.Selected -= ConversationItem_Selected!;
+                
+                // Add the handler
+                item.Selected += ConversationItem_Selected!;
             }
         }
 

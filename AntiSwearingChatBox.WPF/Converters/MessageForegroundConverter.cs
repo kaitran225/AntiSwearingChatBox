@@ -5,22 +5,21 @@ using System.Windows.Media;
 
 namespace AntiSwearingChatBox.WPF.Converters
 {
-    public class MessageForegroundConverter : IMultiValueConverter
+    public class MessageForegroundConverter : IValueConverter
     {
-        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (values == null || values.Length < 2 || values[0] == null || values[1] == null)
+            if (value == null)
                 return new SolidColorBrush(Colors.Black);
 
-            string messageSender = values[0].ToString()!;
-            string currentUser = values[1].ToString()!;
+            bool isSent = (bool)value;
 
-            return string.Equals(messageSender, currentUser, StringComparison.OrdinalIgnoreCase)
-                ? new SolidColorBrush(Colors.White) // White text for current user
-                : new SolidColorBrush(Colors.Black); // Black text for others
+            return isSent
+                ? new SolidColorBrush(Colors.White) // White text for sent messages
+                : new SolidColorBrush(Colors.Black); // Black text for received messages
         }
 
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }

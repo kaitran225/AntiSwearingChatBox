@@ -7,16 +7,16 @@ namespace AntiSwearingChatBox.App.Components
     {
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        private string _text;
-        private string _timestamp;
-        private string _avatar;
+        private string? _text;
+        private string? _timestamp;
+        private string? _avatar;
         private bool _isSent;
-        private Brush _background;
-        private Brush _borderBrush;
+        private Brush? _background;
+        private Brush? _borderBrush;
 
         public string Text
         {
-            get => _text;
+            get => _text!;
             set
             {
                 _text = value;
@@ -26,7 +26,7 @@ namespace AntiSwearingChatBox.App.Components
 
         public string Timestamp
         {
-            get => _timestamp;
+            get => _timestamp!;
             set
             {
                 _timestamp = value;
@@ -36,7 +36,7 @@ namespace AntiSwearingChatBox.App.Components
 
         public string Avatar
         {
-            get => _avatar;
+            get => _avatar!;
             set
             {
                 _avatar = value;
@@ -56,7 +56,7 @@ namespace AntiSwearingChatBox.App.Components
 
         public Brush Background
         {
-            get => _background;
+            get => _background!;
             set
             {
                 _background = value;
@@ -66,7 +66,7 @@ namespace AntiSwearingChatBox.App.Components
 
         public Brush BorderBrush
         {
-            get => _borderBrush;
+            get => _borderBrush!;
             set
             {
                 _borderBrush = value;

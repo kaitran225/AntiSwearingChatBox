@@ -2,8 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using AntiSwearingChatBox.WPF.Services;
-using Microsoft.Extensions.DependencyInjection;
+using AntiSwearingChatBox.WPF.Services.Api;
 
 namespace AntiSwearingChatBox.WPF.Components
 {
@@ -12,7 +11,7 @@ namespace AntiSwearingChatBox.WPF.Components
     /// </summary>
     public partial class Register : UserControl
     {
-        //private readonly ApiService _apiService;
+        private readonly ApiService _apiService;
         private readonly TextBox _txtUsername;
         private readonly TextBox _txtEmail;
         private readonly PasswordBox _txtPassword;
@@ -25,8 +24,7 @@ namespace AntiSwearingChatBox.WPF.Components
         public Register()
         {
             InitializeComponent();
-            //_apiService = ((App)Application.Current).ServiceProvider.GetRequiredService<ApiService>();
-
+            _apiService = (ApiService)Services.ServiceProvider.ApiService;
             _txtUsername = (TextBox)FindName("txtUsername") ?? throw new InvalidOperationException("txtUsername not found");
             _txtEmail = (TextBox)FindName("txtEmail") ?? throw new InvalidOperationException("txtEmail not found");
             _txtPassword = (PasswordBox)FindName("txtPassword") ?? throw new InvalidOperationException("txtPassword not found");
@@ -56,17 +54,17 @@ namespace AntiSwearingChatBox.WPF.Components
             try
             {
                 _btnRegister.IsEnabled = false;
-                //var (success, message) = await _apiService.RegisterAsync(Username, Email, Password);
+                var response = await _apiService.RegisterAsync(Username, Email, Password);
                 
-                //if (success)
-                //{
-                //    MessageBox.Show("Registration successful! Please log in.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                //    BackToLoginRequested?.Invoke(this, EventArgs.Empty);
-                //}
-                //else
-                //{
-                //    MessageBox.Show($"Registration failed: {message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                //}
+                if (response.Success)
+                {
+                    MessageBox.Show("Registration successful! Please log in.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    BackToLoginRequested?.Invoke(this, EventArgs.Empty);
+                }
+                else
+                {
+                    MessageBox.Show($"Registration failed: {response.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
             catch (Exception ex)
             {

@@ -12,7 +12,7 @@ namespace AntiSwearingChatBox.WPF.Components
         public ChatHeader()
         {
             InitializeComponent();
-            this.DataContext = this;
+            this.DataContext = this!;
         }
 
         #region Dependency Properties
@@ -61,7 +61,7 @@ namespace AntiSwearingChatBox.WPF.Components
 
         #region Events
 
-        public event EventHandler MenuRequested;
+        public event EventHandler? MenuRequested;
 
         #endregion
 

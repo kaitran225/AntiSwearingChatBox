@@ -99,7 +99,7 @@ public class ChatHub : Hub
         }
         
         // Broadcast filtered message to all clients in this thread
-        await Clients.Group($"thread_{threadId}").SendAsync("ReceiveMessage", username, filteredMessage, userId, DateTime.UtcNow);
+        await Clients.Group($"thread_{threadId}").SendAsync("ReceiveMessage", username, filteredMessage, userId, DateTime.UtcNow, threadId);
     }
 
     public async Task JoinChat(string username, int userId)
@@ -174,7 +174,8 @@ public class ChatHub : Hub
                     sender, 
                     msg.WasModified ? msg.ModeratedMessage : msg.OriginalMessage, 
                     msg.UserId,
-                    msg.CreatedAt
+                    msg.CreatedAt,
+                    msg.ThreadId
                 );
             }
         }
@@ -231,7 +232,8 @@ public class ChatHub : Hub
                     sender, 
                     msg.WasModified ? msg.ModeratedMessage : msg.OriginalMessage, 
                     msg.UserId,
-                    msg.CreatedAt
+                    msg.CreatedAt,
+                    msg.ThreadId
                 );
             }
             

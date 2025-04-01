@@ -74,8 +74,11 @@ namespace AntiSwearingChatBox.WPF.View
         private async void Page_Loaded(object sender, RoutedEventArgs e)
         {
             LoadCurrentUser();
-            await LoadChatThreads();
             await InitializeConnection();
+            await LoadChatThreads();
+            
+            // Initialize with an empty chat view
+            ChatView.ClearChat();
         }
 
         private void UpdateUserDisplay(string username)
@@ -109,8 +112,17 @@ namespace AntiSwearingChatBox.WPF.View
                 {
                     Console.WriteLine($"Adding thread: ID={thread.ThreadId}, Title={thread.Name ?? "Untitled"}");
                     
+                    // Get the last message for this thread
+                    var lastMessages = await _apiService.GetMessagesAsync(thread.ThreadId, 1);
                     string lastMessage = "No messages yet";
                     string lastMessageTime = thread.CreatedAt.ToString("g");
+                    
+                    if (lastMessages.Count > 0)
+                    {
+                        var message = lastMessages[0];
+                        lastMessage = message.ModeratedMessage ?? message.OriginalMessage;
+                        lastMessageTime = message.CreatedAt.ToString("g");
+                    }
                     
                     AddConversation(
                         thread.ThreadId.ToString(), 
@@ -118,17 +130,6 @@ namespace AntiSwearingChatBox.WPF.View
                         lastMessage,
                         lastMessageTime
                     );
-                }
-                
-                // If there are threads, select the first one
-                if (threads.Count > 0)
-                {
-                    Console.WriteLine($"Selecting first thread: {threads[0].ThreadId}");
-                    SelectChatThread(threads[0].ThreadId.ToString());
-                }
-                else
-                {
-                    Console.WriteLine("No threads found for user");
                 }
             }
             catch (Exception ex)
@@ -201,15 +202,24 @@ namespace AntiSwearingChatBox.WPF.View
                     }
                 });
                 
-                // Connect to the hub
-                await _connection.StartAsync();
-                Console.WriteLine("SignalR connection established successfully");
-                
-                // Join the hub with the current user
-                if (_apiService.CurrentUser != null)
+                try
                 {
-                    await _connection.InvokeAsync("JoinChat", _currentUsername, _apiService.CurrentUser.UserId);
-                    Console.WriteLine($"Joined chat as {_currentUsername}");
+                    // Connect to the hub
+                    await _connection.StartAsync();
+                    Console.WriteLine("SignalR connection established successfully");
+                    
+                    // Join the hub with the current user
+                    if (_apiService.CurrentUser != null)
+                    {
+                        await _connection.InvokeAsync("JoinChat", _currentUsername, _apiService.CurrentUser.UserId);
+                        Console.WriteLine($"Joined chat as {_currentUsername}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error connecting to SignalR hub: {ex.Message}");
+                    // Continue execution even if SignalR connection fails
+                    // The app can still function without real-time updates
                 }
             }
             catch (Exception ex)
@@ -255,6 +265,19 @@ namespace AntiSwearingChatBox.WPF.View
                 
                 // Clear existing messages
                 ChatView.Messages.Clear();
+                
+                // Get the selected conversation from the list
+                var conversation = ConversationList.Conversations.FirstOrDefault(c => c.Id == threadId);
+                if (conversation != null)
+                {
+                    // Set the current contact
+                    ChatView.CurrentContact = new Components.ContactViewModel
+                    {
+                        Id = conversation.Id,
+                        Name = conversation.Title,
+                        Initials = conversation.Avatar
+                    };
+                }
                 
                 // Load messages for the selected thread
                 var messages = await _apiService.GetMessagesAsync(int.Parse(threadId));
@@ -330,6 +353,12 @@ namespace AntiSwearingChatBox.WPF.View
         private void CloseAdminDashboardButton_Click(object sender, RoutedEventArgs e)
         {
             // Handle close admin dashboard request
+        }
+
+        private void ChatPage_Initialized(object sender, EventArgs e)
+        {
+            // Subscribe to the events from the ChatView
+            ChatView.NewConversationRequested += ConversationList_NewChatRequested!;
         }
     }
 } 

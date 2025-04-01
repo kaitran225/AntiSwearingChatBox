@@ -14,8 +14,8 @@ namespace AntiSwearingChatBox.WPF.View
             // Connect to the Login component's events
             if (LoginComponent != null)
             {
-                LoginComponent.LoginSuccessful += LoginComponent_LoginSuccessful;
-                LoginComponent.RegisterRequested += LoginComponent_RegisterRequested;
+                LoginComponent.LoginSuccessful += LoginComponent_LoginSuccessful!;
+                LoginComponent.RegisterRequested += LoginComponent_RegisterRequested!;
             }
         }
 

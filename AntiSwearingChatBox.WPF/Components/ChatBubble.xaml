@@ -13,7 +13,7 @@
         <BooleanToVisibilityConverter x:Key="BoolToVisConverter" />
     </UserControl.Resources>
 
-    <Grid>
+    <Grid Margin="4,6">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
@@ -24,15 +24,16 @@
         <Border
             x:Name="ReceivedAvatar"
             Grid.Column="0"
-            Width="32"
-            Height="32"
-            Background="{StaticResource SecondaryBackgroundBrush}"
-            CornerRadius="16"
+            Width="38"
+            Height="38"
+            Margin="0,0,8,0"
+            Background="{StaticResource TertiaryBackgroundBrush}"
+            CornerRadius="19"
             Visibility="{Binding IsReceived, Converter={StaticResource BoolToVisConverter}}">
             <TextBlock
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                FontSize="12"
+                FontSize="16"
                 FontWeight="SemiBold"
                 Foreground="{StaticResource PrimaryGreenBrush}"
                 Text="{Binding Avatar}" />
@@ -42,26 +43,27 @@
         <Border
             x:Name="MessageBubble"
             Grid.Column="{Binding BubbleColumn}"
-            MaxWidth="600"
+            MaxWidth="520"
+            MinWidth="80"
             Margin="{Binding BubbleMargin}"
-            Padding="14,10"
+            Padding="16,12"
             HorizontalAlignment="{Binding BubbleAlignment}"
-            Background="{Binding BubbleBackground}"
-            BorderBrush="{Binding BubbleBorder}"
-            BorderThickness="1"
-            CornerRadius="4">
+            Background="{Binding BubbleBackground, FallbackValue={StaticResource SecondaryBackgroundBrush}}"
+            BorderThickness="0"
+            CornerRadius="16">
             <StackPanel>
                 <TextBlock
-                    FontSize="13"
-                    Foreground="{StaticResource PrimaryTextBrush}"
+                    FontSize="14"
+                    Foreground="{Binding BubbleForeground, FallbackValue={StaticResource PrimaryTextBrush}}"
                     Text="{Binding MessageText}"
                     TextWrapping="Wrap" />
-                <TextBlock
-                    HorizontalAlignment="Right"
-                    Margin="0,4,0,0"
-                    FontSize="10"
-                    Foreground="{StaticResource TertiaryTextBrush}"
-                    Text="{Binding Timestamp}" />
+                <Grid Margin="0,5,0,0">
+                    <TextBlock
+                        HorizontalAlignment="Right"
+                        FontSize="11"
+                        Foreground="{StaticResource SecondaryTextBrush}"
+                        Text="{Binding Timestamp}" />
+                </Grid>
             </StackPanel>
         </Border>
 
@@ -69,15 +71,16 @@
         <Border
             x:Name="SentAvatar"
             Grid.Column="2"
-            Width="32"
-            Height="32"
-            Background="{StaticResource TertiaryBackgroundBrush}"
-            CornerRadius="16"
+            Width="38"
+            Height="38"
+            Margin="8,0,0,0"
+            Background="{StaticResource SecondaryBackgroundBrush}"
+            CornerRadius="19"
             Visibility="{Binding IsSent, Converter={StaticResource BoolToVisConverter}}">
             <TextBlock
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                FontSize="12"
+                FontSize="16"
                 FontWeight="SemiBold"
                 Foreground="{StaticResource PrimaryGreenBrush}"
                 Text="{Binding Avatar}" />

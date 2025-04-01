@@ -1,5 +1,7 @@
 using System;
 using Newtonsoft.Json;
+using System.Windows.Media;
+using System.Windows;
 
 namespace AntiSwearingChatBox.WPF.Models.Api
 {
@@ -32,5 +34,9 @@ namespace AntiSwearingChatBox.WPF.Models.Api
         
         // SenderName property for UI binding, uses User.Username
         public string SenderName => User?.Username ?? string.Empty;
+
+        // Returns appropriate text color for the bubble based on message state
+        public object BubbleForeground => 
+            Application.Current.Resources[IsFiltered ? "WarningTextBrush" : "PrimaryTextBrush"];
     }
 } 

@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
-using AntiSwearingChatBox.WPF.View;
-using AntiSwearingChatBox.WPF.Services;
 using AntiSwearingChatBox.WPF.Services.Api;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace AntiSwearingChatBox.WPF.Components
 {

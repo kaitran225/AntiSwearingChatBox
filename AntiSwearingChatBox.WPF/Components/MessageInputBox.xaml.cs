@@ -42,8 +42,8 @@ namespace AntiSwearingChatBox.App.Components
 
         #region Events
 
-        public event EventHandler<string> MessageSent;
-        public event EventHandler AttachmentRequested;
+        public event EventHandler<string>? MessageSent;
+        public event EventHandler? AttachmentRequested;
 
         #endregion
 

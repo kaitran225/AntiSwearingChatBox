@@ -8,6 +8,7 @@ using System.Windows;
 using Microsoft.AspNetCore.SignalR.Client;
 using Newtonsoft.Json;
 using AntiSwearingChatBox.WPF.Models.Api;
+using System.Linq;
 
 namespace AntiSwearingChatBox.WPF.Services.Api
 {
@@ -18,6 +19,7 @@ namespace AntiSwearingChatBox.WPF.Services.Api
         private string _token = string.Empty;
         private int _currentUserId;
         private string _currentUsername = string.Empty;
+        private int _selectedThreadId;
         
         public UserModel? CurrentUser { get; private set; }
         
@@ -216,6 +218,7 @@ namespace AntiSwearingChatBox.WPF.Services.Api
         {
             try
             {
+                _selectedThreadId = threadId;
                 var response = await _httpClient.GetAsync($"{ApiConfig.ThreadsEndpoint}/{threadId}/messages");
                 
                 if (response.IsSuccessStatusCode)
@@ -261,10 +264,55 @@ namespace AntiSwearingChatBox.WPF.Services.Api
             }
         }
         
+        public async Task<List<ChatMessage>> GetMessagesAsync(int threadId, int limit)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"{ApiConfig.ThreadsEndpoint}/{threadId}/messages");
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    
+                    var messages = JsonConvert.DeserializeObject<List<ChatMessage>>(content, new JsonSerializerSettings
+                    {
+                        NullValueHandling = NullValueHandling.Ignore,
+                        MissingMemberHandling = MissingMemberHandling.Ignore
+                    });
+                    
+                    // Sort by date descending and apply limit manually
+                    var result = messages?
+                        .OrderByDescending(m => m.CreatedAt)
+                        .Take(limit)
+                        .ToList() ?? new List<ChatMessage>();
+                        
+                    return result;
+                }
+                else
+                {
+                    Console.WriteLine($"Error getting messages with limit: {response.StatusCode}");
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error content: {errorContent}");
+                }
+                
+                return new List<ChatMessage>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading messages with limit: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner error: {ex.InnerException.Message}");
+                }
+                return new List<ChatMessage>();
+            }
+        }
+        
         public async Task<ChatMessage> SendMessageAsync(int threadId, string content)
         {
             try
             {
+                _selectedThreadId = threadId;
                 var request = new
                 {
                     UserId = _currentUserId,
@@ -304,14 +352,14 @@ namespace AntiSwearingChatBox.WPF.Services.Api
                 _hubConnection = new HubConnectionBuilder()
                     .WithUrl(ApiConfig.ChatHubUrl, options =>
                     {
-                        options.AccessTokenProvider = () => Task.FromResult(_token);
+                        options.AccessTokenProvider = () => Task.FromResult(_token)!;
                     })
                     .WithAutomaticReconnect()
                     .Build();
 
                 // Register event handlers
-                _hubConnection.On<string, string, int, DateTime>("ReceiveMessage", 
-                    (username, message, userId, timestamp) =>
+                _hubConnection.On<string, string, int, DateTime, int>("ReceiveMessage", 
+                    (username, message, userId, timestamp, threadId) =>
                     {
                         var chatMessage = new ChatMessage
                         {
@@ -321,7 +369,8 @@ namespace AntiSwearingChatBox.WPF.Services.Api
                             },
                             OriginalMessage = message,
                             ModeratedMessage = message,
-                            CreatedAt = timestamp
+                            CreatedAt = timestamp,
+                            ThreadId = threadId
                         };
                         
                         OnMessageReceived?.Invoke(chatMessage);

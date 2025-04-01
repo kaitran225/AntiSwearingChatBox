@@ -11,16 +11,16 @@ namespace AntiSwearingChatBox.WPF.Components
     {
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        private string _id;
-        private string _title;
-        private string _lastMessage;
-        private string _lastMessageTime;
+        private string? _id;
+        private string? _title;
+        private string? _lastMessage;
+        private string? _lastMessageTime;
         private bool _isSelected;
         private int _unreadCount;
 
         public string Id
         {
-            get => _id;
+            get => _id!;
             set
             {
                 _id = value;
@@ -30,17 +30,18 @@ namespace AntiSwearingChatBox.WPF.Components
 
         public string Title
         {
-            get => _title;
+            get => _title!;
             set
             {
                 _title = value;
                 OnPropertyChanged(nameof(Title));
+                OnPropertyChanged(nameof(Avatar));
             }
         }
 
         public string LastMessage
         {
-            get => _lastMessage;
+            get => _lastMessage!;
             set
             {
                 _lastMessage = value;
@@ -50,7 +51,7 @@ namespace AntiSwearingChatBox.WPF.Components
 
         public string LastMessageTime
         {
-            get => _lastMessageTime;
+            get => _lastMessageTime!;
             set
             {
                 _lastMessageTime = value;
@@ -80,6 +81,17 @@ namespace AntiSwearingChatBox.WPF.Components
         }
 
         public bool HasUnread => UnreadCount > 0;
+
+        public string Avatar
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(Title))
+                    return "?";
+
+                return Title.Substring(0, 1).ToUpper();
+            }
+        }
 
         protected void OnPropertyChanged(string propertyName)
         {

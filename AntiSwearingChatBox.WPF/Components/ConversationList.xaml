@@ -93,8 +93,8 @@
                                 IsActive="{Binding IsSelected}"
                                 HasUnread="{Binding UnreadCount, Converter={StaticResource IntToBoolConverter}}"
                                 UnreadCount="{Binding UnreadCount}" 
-                                MouseLeftButtonDown="ConversationItem_MouseLeftButtonDown"
-                                Tag="{Binding Id}" />
+                                Tag="{Binding Id}"
+                                Selected="ConversationItem_Selected"/>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
@@ -120,8 +120,8 @@
                                 IsActive="{Binding IsSelected}"
                                 HasUnread="{Binding UnreadCount, Converter={StaticResource IntToBoolConverter}}"
                                 UnreadCount="{Binding UnreadCount}" 
-                                MouseLeftButtonDown="ConversationItem_MouseLeftButtonDown"
-                                Tag="{Binding Id}" />
+                                Tag="{Binding Id}"
+                                Selected="ConversationItem_Selected"/>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>

@@ -13,7 +13,7 @@ namespace AntiSwearingChatBox.Server.Controllers
     public class ThreadDto
     {
         public int ThreadId { get; set; }
-        public string Title { get; set; }
+        public string? Title { get; set; }
         public bool IsPrivate { get; set; }
         public bool IsActive { get; set; }
         public bool ModerationEnabled { get; set; }
@@ -25,15 +25,15 @@ namespace AntiSwearingChatBox.Server.Controllers
     {
         public int UserId { get; set; }
         public DateTime JoinedAt { get; set; }
-        public UserDto User { get; set; }
+        public UserDto? User { get; set; }
     }
     
     public class UserDto
     {
         public int UserId { get; set; }
-        public string Username { get; set; }
-        public string Email { get; set; }
-        public string Role { get; set; }
+        public string? Username { get; set; }
+        public string? Email { get; set; }
+        public string? Role { get; set; }
         public bool IsActive { get; set; }
     }
     
@@ -42,11 +42,11 @@ namespace AntiSwearingChatBox.Server.Controllers
         public int MessageId { get; set; }
         public int ThreadId { get; set; }
         public int UserId { get; set; }
-        public string OriginalMessage { get; set; }
-        public string ModeratedMessage { get; set; }
+        public string? OriginalMessage { get; set; }
+        public string? ModeratedMessage { get; set; }
         public bool WasModified { get; set; }
         public DateTime CreatedAt { get; set; }
-        public UserDto User { get; set; }
+        public UserDto? User { get; set; }
     }
     
     [ApiController]
