@@ -1,7 +1,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
-using AntiSwearingChatBox.App.Components;
+using AntiSwearingChatBox.WPF.Components;
 
 namespace AntiSwearingChatBox.WPF.View
 {
@@ -10,6 +10,13 @@ namespace AntiSwearingChatBox.WPF.View
         public LoginPage()
         {
             InitializeComponent();
+            
+            // Connect to the Login component's events
+            if (LoginComponent != null)
+            {
+                LoginComponent.LoginSuccessful += LoginComponent_LoginSuccessful;
+                LoginComponent.RegisterRequested += LoginComponent_RegisterRequested;
+            }
         }
 
         private void LoginComponent_LoginSuccessful(object sender, EventArgs e)

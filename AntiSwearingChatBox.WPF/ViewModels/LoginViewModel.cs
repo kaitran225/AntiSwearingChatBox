@@ -5,13 +5,14 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using AntiSwearingChatBox.WPF.Commands;
-using AntiSwearingChatBox.WPF.Services;
+using AntiSwearingChatBox.WPF.Services.Api;
+using AntiSwearingChatBox.WPF.View;
 
 namespace AntiSwearingChatBox.WPF.ViewModels
 {
     public class LoginViewModel : INotifyPropertyChanged
     {
-        private readonly ApiService _apiService;
+        private readonly IApiService _apiService;
         private string _username = string.Empty;
         private string _password = string.Empty;
         private bool _isLoggingIn;
@@ -62,7 +63,8 @@ namespace AntiSwearingChatBox.WPF.ViewModels
 
         public LoginViewModel()
         {
-            _apiService = ServiceProvider.ApiService;
+            // Get the proper API service from DI
+            _apiService = new ApiService();
             LoginCommand = new RelayCommand(ExecuteLoginAsync, CanLogin);
             RegisterCommand = new RelayCommand(ExecuteRegister);
         }
@@ -82,21 +84,21 @@ namespace AntiSwearingChatBox.WPF.ViewModels
                 ErrorMessage = string.Empty;
 
                 var result = await _apiService.LoginAsync(Username, Password);
-                if (result.success)
+                if (result.Success)
                 {
                     // Login successful, navigate to chat view
                     Application.Current.Dispatcher.Invoke(() =>
                     {
-                        // Directly access current window and close it
-                        if (Application.Current.MainWindow is Window currentWindow)
+                        // Navigate to the chat page
+                        if (Application.Current.MainWindow is View.MainWindow mainWindow)
                         {
-                            currentWindow.Close();
+                            mainWindow.NavigateToChat();
                         }
                     });
                 }
                 else
                 {
-                    ErrorMessage = result.message;
+                    ErrorMessage = result.Message;
                 }
             }
             catch (Exception ex)
@@ -114,8 +116,10 @@ namespace AntiSwearingChatBox.WPF.ViewModels
             // Navigate to Register view
             Application.Current.Dispatcher.Invoke(() =>
             {
-                // Open the register window
-                MessageBox.Show("Register functionality not implemented.");
+                if (Application.Current.MainWindow is View.MainWindow mainWindow)
+                {
+                    mainWindow.NavigateToRegister();
+                }
             });
         }
 

@@ -4,12 +4,14 @@ using System.Windows;
 using System.Windows.Input;
 using AntiSwearingChatBox.WPF.Commands;
 using AntiSwearingChatBox.WPF.Services;
+using AntiSwearingChatBox.WPF.Services.Api;
+using AntiSwearingChatBox.WPF.View;
 
 namespace AntiSwearingChatBox.WPF.ViewModels
 {
     public class RegisterViewModel : ViewModelBase
     {
-        private readonly ApiService _apiService;
+        private readonly IApiService _apiService;
         private string _username = string.Empty;
         private string _email = string.Empty;
         private string _password = string.Empty;
@@ -58,7 +60,7 @@ namespace AntiSwearingChatBox.WPF.ViewModels
 
         public RegisterViewModel()
         {
-            _apiService = ServiceProvider.ApiService;
+            _apiService = AntiSwearingChatBox.WPF.Services.ServiceProvider.ApiService;
             RegisterCommand = new RelayCommand(ExecuteRegisterAsync, CanRegister);
             BackCommand = new RelayCommand(ExecuteBack);
         }
@@ -81,23 +83,23 @@ namespace AntiSwearingChatBox.WPF.ViewModels
                 ErrorMessage = string.Empty;
 
                 var result = await _apiService.RegisterAsync(Username, Email, Password);
-                if (result.success)
+                if (result.Success)
                 {
                     // Registration successful, notify the user
                     MessageBox.Show("Registration successful! You can now log in.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                     
-                    // Close the registration window
+                    // Navigate to login page
                     Application.Current.Dispatcher.Invoke(() =>
                     {
-                        if (Application.Current.MainWindow is Window currentWindow)
+                        if (Application.Current.MainWindow is View.MainWindow mainWindow)
                         {
-                            currentWindow.Close();
+                            mainWindow.NavigateToLogin();
                         }
                     });
                 }
                 else
                 {
-                    ErrorMessage = result.message;
+                    ErrorMessage = result.Message;
                 }
             }
             catch (Exception ex)
@@ -112,12 +114,12 @@ namespace AntiSwearingChatBox.WPF.ViewModels
 
         private void ExecuteBack()
         {
-            // Close the registration window
+            // Navigate back to login page
             Application.Current.Dispatcher.Invoke(() =>
             {
-                if (Application.Current.MainWindow is Window currentWindow)
+                if (Application.Current.MainWindow is View.MainWindow mainWindow)
                 {
-                    currentWindow.Close();
+                    mainWindow.NavigateToLogin();
                 }
             });
         }

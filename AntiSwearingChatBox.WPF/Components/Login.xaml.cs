@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using AntiSwearingChatBox.WPF.View;
 using AntiSwearingChatBox.WPF.Services;
+using AntiSwearingChatBox.WPF.Services.Api;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AntiSwearingChatBox.WPF.Components
@@ -12,7 +13,7 @@ namespace AntiSwearingChatBox.WPF.Components
     /// </summary>
     public partial class Login : UserControl
     {
-        private readonly ApiService _apiService;
+        private readonly IApiService _apiService;
         
         public event EventHandler? LoginSuccessful;
         public event EventHandler? RegisterRequested;
@@ -58,15 +59,16 @@ namespace AntiSwearingChatBox.WPF.Components
             
             try
             {
-                var (success, token, message) = await _apiService.LoginAsync(Username, Password);
+                var response = await _apiService.LoginAsync(Username, Password);
                 
-                if (success)
+                if (response.Success)
                 {
+                    // Successfully logged in
                     LoginSuccessful?.Invoke(this, EventArgs.Empty);
                 }
                 else
                 {
-                    MessageBox.Show(message, "Login Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(response.Message, "Login Failed", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)

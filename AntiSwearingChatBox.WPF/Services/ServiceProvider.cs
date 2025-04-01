@@ -4,8 +4,8 @@ namespace AntiSwearingChatBox.WPF.Services
 {
     public static class ServiceProvider
     {
-        private static ApiService? _apiService;
+        private static IApiService? _apiService;
         
-        public static ApiService ApiService => _apiService ??= new ApiService();
+        public static IApiService ApiService => _apiService ??= new Services.Api.ApiService();
     }
 } 
