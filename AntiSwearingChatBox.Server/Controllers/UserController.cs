@@ -7,7 +7,7 @@ namespace AntiSwearingChatBox.Server.Controllers
 {
     [ApiController]
     [Route("api/users")]
-    [AllowAnonymous] // Allow anonymous access for testing
+    [Authorize] // Default to authorized
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -18,12 +18,14 @@ namespace AntiSwearingChatBox.Server.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public ActionResult<IEnumerable<User>> GetAllUsers()
         {
             return Ok(_userService.GetAll());
         }
 
         [HttpGet("{id}")]
+        [Authorize]
         public ActionResult<User> GetUserById(int id)
         {
             var user = _userService.GetById(id);
@@ -35,6 +37,7 @@ namespace AntiSwearingChatBox.Server.Controllers
         }
 
         [HttpGet("find")]
+        [Authorize]
         public ActionResult<User> GetUserByUsername([FromQuery] string username)
         {
             var user = _userService.GetByUsername(username);
@@ -46,6 +49,7 @@ namespace AntiSwearingChatBox.Server.Controllers
         }
 
         [HttpPost("register")]
+        [AllowAnonymous] // Registration should be open
         public ActionResult<User> RegisterUser(RegisterRequestModel request)
         {
             var user = new User

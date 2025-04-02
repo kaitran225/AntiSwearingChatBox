@@ -7,7 +7,7 @@ namespace AntiSwearingChatBox.Server.Controllers
 {
     [ApiController]
     [Route("api/threads")]
-    [AllowAnonymous] // Allow anonymous access for testing
+    [Authorize] // Chat thread operations require authentication
     public class ChatThreadController : ControllerBase
     {
         private readonly IChatThreadService _chatThreadService;

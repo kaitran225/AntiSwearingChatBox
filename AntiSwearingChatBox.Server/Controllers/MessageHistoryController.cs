@@ -7,7 +7,7 @@ namespace AntiSwearingChatBox.Server.Controllers
 {
     [ApiController]
     [Route("api/messages")]
-    [AllowAnonymous] // Allow anonymous access for testing
+    [Authorize] // All message operations require authentication
     public class MessageHistoryController : ControllerBase
     {
         private readonly IMessageHistoryService _messageHistoryService;
