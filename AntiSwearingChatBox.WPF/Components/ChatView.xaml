@@ -142,8 +142,7 @@
         <!-- Message Input -->
         <Border Grid.Row="2" 
                 Background="{StaticResource TertiaryBackgroundBrush}"
-                Padding="16,12"
-                Visibility="{Binding HasSelectedConversation, Converter={StaticResource BoolToVisibilityConverter}}">
+                Padding="16,12">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>

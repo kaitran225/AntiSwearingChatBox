@@ -360,11 +360,39 @@ namespace AntiSwearingChatBox.WPF.View
         {
             try
             {
+                // Add the message to the UI immediately
+                var avatar = !string.IsNullOrEmpty(_currentUsername) ? _currentUsername[0].ToString().ToUpper() : "?";
+                ChatView.Messages.Add(new ChatMessageViewModel
+                {
+                    IsSent = true,
+                    Text = message,
+                    Timestamp = DateTime.Now.ToString("h:mm tt"),
+                    Avatar = avatar
+                });
+                
+                // Scroll to bottom to show the new message
+                ChatView.ScrollToBottom();
+                
+                // Send to API (this will trigger the server to send to others)
                 var result = await _apiService.SendMessageAsync(_currentThreadId, message);
                 if (result != null)
                 {
                     // Sent successfully
                     Console.WriteLine("Message sent successfully");
+                    
+                    // Update the timestamp with the server timestamp if needed
+                    // (optional as we already show the message with local time)
+                }
+                else
+                {
+                    // API returned null - add error indicator to UI
+                    Console.WriteLine("Error: API returned null when sending message");
+                    
+                    // Option 1: Show an error message
+                    MessageBox.Show("Failed to send message. Please try again.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    
+                    // Option 2: Mark the message as failed in the UI (add a visual indicator)
+                    // This would require extending the ChatMessageViewModel with a "Failed" property
                 }
             }
             catch (Exception ex)

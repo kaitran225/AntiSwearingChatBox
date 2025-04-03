@@ -52,9 +52,16 @@ namespace AntiSwearingChatBox.WPF.View
         
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.ChangedButton == MouseButton.Left)
+            try
             {
-                DragMove();
+                if (e.ButtonState == MouseButtonState.Pressed)
+                {
+                    DragMove();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in window drag: {ex.Message}");
             }
         }
         

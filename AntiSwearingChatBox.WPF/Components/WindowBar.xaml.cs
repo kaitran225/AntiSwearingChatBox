@@ -31,12 +31,20 @@ namespace AntiSwearingChatBox.WPF.Components
         
         private void Border_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.ChangedButton == MouseButton.Left)
+            if (e.ChangedButton == MouseButton.Left && e.ButtonState == MouseButtonState.Pressed)
             {
-                Window window = Window.GetWindow(this);
-                if (window != null)
+                try
                 {
-                    window.DragMove();
+                    Window window = Window.GetWindow(this);
+                    if (window != null)
+                    {
+                        window.DragMove();
+                        e.Handled = true; // Mark as handled to prevent bubbling
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error dragging window from title bar: {ex.Message}");
                 }
             }
         }

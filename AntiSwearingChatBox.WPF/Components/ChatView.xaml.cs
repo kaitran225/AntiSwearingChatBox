@@ -149,34 +149,51 @@ namespace AntiSwearingChatBox.WPF.Components
         {
             Console.WriteLine("ShowChatView called");
             
-             // Force conversation selected state
+            // Force conversation selected state
             if (CurrentContact == null)
             {
                 Console.WriteLine("WARNING: ShowChatView called but CurrentContact is null");
+            }
+            else
+            {
+                // Set HasSelectedConversation property to true
+                OnPropertyChanged(nameof(HasSelectedConversation));
             }
             
             // Force UI update directly without using CurrentContact property
             Dispatcher.InvokeAsync(() => {
                 try {
-                    // This method directly handles UI elements by name
+                    // Direct access to named controls in XAML
                     if (MessagesScroll != null)
                     {
-                        Console.WriteLine("Setting MessagesScroll to Visible");
                         MessagesScroll.Visibility = Visibility.Visible;
-                    }
-                    else
-                    {
-                        Console.WriteLine("ERROR: MessagesScroll is null");
+                        Console.WriteLine("Set MessagesScroll to Visible");
                     }
                     
                     if (MessagesList != null)
                     {
-                        Console.WriteLine("Setting MessagesList to Visible");
                         MessagesList.Visibility = Visibility.Visible;
+                        Console.WriteLine("Set MessagesList to Visible");
+                    }
+                    
+                    // Make sure the parent border of MessageTextBox is visible
+                    if (MessageTextBox != null)
+                    {
+                        var parent = VisualTreeHelper.GetParent(MessageTextBox);
+                        while (parent != null && !(parent is Border))
+                        {
+                            parent = VisualTreeHelper.GetParent(parent);
+                        }
+                        
+                        if (parent is Border inputBorder)
+                        {
+                            inputBorder.Visibility = Visibility.Visible;
+                            Console.WriteLine("Set message input Border to Visible");
+                        }
                     }
                     else
                     {
-                        Console.WriteLine("ERROR: MessagesList is null");
+                        Console.WriteLine("WARNING: MessageTextBox is null");
                     }
                     
                     // Force layout update after changing visibility
@@ -209,6 +226,27 @@ namespace AntiSwearingChatBox.WPF.Components
                     {
                         MessagesList.Visibility = Visibility.Visible;
                         Console.WriteLine("Set MessagesList to Visible");
+                    }
+                    
+                    // Find and show message input
+                    if (MessageTextBox != null)
+                    {
+                        // Get parent border (Grid.Row="2" Border)
+                        DependencyObject parent = MessageTextBox;
+                        while (parent != null && !(parent is Border))
+                        {
+                            parent = VisualTreeHelper.GetParent(parent);
+                        }
+                        
+                        if (parent is Border inputBorder)
+                        {
+                            inputBorder.Visibility = Visibility.Visible;
+                            Console.WriteLine("Set message input border to Visible");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("WARNING: MessageTextBox is null");
                     }
                 }
                 else
