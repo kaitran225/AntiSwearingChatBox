@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <UserControl
     x:Class="AntiSwearingChatBox.WPF.Components.ConversationItem"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -11,6 +12,14 @@
 
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        
+        <!-- Colors from requirements -->
+        <SolidColorBrush x:Key="BrandPurple" Color="#A280FF"/>
+        <SolidColorBrush x:Key="RoyalPurple" Color="#8F66FF"/>
+        <SolidColorBrush x:Key="DeepPurple" Color="#7C4CFF"/>
+        <SolidColorBrush x:Key="SpecialPurple" Color="#6933FF"/>
+        <SolidColorBrush x:Key="SuccessGreen" Color="#47D068"/>
+        <SolidColorBrush x:Key="SubtlePurple" Color="#C7B3FF"/>
     </UserControl.Resources>
 
     <Border
@@ -20,30 +29,47 @@
         BorderBrush="{Binding BorderBrush, FallbackValue={StaticResource BorderBrush}}"
         BorderThickness="{Binding BorderThickness, FallbackValue=0}"
         CornerRadius="8"
-        Cursor="Hand">
+        Cursor="Hand"
+        MouseLeftButtonDown="Border_MouseLeftButtonDown">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <Border
-                Width="42"
-                Height="42"
-                Margin="0,0,12,0"
-                Background="{StaticResource TertiaryBackgroundBrush}"
-                CornerRadius="21">
-                <TextBlock
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    FontSize="16"
-                    FontWeight="SemiBold"
-                    Foreground="{StaticResource PrimaryGreenBrush}"
-                    Text="{Binding AvatarText}" />
-            </Border>
+            <!-- Avatar with Online Status -->
+            <Grid>
+                <Border
+                    Width="42"
+                    Height="42"
+                    Margin="0,0,12,0"
+                    Background="{StaticResource TertiaryBackgroundBrush}"
+                    CornerRadius="21">
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        FontSize="16"
+                        FontWeight="SemiBold"
+                        Foreground="{StaticResource BrandPurple}"
+                        Text="{Binding AvatarText}" />
+                </Border>
+                
+                <!-- Online Status Indicator -->
+                <Border
+                    Width="12"
+                    Height="12"
+                    Margin="30,30,0,0"
+                    Background="{Binding IsOnline, Converter={StaticResource BoolToOnlineColorConverter}, FallbackValue={StaticResource SubtlePurple}}"
+                    BorderBrush="{StaticResource SecondaryBackgroundBrush}"
+                    BorderThickness="2"
+                    CornerRadius="6"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"/>
+            </Grid>
 
             <Grid Grid.Column="1">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
@@ -52,36 +78,78 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
+                <!-- Title -->
                 <TextBlock
                     FontSize="14"
                     FontWeight="SemiBold"
                     Foreground="{StaticResource PrimaryTextBrush}"
                     Text="{Binding DisplayName}"
                     TextTrimming="CharacterEllipsis" />
-                <TextBlock
-                    Grid.Row="1"
-                    Margin="0,6,0,0"
-                    FontSize="12"
-                    Foreground="{StaticResource SecondaryTextBrush}"
-                    Text="{Binding LastMessage}"
-                    TextTrimming="CharacterEllipsis" />
 
+                <!-- Last Message with Typing Indicator -->
+                <Grid Grid.Row="1" Margin="0,6,0,0">
+                    <TextBlock
+                        FontSize="12"
+                        Foreground="{StaticResource SecondaryTextBrush}"
+                        Text="{Binding LastMessage}"
+                        TextTrimming="CharacterEllipsis"
+                        Visibility="{Binding IsTyping, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+                    
+                    <StackPanel 
+                        Orientation="Horizontal" 
+                        Visibility="{Binding IsTyping, Converter={StaticResource BoolToVis}}">
+                        <TextBlock
+                            FontSize="12"
+                            Foreground="{StaticResource SuccessGreen}"
+                            Text="typing"/>
+                        <materialDesign:PackIcon
+                            Kind="DotsHorizontal"
+                            Width="16"
+                            Height="16"
+                            Margin="4,0,0,0"
+                            Foreground="{StaticResource SuccessGreen}"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Last Seen / Message Status -->
+                <TextBlock
+                    Grid.Row="2"
+                    Margin="0,4,0,0"
+                    FontSize="10"
+                    Foreground="{StaticResource TertiaryTextBrush}"
+                    Text="{Binding LastSeen}"
+                    TextTrimming="CharacterEllipsis"
+                    Visibility="{Binding ShowLastSeen, Converter={StaticResource BoolToVis}}"/>
+
+                <!-- Right Side Info -->
                 <StackPanel
-                    Grid.RowSpan="2"
+                    Grid.RowSpan="3"
                     Grid.Column="1"
                     Margin="8,0,0,0"
                     VerticalAlignment="Top">
+                    <!-- Timestamp -->
                     <TextBlock
                         HorizontalAlignment="Right"
                         FontSize="11"
-                        Foreground="{Binding TimestampForeground, FallbackValue={StaticResource TertiaryTextBrush}}"
+                        Foreground="{StaticResource TertiaryTextBrush}"
                         Text="{Binding Timestamp}" />
+                    
+                    <!-- Message Status -->
+                    <materialDesign:PackIcon
+                        Kind="{Binding MessageStatus, Converter={StaticResource MessageStatusToIconConverter}}"
+                        Width="16"
+                        Height="16"
+                        Margin="0,2,0,0"
+                        HorizontalAlignment="Right"
+                        Foreground="{Binding MessageStatus, Converter={StaticResource MessageStatusToColorConverter}}"/>
+                    
+                    <!-- Unread Counter -->
                     <Border
                         Width="20"
                         Height="20"
                         Margin="0,5,0,0"
                         HorizontalAlignment="Right"
-                        Background="{StaticResource PrimaryGreenBrush}"
+                        Background="{StaticResource SuccessGreen}"
                         CornerRadius="10"
                         Visibility="{Binding HasUnread, Converter={StaticResource BoolToVis}}">
                         <TextBlock

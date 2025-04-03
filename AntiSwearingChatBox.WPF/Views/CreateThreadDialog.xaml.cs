@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Windows;
 using AntiSwearingChatBox.WPF.Models.Api;
+using System.Linq;
 
 namespace AntiSwearingChatBox.WPF.Views
 {
@@ -8,7 +9,7 @@ namespace AntiSwearingChatBox.WPF.Views
     {
         public string ThreadTitle => TitleTextBox.Text;
         public UserModel? SelectedUser => UsersListBox.SelectedItem as UserModel;
-        public bool DialogResult { get; private set; }
+        public new bool? DialogResult { get; private set; }
 
         public CreateThreadDialog(IEnumerable<UserModel> users)
         {

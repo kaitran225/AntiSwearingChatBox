@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Collections.Generic;
 
 namespace AntiSwearingChatBox.WPF.Components
 {
@@ -73,20 +74,28 @@ namespace AntiSwearingChatBox.WPF.Components
             InitializeComponent();
             this.DataContext = this;
             Messages = [];
-            MessagesList.ItemsSource = Messages;
+            
+            // Make sure the ItemsSource is set
+            if (MessagesList != null)
+            {
+                MessagesList.ItemsSource = Messages;
+            }
         }
 
         #region Properties
 
         private ContactViewModel? _currentContact;
-        public ContactViewModel CurrentContact
+        public ContactViewModel? CurrentContact
         {
-            get { return _currentContact!; }
+            get { return _currentContact; }
             set
             {
                 _currentContact = value;
                 OnPropertyChanged(nameof(CurrentContact));
                 OnPropertyChanged(nameof(HasSelectedConversation));
+                
+                // When contact changes, update UI visibility
+                UpdateUIVisibility();
             }
         }
 
@@ -125,28 +134,216 @@ namespace AntiSwearingChatBox.WPF.Components
 
         #endregion
 
-        #region Methods
+        #region Public Methods
 
         public void ClearChat()
         {
-            CurrentContact = null!;
+            Console.WriteLine("ClearChat called");
             Messages.Clear();
+            CurrentContact = null;
+            
+            // Will trigger UI visibility update through CurrentContact setter
         }
 
-        private void ScrollToBottom()
+        public void ShowChatView()
         {
-            // Wait for UI to update before scrolling
-            this.Dispatcher.InvokeAsync(() =>
+            Console.WriteLine("ShowChatView called");
+            
+             // Force conversation selected state
+            if (CurrentContact == null)
             {
-                MessagesScroll.ScrollToEnd();
-            }, System.Windows.Threading.DispatcherPriority.ContextIdle);
+                Console.WriteLine("WARNING: ShowChatView called but CurrentContact is null");
+            }
+            
+            // Force UI update directly without using CurrentContact property
+            Dispatcher.InvokeAsync(() => {
+                try {
+                    // This method directly handles UI elements by name
+                    if (MessagesScroll != null)
+                    {
+                        Console.WriteLine("Setting MessagesScroll to Visible");
+                        MessagesScroll.Visibility = Visibility.Visible;
+                    }
+                    else
+                    {
+                        Console.WriteLine("ERROR: MessagesScroll is null");
+                    }
+                    
+                    if (MessagesList != null)
+                    {
+                        Console.WriteLine("Setting MessagesList to Visible");
+                        MessagesList.Visibility = Visibility.Visible;
+                    }
+                    else
+                    {
+                        Console.WriteLine("ERROR: MessagesList is null");
+                    }
+                    
+                    // Force layout update after changing visibility
+                    UpdateLayout();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error showing chat view: {ex.Message}");
+                }
+            });
         }
+
+        private void UpdateUIVisibility()
+        {
+            try {
+                // Update UI based on whether we have a selected conversation
+                if (HasSelectedConversation)
+                {
+                    // Show chat interface
+                    Console.WriteLine("HasSelectedConversation=true, showing chat interface");
+                    
+                    // Direct access to named controls in the XAML
+                    if (MessagesScroll != null)
+                    {
+                        MessagesScroll.Visibility = Visibility.Visible;
+                        Console.WriteLine("Set MessagesScroll to Visible");
+                    }
+                    
+                    if (MessagesList != null)
+                    {
+                        MessagesList.Visibility = Visibility.Visible;
+                        Console.WriteLine("Set MessagesList to Visible");
+                    }
+                }
+                else
+                {
+                    // Show empty state by letting the XAML bindings handle it
+                    Console.WriteLine("HasSelectedConversation=false, showing empty state");
+                    
+                    // The empty state is shown automatically via bindings in XAML
+                    // when HasSelectedConversation is false
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating UI visibility: {ex.Message}");
+            }
+        }
+
+        public void ScrollToBottom()
+        {
+            Console.WriteLine("ScrollToBottom called");
+            
+            Dispatcher.InvokeAsync(() =>
+            {
+                try
+                {
+                    // Direct access to the named ScrollViewer in XAML
+                    if (MessagesScroll != null)
+                    {
+                        Console.WriteLine("Scrolling MessagesScroll to bottom");
+                        MessagesScroll.ScrollToBottom();
+                    }
+                    else
+                    {
+                        Console.WriteLine("ERROR: MessagesScroll is null");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error in ScrollToBottom: {ex.Message}");
+                }
+            });
+        }
+
+        #endregion
+
+        #region Methods
 
         protected void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+        
+        // Helper method to find all elements of a specific type in the visual tree
+        private IEnumerable<T> FindVisualChildren<T>(DependencyObject parent) where T : DependencyObject
+        {
+            int childCount = VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < childCount; i++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(parent, i);
+                
+                if (child is T t)
+                    yield return t;
+                
+                foreach (T childOfChild in FindVisualChildren<T>(child))
+                    yield return childOfChild;
+            }
+        }
 
         #endregion
+
+        private T FindVisualChild<T>() where T : DependencyObject
+        {
+            foreach (object child in LogicalTreeHelper.GetChildren(this))
+            {
+                if (child is T typedChild)
+                    return typedChild;
+                
+                if (child is DependencyObject depChild)
+                {
+                    T childOfChild = FindVisualChildHelper<T>(depChild);
+                    if (childOfChild != null)
+                        return childOfChild;
+                }
+            }
+            return null;
+        }
+
+        private T FindVisualChildHelper<T>(DependencyObject parent) where T : DependencyObject
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(parent, i);
+                
+                if (child is T typedChild)
+                    return typedChild;
+                
+                T childOfChild = FindVisualChildHelper<T>(child);
+                if (childOfChild != null)
+                    return childOfChild;
+            }
+            return null;
+        }
+
+        // Helper method to find a named element in the visual tree
+        private DependencyObject FindVisualChildByName(string name)
+        {
+            foreach (object child in LogicalTreeHelper.GetChildren(this))
+            {
+                if (child is FrameworkElement element && element.Name == name)
+                    return element;
+                
+                if (child is DependencyObject depChild)
+                {
+                    DependencyObject childResult = FindVisualChildByNameHelper(depChild, name);
+                    if (childResult != null)
+                        return childResult;
+                }
+            }
+            return null;
+        }
+
+        private DependencyObject FindVisualChildByNameHelper(DependencyObject parent, string name)
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(parent, i);
+                
+                if (child is FrameworkElement element && element.Name == name)
+                    return element;
+                
+                DependencyObject childOfChild = FindVisualChildByNameHelper(child, name);
+                if (childOfChild != null)
+                    return childOfChild;
+            }
+            return null;
+        }
     }
 } 

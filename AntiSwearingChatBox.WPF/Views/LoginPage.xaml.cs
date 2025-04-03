@@ -19,6 +19,18 @@ namespace AntiSwearingChatBox.WPF.View
             }
         }
 
+        private void Page_Loaded(object sender, RoutedEventArgs e)
+        {
+#if DEBUG
+            // Pre-fill login details in Debug mode
+            if (LoginComponent != null)
+            {
+                LoginComponent.txtUsername.Text = "KaiTran2205";
+                LoginComponent.txtPassword.Password = "123456";
+            }
+#endif
+        }
+
         private void LoginComponent_LoginSuccessful(object sender, EventArgs e)
         {
             // Navigate to chat page

@@ -4,6 +4,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using AntiSwearingChatBox.WPF.Utilities;
+using System.Linq;
+using AntiSwearingChatBox.WPF.ViewModels;
 
 namespace AntiSwearingChatBox.WPF.Components
 {
@@ -20,15 +22,36 @@ namespace AntiSwearingChatBox.WPF.Components
             this.DataContext = this;
             
             // Initialize collections
-            Conversations = [];
-            Groups = [];
+            Conversations = new ObservableCollection<ConversationItemViewModel>();
+            Groups = new ObservableCollection<ConversationItemViewModel>();
             
             // Hook up event handlers
             AdminDashboardButton.Click += AdminDashboard_Click;
+            
+            // Subscribe to collection changes
+            Conversations.CollectionChanged += (s, args) =>
+            {
+                // When items are added, make sure they're connected
+                RefreshItemEventHandlers();
+            };
         }
 
         #region Properties
 
+        private string _searchText = string.Empty;
+        public string SearchText
+        {
+            get { return _searchText; }
+            set
+            {
+                _searchText = value;
+                OnPropertyChanged(nameof(SearchText));
+                FilterConversations();
+            }
+        }
+
+        private ObservableCollection<ConversationItemViewModel> _allConversations = new();
+        private ObservableCollection<ConversationItemViewModel> _filteredConversations = new();
         private ObservableCollection<ConversationItemViewModel>? _conversations;
         public ObservableCollection<ConversationItemViewModel> Conversations
         {
@@ -40,8 +63,8 @@ namespace AntiSwearingChatBox.WPF.Components
             }
         }
 
-        private ObservableCollection<string>? _groups;
-        public ObservableCollection<string> Groups
+        private ObservableCollection<ConversationItemViewModel>? _groups;
+        public ObservableCollection<ConversationItemViewModel> Groups
         {
             get { return _groups!; }
             set
@@ -63,7 +86,7 @@ namespace AntiSwearingChatBox.WPF.Components
             }
         }
 
-        public bool HasGroups => Groups?.Count > 0;
+        public bool HasGroups => Groups?.Any() == true;
 
         #endregion
 
@@ -109,7 +132,10 @@ namespace AntiSwearingChatBox.WPF.Components
         
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            // Empty implementation for search functionality
+            if (sender is TextBox textBox)
+            {
+                SearchText = textBox.Text;
+            }
         }
         
         // Alias methods to maintain compatibility
@@ -144,7 +170,8 @@ namespace AntiSwearingChatBox.WPF.Components
 
         public void AddConversation(ConversationItemViewModel conversation)
         {
-            Conversations.Add(conversation);
+            _allConversations.Add(conversation);
+            FilterConversations();
         }
         
         public void AddConversation(string id, string title, string lastMessage, string lastMessageTime)
@@ -159,27 +186,75 @@ namespace AntiSwearingChatBox.WPF.Components
                 IsSelected = false
             };
             
-            Conversations.Add(conversation);
+            _allConversations.Add(conversation);
+            FilterConversations();
         }
 
         public void AddGroup(ConversationItemViewModel group)
         {
-            Groups.Add(group.Id);
+            Groups.Add(group);
             OnPropertyChanged(nameof(HasGroups));
         }
 
         public void UpdateConversation(string id, string lastMessage, string timestamp, bool increaseUnread = false)
         {
-            var conversation = Conversations.FirstOrDefault(c => c.Id == id);
+            var conversation = _allConversations.FirstOrDefault(c => c.Id == id);
             if (conversation != null)
             {
                 conversation.LastMessage = lastMessage;
                 conversation.LastMessageTime = timestamp;
+                conversation.MessageStatus = MessageStatus.Sent;
 
                 if (increaseUnread && !conversation.IsSelected)
                 {
                     conversation.UnreadCount++;
                 }
+            }
+        }
+
+        public void UpdateMessageStatus(string id, MessageStatus status)
+        {
+            var conversation = _allConversations.FirstOrDefault(c => c.Id == id);
+            if (conversation != null)
+            {
+                conversation.MessageStatus = status;
+            }
+        }
+
+        public void UpdateOnlineStatus(string id, bool isOnline, string? lastSeen = null)
+        {
+            var conversation = _allConversations.FirstOrDefault(c => c.Id == id);
+            if (conversation != null)
+            {
+                conversation.IsOnline = isOnline;
+                if (!isOnline && !string.IsNullOrEmpty(lastSeen))
+                {
+                    conversation.LastSeen = lastSeen;
+                    conversation.ShowLastSeen = true;
+                }
+                else
+                {
+                    conversation.ShowLastSeen = false;
+                }
+            }
+        }
+
+        public void SetTyping(string id, bool isTyping)
+        {
+            var conversation = _allConversations.FirstOrDefault(c => c.Id == id);
+            if (conversation != null)
+            {
+                conversation.IsTyping = isTyping;
+            }
+        }
+
+        public void MarkAsRead(string id)
+        {
+            var conversation = _allConversations.FirstOrDefault(c => c.Id == id);
+            if (conversation != null)
+            {
+                conversation.UnreadCount = 0;
+                conversation.MessageStatus = MessageStatus.Read;
             }
         }
 
@@ -195,11 +270,14 @@ namespace AntiSwearingChatBox.WPF.Components
             };
             
             // Also subscribe to the CollectionChanged event for Conversations
-            Conversations.CollectionChanged += (s, args) =>
+            if (Conversations != null)
             {
-                // When items are added, make sure they're connected
-                RefreshItemEventHandlers();
-            };
+                Conversations.CollectionChanged += (s, args) =>
+                {
+                    // When items are added, make sure they're connected
+                    RefreshItemEventHandlers();
+                };
+            }
         }
 
         private void RefreshItemEventHandlers()
@@ -213,6 +291,21 @@ namespace AntiSwearingChatBox.WPF.Components
                 
                 // Add the handler
                 item.Selected += ConversationItem_Selected!;
+            }
+        }
+
+        private void FilterConversations()
+        {
+            if (string.IsNullOrWhiteSpace(SearchText))
+            {
+                Conversations = new ObservableCollection<ConversationItemViewModel>(_allConversations);
+            }
+            else
+            {
+                var filtered = _allConversations.Where(c => 
+                    c.Title.Contains(SearchText, StringComparison.OrdinalIgnoreCase) || 
+                    c.LastMessage.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
+                Conversations = new ObservableCollection<ConversationItemViewModel>(filtered);
             }
         }
 

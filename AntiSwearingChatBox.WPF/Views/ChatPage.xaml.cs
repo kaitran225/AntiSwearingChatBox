@@ -12,6 +12,7 @@ using System.Windows.Media;
 using AntiSwearingChatBox.WPF.Models;
 using AntiSwearingChatBox.WPF.Components;
 using AntiSwearingChatBox.WPF.Models.Api;
+using AntiSwearingChatBox.WPF.ViewModels;
 
 namespace AntiSwearingChatBox.WPF.View
 {
@@ -97,11 +98,8 @@ namespace AntiSwearingChatBox.WPF.View
                     return;
                 }
 
-                Console.WriteLine($"Loading chat threads for user {_apiService.CurrentUser.UserId}...");
-
                 // Clear existing conversations
                 ClearConversations();
-                Console.WriteLine("Cleared existing conversations");
                 
                 // Get chat threads from API
                 var threads = await _apiService.GetThreadsAsync();
@@ -110,26 +108,37 @@ namespace AntiSwearingChatBox.WPF.View
                 // Add each thread to the UI
                 foreach (var thread in threads)
                 {
-                    Console.WriteLine($"Adding thread: ID={thread.ThreadId}, Title={thread.Name ?? "Untitled"}");
-                    
-                    // Get the last message for this thread
-                    var lastMessages = await _apiService.GetMessagesAsync(thread.ThreadId, 1);
-                    string lastMessage = "No messages yet";
+                    // Try to get the latest message for the thread
+                    var messages = await _apiService.GetMessagesAsync(thread.ThreadId);
+                    string lastMessageContent = "No messages yet";
                     string lastMessageTime = thread.CreatedAt.ToString("g");
                     
-                    if (lastMessages.Count > 0)
+                    // If there are messages in this thread, display the latest one
+                    if (messages != null && messages.Count > 0)
                     {
-                        var message = lastMessages[0];
-                        lastMessage = message.ModeratedMessage ?? message.OriginalMessage;
-                        lastMessageTime = message.CreatedAt.ToString("g");
+                        // The messages should be ordered chronologically, 
+                        // so the last one is the most recent
+                        var latestMessage = messages.LastOrDefault();
+                        if (latestMessage != null)
+                        {
+                            lastMessageContent = latestMessage.ModeratedMessage ?? latestMessage.OriginalMessage;
+                            lastMessageTime = latestMessage.CreatedAt.ToString("g");
+                        }
                     }
                     
+                    // Add conversation to UI with last message info
                     AddConversation(
                         thread.ThreadId.ToString(), 
                         thread.Name ?? $"Chat {thread.ThreadId}",
-                        lastMessage,
+                        lastMessageContent,
                         lastMessageTime
                     );
+                }
+                
+                // If we have threads, select the first one by default
+                if (threads.Count > 0)
+                {
+                    SelectChatThread(threads[0].ThreadId.ToString());
                 }
             }
             catch (Exception ex)
@@ -177,7 +186,10 @@ namespace AntiSwearingChatBox.WPF.View
                 {
                     Console.WriteLine($"Received message in thread {threadId} from {sender}: {message}");
                     
-                    // Only process messages for the current thread
+                    // Update Conversation List preview
+                    Dispatcher.Invoke(() => UpdateConversationLastMessage(threadId.ToString(), message, timestamp));
+
+                    // Only process messages for the current thread in the main view
                     if (threadId == _currentThreadId)
                     {
                         Dispatcher.Invoke(() =>
@@ -188,16 +200,16 @@ namespace AntiSwearingChatBox.WPF.View
                             
                             Console.WriteLine($"Adding message to chat view (isSent: {isSent})");
                             
-                            // Add to chat view
                             ChatView.Messages.Add(new ChatMessageViewModel
                             {
                                 IsSent = isSent,
                                 Text = message,
                                 Timestamp = timestamp,
-                                Avatar = avatar,
-                                Background = new SolidColorBrush(isSent ? Color.FromRgb(220, 248, 198) : Color.FromRgb(255, 255, 255)),
-                                BorderBrush = new SolidColorBrush(isSent ? Color.FromRgb(206, 233, 185) : Color.FromRgb(229, 229, 229))
+                                Avatar = avatar
                             });
+                            
+                            // Scroll to bottom
+                            ChatView.ScrollToBottom(); 
                         });
                     }
                 });
@@ -231,14 +243,16 @@ namespace AntiSwearingChatBox.WPF.View
         
         private void UpdateConversationLastMessage(string threadId, string message, string time)
         {
-            // Find the conversation in the list and update the last message
-            var conversation = ConversationList.Conversations
-                .FirstOrDefault(c => c.Id == threadId);
-                
-            if (conversation != null)
+            var conversationVM = ConversationList.Conversations.FirstOrDefault(c => c.Id == threadId);
+            if (conversationVM != null)
             {
-                conversation.LastMessage = message;
-                conversation.LastMessageTime = time;
+                conversationVM.LastMessage = message;
+                conversationVM.LastMessageTime = time;
+                // Optionally increase unread count if the chat isn't selected
+                if (int.Parse(threadId) != _currentThreadId)
+                {
+                    conversationVM.UnreadCount++;
+                }
             }
         }
         
@@ -261,48 +275,83 @@ namespace AntiSwearingChatBox.WPF.View
         {
             try
             {
-                _currentThreadId = int.Parse(threadId);
+                // Parse thread ID
+                if (!int.TryParse(threadId, out int parsedThreadId))
+                {
+                    MessageBox.Show("Invalid thread ID.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
                 
-                // Clear existing messages
-                ChatView.Messages.Clear();
+                Console.WriteLine($"Selected thread: {threadId}");
+                _currentThreadId = parsedThreadId;
+                
+                // Set up UI immediately to provide user feedback
+                foreach (var conv in ConversationList.Conversations)
+                {
+                    conv.IsSelected = conv.Id == threadId;
+                }
                 
                 // Get the selected conversation from the list
                 var conversation = ConversationList.Conversations.FirstOrDefault(c => c.Id == threadId);
                 if (conversation != null)
                 {
-                    // Set the current contact
+                    // Set the current contact FIRST - this is critical
                     ChatView.CurrentContact = new Components.ContactViewModel
                     {
                         Id = conversation.Id,
                         Name = conversation.Title,
-                        Initials = conversation.Avatar
+                        Initials = conversation.Avatar,
                     };
+                    
+                    // Reset unread count for this conversation
+                    conversation.UnreadCount = 0;
                 }
                 
+                // Clear existing messages before loading new ones
+                ChatView.Messages.Clear();
+                
+                // Force immediate UI refresh - don't wait for data
+                Dispatcher.Invoke(() => {
+                    Console.WriteLine("Forcing UI update in ChatView");
+                    ChatView.ShowChatView();
+                    ChatView.UpdateLayout(); // Force layout update
+                });
+                
                 // Load messages for the selected thread
-                var messages = await _apiService.GetMessagesAsync(int.Parse(threadId));
+                Console.WriteLine($"Loading messages for thread {threadId}...");
+                var messages = await _apiService.GetMessagesAsync(parsedThreadId);
+                Console.WriteLine($"Retrieved {messages?.Count ?? 0} messages from API");
                 
                 // Add messages to the chat view
-                foreach (var message in messages)
+                if (messages != null && messages.Count > 0)
                 {
-                    var username = message.User?.Username ?? "Unknown";
-                    var avatar = !string.IsNullOrEmpty(username) ? username[0].ToString().ToUpper() : "?";
-                    var isSent = message.UserId == _apiService.CurrentUser?.UserId;
-                    
-                    ChatView.Messages.Add(new ChatMessageViewModel
+                    foreach (var message in messages)
                     {
-                        IsSent = isSent,
-                        Text = message.ModeratedMessage ?? message.OriginalMessage,
-                        Timestamp = message.CreatedAt.ToString("h:mm tt"),
-                        Avatar = avatar,
-                        Background = new SolidColorBrush(isSent ? Color.FromRgb(220, 248, 198) : Color.FromRgb(255, 255, 255)),
-                        BorderBrush = new SolidColorBrush(isSent ? Color.FromRgb(206, 233, 185) : Color.FromRgb(229, 229, 229))
-                    });
+                        var username = message.User?.Username ?? "Unknown";
+                        var avatar = !string.IsNullOrEmpty(username) ? username[0].ToString().ToUpper() : "?";
+                        var isSent = message.UserId == _apiService.CurrentUser?.UserId;
+                        
+                        ChatView.Messages.Add(new ChatMessageViewModel
+                        {
+                            IsSent = isSent,
+                            Text = message.ModeratedMessage ?? message.OriginalMessage,
+                            Timestamp = message.CreatedAt.ToString("h:mm tt"),
+                            Avatar = avatar
+                        });
+                    }
+                    
+                    // After adding all messages, scroll to bottom
+                    ChatView.UpdateLayout(); // Force layout update again
+                    ChatView.ScrollToBottom();
+                }
+                else
+                {
+                    Console.WriteLine("No messages found for this thread");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error loading thread messages: {ex}");
+                Console.WriteLine($"Error loading thread messages: {ex.Message}\n{ex.StackTrace}");
                 MessageBox.Show($"Error loading messages: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
