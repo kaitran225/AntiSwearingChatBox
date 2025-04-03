@@ -28,14 +28,14 @@
     WindowStyle="None"
     mc:Ignorable="d">
 
-    <Border Background="{StaticResource PrimaryBackgroundBrush}" CornerRadius="8">
+    <Border Background="{StaticResource PrimaryBackgroundBrush}" CornerRadius="8" MouseLeftButtonDown="Window_MouseLeftButtonDown">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <!--  Custom Window Title Bar  -->
-            <components:WindowBar Grid.Row="0" />
+            <components:WindowBar x:Name="WindowTitleBar" Grid.Row="0" />
             <!--  Main Content - Navigation Frame  -->
             <Frame
                 x:Name="MainFrame"

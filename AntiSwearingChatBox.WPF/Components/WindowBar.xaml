@@ -18,14 +18,14 @@
         </Style>
     </UserControl.Resources>
 
-    <Border Grid.Row="0" Background="#111111" BorderThickness="0,0,0,1" BorderBrush="#1E1E1E">
+    <Border Grid.Row="0" Background="#111111" BorderThickness="0,0,0,1" BorderBrush="#1E1E1E" MouseLeftButtonDown="Border_MouseDown">
         <Grid>
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0,0,0">
                 <Border Width="16" Height="16" Background="#121212" CornerRadius="8" Margin="0,0,8,0">
                     <TextBlock Text="A" Foreground="#BCD9B4" FontSize="10" FontWeight="SemiBold" 
                             HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </Border>
-                <TextBlock Text="Anti-Swearing Chat - Login" FontSize="11" Foreground="#B3B3B3" 
+                <TextBlock x:Name="WindowTitle" Text="Anti-Swearing Chat - Login" FontSize="11" Foreground="#B3B3B3" 
                        VerticalAlignment="Center"/>
             </StackPanel>
 

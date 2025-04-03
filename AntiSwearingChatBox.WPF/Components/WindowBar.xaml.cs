@@ -20,6 +20,15 @@ namespace AntiSwearingChatBox.WPF.Components
             btnClose.Click += BtnClose_Click;
         }
         
+        /// <summary>
+        /// Updates the window title text
+        /// </summary>
+        /// <param name="title">The new title to display</param>
+        public void SetWindowTitle(string title)
+        {
+            WindowTitle.Text = $"Anti-Swearing Chat - {title}";
+        }
+        
         private void Border_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left)

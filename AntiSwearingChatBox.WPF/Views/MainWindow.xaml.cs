@@ -50,20 +50,31 @@ namespace AntiSwearingChatBox.WPF.View
             Close();
         }
         
+        private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                DragMove();
+            }
+        }
+        
         // Navigation methods with page caching
         public void NavigateToLogin()
         {
             MainFrame.Navigate(_loginPage);
+            WindowTitleBar.SetWindowTitle("Login");
         }
         
         public void NavigateToRegister()
         {
             MainFrame.Navigate(_registerPage);
+            WindowTitleBar.SetWindowTitle("Register");
         }
         
         public void NavigateToChat()
         {
             MainFrame.Navigate(_chatPage);
+            WindowTitleBar.SetWindowTitle("Chat");
         }
     }
 } 
