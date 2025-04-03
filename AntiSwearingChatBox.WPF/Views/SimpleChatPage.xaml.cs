@@ -250,19 +250,19 @@ namespace AntiSwearingChatBox.WPF.View
                 Console.WriteLine("Registering message handler...");
                 
                 // Handle incoming messages
-                _connection.On<int, string, string, string>("ReceiveMessage", 
-                    (threadId, sender, message, timestamp) =>
+                _connection.On<string, string, int, DateTime, int, string, bool>("ReceiveMessage", 
+                    (username, filteredMessage, userId, timestamp, threadId, originalMessage, containsProfanity) =>
                 {
-                    Console.WriteLine($"Received message in thread {threadId} from {sender}: {message}");
+                    Console.WriteLine($"Received message in thread {threadId} from {username}: {filteredMessage} (Contains profanity: {containsProfanity})");
                     
                     // Track message details for duplication check
                     var isCurrentThread = threadId == _currentThreadId;
-                    var isFromSelf = string.Equals(sender, _currentUsername, StringComparison.OrdinalIgnoreCase);
+                    var isFromSelf = string.Equals(username, _currentUsername, StringComparison.OrdinalIgnoreCase);
                     
-                    Console.WriteLine($"Message check - isCurrentThread: {isCurrentThread}, isFromSelf: {isFromSelf}, currentUsername: '{_currentUsername}', sender: '{sender}'");
+                    Console.WriteLine($"Message check - isCurrentThread: {isCurrentThread}, isFromSelf: {isFromSelf}, currentUsername: '{_currentUsername}', sender: '{username}'");
                     
                     // Always update the conversation list preview, even for our own messages
-                    Dispatcher.Invoke(() => UpdateConversationLastMessage(threadId.ToString(), message, timestamp));
+                    Dispatcher.Invoke(() => UpdateConversationLastMessage(threadId.ToString(), filteredMessage, timestamp.ToString("h:mm tt")));
 
                     // Only process messages for the current thread AND from other users
                     // This prevents duplicate messages when we send a message
@@ -270,17 +270,20 @@ namespace AntiSwearingChatBox.WPF.View
                     {
                         Dispatcher.Invoke(() =>
                         {
-                            var username = sender ?? "Unknown";
-                            var avatar = !string.IsNullOrEmpty(username) ? username[0].ToString().ToUpper() : "?";
+                            var sender = username ?? "Unknown";
+                            var avatar = !string.IsNullOrEmpty(sender) ? sender[0].ToString().ToUpper() : "?";
                             
-                            Console.WriteLine($"Adding message from {sender} to chat view");
+                            Console.WriteLine($"Adding message from {sender} to chat view (Contains profanity: {containsProfanity})");
                             
                             Messages.Add(new ChatMessageViewModel
                             {
                                 IsSent = false,
-                                Text = message,
-                                Timestamp = timestamp,
-                                Avatar = avatar
+                                Text = filteredMessage,
+                                OriginalText = originalMessage,
+                                Timestamp = timestamp.ToString("h:mm tt"),
+                                Avatar = avatar,
+                                ContainsProfanity = containsProfanity,
+                                IsUncensored = false // Initially show censored version
                             });
                             
                             // Scroll to bottom to show the new message
@@ -395,8 +398,11 @@ namespace AntiSwearingChatBox.WPF.View
                         {
                             IsSent = isSent,
                             Text = message.ModeratedMessage ?? message.OriginalMessage,
+                            OriginalText = message.OriginalMessage,
                             Timestamp = message.CreatedAt.ToString("h:mm tt"),
-                            Avatar = avatar
+                            Avatar = avatar,
+                            ContainsProfanity = message.WasModified,
+                            IsUncensored = false // Initially show censored version
                         });
                     }
                     
@@ -469,8 +475,157 @@ namespace AntiSwearingChatBox.WPF.View
 
         private void NewChat_Click(object sender, RoutedEventArgs e)
         {
-            // Handle new chat button click
-            MessageBox.Show("New chat functionality will be added here.", "New Chat", MessageBoxButton.OK, MessageBoxImage.Information);
+            // Open user selection dialog to start a new chat
+            NewChatDialog();
+        }
+        
+        private async void NewChatDialog()
+        {
+            try
+            {
+                // Get list of users
+                var users = await _apiService.GetUsersAsync();
+                
+                // Filter out current user
+                var otherUsers = users.Where(u => u.UserId != _apiService.CurrentUser?.UserId).ToList();
+                
+                if (otherUsers.Count == 0)
+                {
+                    MessageBox.Show("No other users found to chat with.", "New Chat", 
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+                
+                // Create a simple dialog
+                var dialog = new Window
+                {
+                    Title = "New Chat",
+                    Width = 400,
+                    Height = 500,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    Owner = Window.GetWindow(this),
+                    ResizeMode = ResizeMode.NoResize,
+                    WindowStyle = WindowStyle.ToolWindow
+                };
+                
+                var stackPanel = new StackPanel
+                {
+                    Margin = new Thickness(20)
+                };
+                
+                var headerText = new TextBlock
+                {
+                    Text = "Select a user to chat with:",
+                    FontSize = 16,
+                    Margin = new Thickness(0, 0, 0, 20)
+                };
+                
+                var userListBox = new ListBox
+                {
+                    Height = 300,
+                    Margin = new Thickness(0, 0, 0, 20)
+                };
+                
+                foreach (var user in otherUsers)
+                {
+                    userListBox.Items.Add(new ListBoxItem
+                    {
+                        Content = user.Username,
+                        Tag = user.UserId
+                    });
+                }
+                
+                var buttonsPanel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    HorizontalAlignment = HorizontalAlignment.Right
+                };
+                
+                var cancelButton = new Button
+                {
+                    Content = "Cancel",
+                    Width = 100,
+                    Height = 30,
+                    Margin = new Thickness(0, 0, 10, 0)
+                };
+                
+                var startChatButton = new Button
+                {
+                    Content = "Start Chat",
+                    Width = 100,
+                    Height = 30,
+                    IsEnabled = false
+                };
+                
+                // Enable start chat button only when a user is selected
+                userListBox.SelectionChanged += (s, e) =>
+                {
+                    startChatButton.IsEnabled = userListBox.SelectedItem != null;
+                };
+                
+                // Set up button click handlers
+                cancelButton.Click += (s, e) => dialog.Close();
+                
+                startChatButton.Click += async (s, e) =>
+                {
+                    if (userListBox.SelectedItem is ListBoxItem selectedItem)
+                    {
+                        int userId = (int)selectedItem.Tag;
+                        string username = selectedItem.Content.ToString() ?? "User";
+                        
+                        dialog.Close();
+                        
+                        try
+                        {
+                            // Show loading indication
+                            Mouse.OverrideCursor = Cursors.Wait;
+                            
+                            // Create private chat with selected user
+                            var thread = await _apiService.CreatePrivateChatAsync(userId, $"Chat with {username}");
+                            
+                            if (thread != null && thread.ThreadId > 0)
+                            {
+                                // Reload the threads to show the new chat
+                                await LoadChatThreads();
+                                
+                                // Select the new thread
+                                LoadConversation(thread.ThreadId.ToString());
+                            }
+                            else
+                            {
+                                MessageBox.Show("Failed to create new chat.", "Error", 
+                                    MessageBoxButton.OK, MessageBoxImage.Error);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show($"Error creating chat: {ex.Message}", "Error", 
+                                MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
+                        finally
+                        {
+                            // Reset cursor
+                            Mouse.OverrideCursor = null;
+                        }
+                    }
+                };
+                
+                // Add controls to the dialog
+                buttonsPanel.Children.Add(cancelButton);
+                buttonsPanel.Children.Add(startChatButton);
+                
+                stackPanel.Children.Add(headerText);
+                stackPanel.Children.Add(userListBox);
+                stackPanel.Children.Add(buttonsPanel);
+                
+                dialog.Content = stackPanel;
+                dialog.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error opening user selection dialog: {ex.Message}", "Error", 
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void AdminDashboard_Click(object sender, RoutedEventArgs e)
@@ -531,6 +686,20 @@ namespace AntiSwearingChatBox.WPF.View
                     Console.WriteLine("Enter key pressed without Shift - sending message");
                     e.Handled = true; // Prevent default behavior
                     _ = SendMessage(); // Use discard to acknowledge intentionally not awaiting
+                }
+            }
+        }
+
+        private void MessageBubble_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is FrameworkElement element && element.Tag is ChatMessageViewModel message)
+            {
+                // Only toggle censorship for messages that contain profanity
+                if (message.ContainsProfanity)
+                {
+                    Console.WriteLine($"Message clicked. Contains profanity: {message.ContainsProfanity}, Is currently uncensored: {message.IsUncensored}");
+                    message.ToggleCensorship();
+                    e.Handled = true;
                 }
             }
         }

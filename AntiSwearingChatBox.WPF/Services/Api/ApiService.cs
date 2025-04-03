@@ -193,6 +193,72 @@ namespace AntiSwearingChatBox.WPF.Services.Api
             }
         }
         
+        public async Task<ChatThread> CreatePrivateChatAsync(int otherUserId, string title = "")
+        {
+            try
+            {
+                // Get user details to create appropriate chat title if not provided
+                if (string.IsNullOrEmpty(title))
+                {
+                    var users = await GetUsersAsync();
+                    var otherUser = users.FirstOrDefault(u => u.UserId == otherUserId);
+                    title = otherUser?.Username ?? $"Chat with User {otherUserId}";
+                }
+                
+                var request = new { 
+                    Title = title,
+                    IsPrivate = true,
+                    CreatorUserId = _currentUserId,
+                    OtherUserId = otherUserId
+                };
+                
+                var content = CreateJsonContent(request);
+                
+                var response = await _httpClient.PostAsync(ApiConfig.ThreadsEndpoint, content);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var result = JsonConvert.DeserializeAnonymousType(responseContent, 
+                        new { Success = false, Message = "", Thread = new ChatThread() });
+                    
+                    if (result != null && result.Success)
+                    {
+                        return result.Thread;
+                    }
+                }
+                
+                return new ChatThread();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error creating private chat: {ex.Message}");
+                return new ChatThread();
+            }
+        }
+        
+        public async Task<List<UserModel>> GetUsersAsync()
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"{ApiConfig.BaseUrl}/api/users");
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var users = JsonConvert.DeserializeObject<List<UserModel>>(content);
+                    return users ?? new List<UserModel>();
+                }
+                
+                return new List<UserModel>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading users: {ex.Message}");
+                return new List<UserModel>();
+            }
+        }
+        
         public async Task<bool> JoinThreadAsync(int threadId)
         {
             try

@@ -17,6 +17,8 @@ namespace AntiSwearingChatBox.WPF.Services.Api
         // Chat Threads
         Task<List<ChatThread>> GetThreadsAsync();
         Task<ChatThread> CreateThreadAsync(string name);
+        Task<ChatThread> CreatePrivateChatAsync(int otherUserId, string title = "");
+        Task<List<UserModel>> GetUsersAsync();
         Task<bool> JoinThreadAsync(int threadId);
         
         // Messages

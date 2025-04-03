@@ -99,7 +99,16 @@ public class ChatHub : Hub
         }
         
         // Broadcast filtered message to all clients in this thread
-        await Clients.Group($"thread_{threadId}").SendAsync("ReceiveMessage", username, filteredMessage, userId, DateTime.UtcNow, threadId);
+        await Clients.Group($"thread_{threadId}").SendAsync(
+            "ReceiveMessage", 
+            username, 
+            filteredMessage, 
+            userId, 
+            DateTime.UtcNow, 
+            threadId, 
+            message,  // Original message 
+            containedProfanity  // Flag indicating if message contained profanity
+        );
     }
 
     public async Task JoinChat(string username, int userId)
@@ -175,7 +184,9 @@ public class ChatHub : Hub
                     msg.WasModified ? msg.ModeratedMessage : msg.OriginalMessage, 
                     msg.UserId,
                     msg.CreatedAt,
-                    msg.ThreadId
+                    msg.ThreadId,
+                    msg.OriginalMessage,  // Original message
+                    msg.WasModified       // Flag indicating if message was modified
                 );
             }
         }
@@ -233,7 +244,9 @@ public class ChatHub : Hub
                     msg.WasModified ? msg.ModeratedMessage : msg.OriginalMessage, 
                     msg.UserId,
                     msg.CreatedAt,
-                    msg.ThreadId
+                    msg.ThreadId,
+                    msg.OriginalMessage,  // Original message
+                    msg.WasModified       // Flag indicating if message was modified
                 );
             }
             

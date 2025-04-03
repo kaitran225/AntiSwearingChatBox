@@ -27,6 +27,7 @@
         <converters:BoolToColumnConverter x:Key="BoolToColumnConverter" />
         <converters:FirstCharConverter x:Key="FirstCharConverter" />
         <converters:SwearingScoreToColorConverter x:Key="SwearingScoreToColorConverter" />
+        <converters:BoolToTextConverter x:Key="BoolToTextConverter" />
     </Page.Resources>
 
     <Grid>
@@ -547,20 +548,44 @@
                                                 Background="{Binding IsSent, Converter={StaticResource MessageBackgroundConverter}}"
                                                 BorderBrush="{StaticResource MatchaGreenBrush}"
                                                 BorderThickness="{Binding IsSent, Converter={StaticResource MessageBorderThicknessConverter}}"
-                                                CornerRadius="18">
-                                                <StackPanel>
-                                                    <TextBlock
-                                                        FontSize="14"
-                                                        Foreground="{Binding IsSent, Converter={StaticResource MessageForegroundConverter}}"
-                                                        Text="{Binding Text}"
-                                                        TextWrapping="Wrap" />
-                                                    <TextBlock
-                                                        Margin="0,4,0,0"
-                                                        HorizontalAlignment="Right"
-                                                        FontSize="11"
-                                                        Foreground="{StaticResource TertiaryTextBrush}"
-                                                        Text="{Binding Timestamp}" />
-                                                </StackPanel>
+                                                CornerRadius="18"
+                                                MouseLeftButtonDown="MessageBubble_MouseLeftButtonDown"
+                                                Tag="{Binding}">
+                                                <Grid>
+                                                    <StackPanel>
+                                                        <TextBlock
+                                                            FontSize="14"
+                                                            Foreground="{Binding IsSent, Converter={StaticResource MessageForegroundConverter}}"
+                                                            Text="{Binding DisplayText}"
+                                                            TextWrapping="Wrap" />
+                                                            
+                                                        <Grid>
+                                                            <TextBlock
+                                                                Margin="0,4,0,0"
+                                                                HorizontalAlignment="Right"
+                                                                FontSize="11"
+                                                                Foreground="{StaticResource TertiaryTextBrush}"
+                                                                Text="{Binding Timestamp}" />
+                                                                
+                                                            <StackPanel 
+                                                                Orientation="Horizontal"
+                                                                HorizontalAlignment="Left"
+                                                                Visibility="{Binding ContainsProfanity, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                                <TextBlock
+                                                                    Margin="0,4,0,0"
+                                                                    FontSize="11"
+                                                                    Foreground="#FF4D4D"
+                                                                    Text="⚠️ Warning" />
+                                                                    
+                                                                <TextBlock
+                                                                    Margin="4,4,0,0"
+                                                                    FontSize="10"
+                                                                    Foreground="{StaticResource TertiaryTextBrush}"
+                                                                    Text="{Binding IsUncensored, Converter={StaticResource BoolToTextConverter}, ConverterParameter=Uncensored:Click to reveal}" />
+                                                            </StackPanel>
+                                                        </Grid>
+                                                    </StackPanel>
+                                                </Grid>
                                             </Border>
 
                                             <!--  Avatar (for sent messages)  -->
