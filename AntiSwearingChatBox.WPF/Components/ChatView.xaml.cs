@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Collections.Generic;
+using System.Windows.Input;
 
 namespace AntiSwearingChatBox.WPF.Components
 {
@@ -80,6 +81,9 @@ namespace AntiSwearingChatBox.WPF.Components
             {
                 MessagesList.ItemsSource = Messages;
             }
+            
+            // Add the KeyDown event handler for Enter key
+            MessageTextBox.KeyDown += MessageTextBox_KeyDown;
         }
 
         #region Properties
@@ -108,13 +112,78 @@ namespace AntiSwearingChatBox.WPF.Components
 
         #region Event Handlers
 
+        private void MessageTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            // Handle Enter key press to send message
+            if (e.Key == Key.Enter)
+            {
+                // Only handle if not already handled by another handler
+                if (e.Handled)
+                {
+                    Console.WriteLine("Enter key event already handled, skipping");
+                    return;
+                }
+                
+                // Shift+Enter creates a new line, just Enter sends the message
+                if ((Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
+                {
+                    // Allow Shift+Enter to create a new line
+                    Console.WriteLine("Shift+Enter pressed - allowing new line");
+                    MessageTextBox.Text += Environment.NewLine;
+                    MessageTextBox.CaretIndex = MessageTextBox.Text.Length; // Move caret to end
+                    e.Handled = true; // Mark as handled
+                }
+                else
+                {
+                    // Just Enter - send the message
+                    Console.WriteLine("Enter key pressed without Shift - sending message");
+                    e.Handled = true; // Prevent default behavior
+                    SendMessage();
+                }
+            }
+        }
+
         private void SendButton_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(MessageTextBox.Text))
-                return;
+            Console.WriteLine("Send button clicked - sending message");
+            SendMessage();
+        }
 
-            MessageSent?.Invoke(this, MessageTextBox.Text);
-            MessageTextBox.Clear();
+        // Track if we're currently in the process of sending a message to prevent duplicate sends
+        private bool _isSending = false;
+
+        private void SendMessage()
+        {
+            Console.WriteLine("SendMessage called");
+            
+            // Prevent duplicate sends
+            if (_isSending)
+            {
+                Console.WriteLine("Already sending message, ignoring duplicate call");
+                return;
+            }
+            
+            try
+            {
+                _isSending = true;
+                
+                if (string.IsNullOrWhiteSpace(MessageTextBox.Text))
+                {
+                    Console.WriteLine("Message text is empty, not sending");
+                    return;
+                }
+
+                var textToSend = MessageTextBox.Text.TrimEnd();
+                Console.WriteLine($"Sending message: '{textToSend}'");
+                MessageSent?.Invoke(this, textToSend);
+                
+                Console.WriteLine("Clearing message text box");
+                MessageTextBox.Clear();
+            }
+            finally
+            {
+                _isSending = false;
+            }
         }
 
         private void MenuButton_Click(object sender, RoutedEventArgs e)
@@ -292,96 +361,59 @@ namespace AntiSwearingChatBox.WPF.Components
 
         #endregion
 
-        #region Methods
+        #region Helpers
 
-        protected void OnPropertyChanged(string propertyName)
+        // Helper methods for finding elements in the visual tree
+        private T? FindVisualChild<T>(DependencyObject? parent) where T : DependencyObject
+        {
+            if (parent == null)
+                return null;
+                
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                
+                if (child is T typedChild)
+                    return typedChild;
+                    
+                var result = FindVisualChild<T>(child);
+                if (result != null)
+                    return result;
+            }
+            
+            return null;
+        }
+        
+        private FrameworkElement? FindVisualChildByName(string name)
+        {
+            return FindVisualChildByName(this, name);
+        }
+        
+        private FrameworkElement? FindVisualChildByName(DependencyObject? parent, string name)
+        {
+            if (parent == null)
+                return null;
+                
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                
+                if (child is FrameworkElement element && element.Name == name)
+                    return element;
+                    
+                var result = FindVisualChildByName(child, name);
+                if (result != null)
+                    return result;
+            }
+            
+            return null;
+        }
+
+        protected virtual void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-        
-        // Helper method to find all elements of a specific type in the visual tree
-        private IEnumerable<T> FindVisualChildren<T>(DependencyObject parent) where T : DependencyObject
-        {
-            int childCount = VisualTreeHelper.GetChildrenCount(parent);
-            for (int i = 0; i < childCount; i++)
-            {
-                DependencyObject child = VisualTreeHelper.GetChild(parent, i);
-                
-                if (child is T t)
-                    yield return t;
-                
-                foreach (T childOfChild in FindVisualChildren<T>(child))
-                    yield return childOfChild;
-            }
-        }
 
         #endregion
-
-        private T FindVisualChild<T>() where T : DependencyObject
-        {
-            foreach (object child in LogicalTreeHelper.GetChildren(this))
-            {
-                if (child is T typedChild)
-                    return typedChild;
-                
-                if (child is DependencyObject depChild)
-                {
-                    T childOfChild = FindVisualChildHelper<T>(depChild);
-                    if (childOfChild != null)
-                        return childOfChild;
-                }
-            }
-            return null;
-        }
-
-        private T FindVisualChildHelper<T>(DependencyObject parent) where T : DependencyObject
-        {
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
-            {
-                DependencyObject child = VisualTreeHelper.GetChild(parent, i);
-                
-                if (child is T typedChild)
-                    return typedChild;
-                
-                T childOfChild = FindVisualChildHelper<T>(child);
-                if (childOfChild != null)
-                    return childOfChild;
-            }
-            return null;
-        }
-
-        // Helper method to find a named element in the visual tree
-        private DependencyObject FindVisualChildByName(string name)
-        {
-            foreach (object child in LogicalTreeHelper.GetChildren(this))
-            {
-                if (child is FrameworkElement element && element.Name == name)
-                    return element;
-                
-                if (child is DependencyObject depChild)
-                {
-                    DependencyObject childResult = FindVisualChildByNameHelper(depChild, name);
-                    if (childResult != null)
-                        return childResult;
-                }
-            }
-            return null;
-        }
-
-        private DependencyObject FindVisualChildByNameHelper(DependencyObject parent, string name)
-        {
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
-            {
-                DependencyObject child = VisualTreeHelper.GetChild(parent, i);
-                
-                if (child is FrameworkElement element && element.Name == name)
-                    return element;
-                
-                DependencyObject childOfChild = FindVisualChildByNameHelper(child, name);
-                if (childOfChild != null)
-                    return childOfChild;
-            }
-            return null;
-        }
     }
 } 

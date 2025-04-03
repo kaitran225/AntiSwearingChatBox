@@ -69,19 +69,43 @@ namespace AntiSwearingChatBox.WPF.View
         public void NavigateToLogin()
         {
             MainFrame.Navigate(_loginPage);
-            WindowTitleBar.SetWindowTitle("Login");
+            try
+            {
+                WindowTitleBar?.SetWindowTitle("Login");
+                this.Title = "Login - Anti-Swearing Chat Box";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error setting window title: {ex.Message}");
+            }
         }
         
         public void NavigateToRegister()
         {
             MainFrame.Navigate(_registerPage);
-            WindowTitleBar.SetWindowTitle("Register");
+            try
+            {
+                WindowTitleBar?.SetWindowTitle("Register");
+                this.Title = "Register - Anti-Swearing Chat Box";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error setting window title: {ex.Message}");
+            }
         }
         
         public void NavigateToChat()
         {
             MainFrame.Navigate(_chatPage);
-            WindowTitleBar.SetWindowTitle("Chat");
+            try
+            {
+                WindowTitleBar?.SetWindowTitle("Chat");
+                this.Title = "Chat - Anti-Swearing Chat Box";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error setting window title: {ex.Message}");
+            }
         }
     }
 } 

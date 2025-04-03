@@ -114,13 +114,14 @@
                             </Border>
 
                             <!-- Message Bubble -->
-                            <Border Grid.Column="1"
+                            <Border x:Name="MessageBubble" 
+                                    CornerRadius="18" 
+                                    Padding="12,8"
                                     Background="{Binding IsSent, Converter={StaticResource MessageBackgroundConverter}}"
-                                    BorderThickness="0"
-                                    CornerRadius="12"
-                                    Padding="14,10"
-                                    MaxWidth="400"
-                                    HorizontalAlignment="{Binding IsSent, Converter={StaticResource BoolToAlignmentConverter}}">
+                                    BorderThickness="{Binding IsSent, Converter={StaticResource MessageBorderThicknessConverter}}"
+                                    BorderBrush="#555555"
+                                    MaxWidth="600"
+                                    HorizontalAlignment="{Binding IsSent, Converter={StaticResource MessageAlignmentConverter}}">
                                 <StackPanel>
                                     <TextBlock Text="{Binding Text}"
                                              Foreground="{Binding IsSent, Converter={StaticResource MessageForegroundConverter}}"
@@ -162,7 +163,7 @@
                          Background="{StaticResource SecondaryBackgroundBrush}"
                          Foreground="{StaticResource PrimaryTextBrush}"
                          CaretBrush="{StaticResource PrimaryGreenBrush}"
-                         AcceptsReturn="True"/>
+                         AcceptsReturn="False"/>
 
                 <Button Grid.Column="2"
                         Style="{StaticResource WindowBarButtonStyle}"

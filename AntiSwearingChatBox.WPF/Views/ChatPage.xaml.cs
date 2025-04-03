@@ -1,17 +1,8 @@
-using System;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.AspNetCore.SignalR.Client;
-using AntiSwearingChatBox.WPF.Services;
 using AntiSwearingChatBox.WPF.Services.Api;
-using Microsoft.Extensions.DependencyInjection;
-using System.Linq;
-using System.Collections.Generic;
-using System.Windows.Media;
-using AntiSwearingChatBox.WPF.Models;
 using AntiSwearingChatBox.WPF.Components;
-using AntiSwearingChatBox.WPF.Models.Api;
 using AntiSwearingChatBox.WPF.ViewModels;
 
 namespace AntiSwearingChatBox.WPF.View
@@ -23,14 +14,14 @@ namespace AntiSwearingChatBox.WPF.View
         private int _currentThreadId;
         private string _currentUsername = string.Empty;
         
+        private Dictionary<string, DateTime> _recentlySentMessages = new Dictionary<string, DateTime>();
+        private object _sendLock = new object();
+        
         public ChatPage()
         {
             InitializeComponent();
             
-            // Get the ApiService from our ServiceProvider
             _apiService = AntiSwearingChatBox.WPF.Services.ServiceProvider.ApiService;
-            
-            // Initialize events
             InitializeEvents();
         }
         
@@ -186,23 +177,29 @@ namespace AntiSwearingChatBox.WPF.View
                 {
                     Console.WriteLine($"Received message in thread {threadId} from {sender}: {message}");
                     
-                    // Update Conversation List preview
+                    // Track message details for duplication check
+                    var isCurrentThread = threadId == _currentThreadId;
+                    var isFromSelf = string.Equals(sender, _currentUsername, StringComparison.OrdinalIgnoreCase);
+                    
+                    Console.WriteLine($"Message check - isCurrentThread: {isCurrentThread}, isFromSelf: {isFromSelf}, currentUsername: '{_currentUsername}', sender: '{sender}'");
+                    
+                    // Always update the conversation list preview, even for our own messages
                     Dispatcher.Invoke(() => UpdateConversationLastMessage(threadId.ToString(), message, timestamp));
 
-                    // Only process messages for the current thread in the main view
-                    if (threadId == _currentThreadId)
+                    // Only process messages for the current thread AND from other users
+                    // This prevents duplicate messages when we send a message
+                    if (isCurrentThread && !isFromSelf)
                     {
                         Dispatcher.Invoke(() =>
                         {
                             var username = sender ?? "Unknown";
                             var avatar = !string.IsNullOrEmpty(username) ? username[0].ToString().ToUpper() : "?";
-                            var isSent = sender == _currentUsername;
                             
-                            Console.WriteLine($"Adding message to chat view (isSent: {isSent})");
+                            Console.WriteLine($"Adding message from {sender} to chat view");
                             
                             ChatView.Messages.Add(new ChatMessageViewModel
                             {
-                                IsSent = isSent,
+                                IsSent = false, // Never our own messages here (those are added in ChatView_MessageSent)
                                 Text = message,
                                 Timestamp = timestamp,
                                 Avatar = avatar
@@ -360,6 +357,40 @@ namespace AntiSwearingChatBox.WPF.View
         {
             try
             {
+                // Check for duplicate message sends within a short time window
+                lock (_sendLock)
+                {
+                    // Generate a simple key for the message
+                    string messageKey = $"{_currentThreadId}:{message}";
+                    
+                    // Check if this exact message was sent in the last second
+                    if (_recentlySentMessages.TryGetValue(messageKey, out DateTime lastSent))
+                    {
+                        TimeSpan elapsed = DateTime.Now - lastSent;
+                        if (elapsed.TotalSeconds < 2)
+                        {
+                            Console.WriteLine($"DUPLICATE DETECTED: Same message sent again within {elapsed.TotalSeconds:F1} seconds, ignoring");
+                            return;
+                        }
+                    }
+                    
+                    // Record this message as sent
+                    _recentlySentMessages[messageKey] = DateTime.Now;
+                    
+                    // Clean up old messages (older than 5 seconds)
+                    var keysToRemove = _recentlySentMessages
+                        .Where(kvp => (DateTime.Now - kvp.Value).TotalSeconds > 5)
+                        .Select(kvp => kvp.Key)
+                        .ToList();
+                    
+                    foreach (var key in keysToRemove)
+                    {
+                        _recentlySentMessages.Remove(key);
+                    }
+                }
+                
+                Console.WriteLine($"ChatView_MessageSent handling message: '{message}'");
+                
                 // Add the message to the UI immediately
                 var avatar = !string.IsNullOrEmpty(_currentUsername) ? _currentUsername[0].ToString().ToUpper() : "?";
                 ChatView.Messages.Add(new ChatMessageViewModel
@@ -374,14 +405,12 @@ namespace AntiSwearingChatBox.WPF.View
                 ChatView.ScrollToBottom();
                 
                 // Send to API (this will trigger the server to send to others)
+                Console.WriteLine($"Calling API to send message to thread {_currentThreadId}");
                 var result = await _apiService.SendMessageAsync(_currentThreadId, message);
                 if (result != null)
                 {
                     // Sent successfully
-                    Console.WriteLine("Message sent successfully");
-                    
-                    // Update the timestamp with the server timestamp if needed
-                    // (optional as we already show the message with local time)
+                    Console.WriteLine("Message sent successfully through API");
                 }
                 else
                 {
@@ -390,9 +419,6 @@ namespace AntiSwearingChatBox.WPF.View
                     
                     // Option 1: Show an error message
                     MessageBox.Show("Failed to send message. Please try again.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    
-                    // Option 2: Mark the message as failed in the UI (add a visual indicator)
-                    // This would require extending the ChatMessageViewModel with a "Failed" property
                 }
             }
             catch (Exception ex)
@@ -434,8 +460,12 @@ namespace AntiSwearingChatBox.WPF.View
 
         private void ChatPage_Initialized(object sender, EventArgs e)
         {
-            // Subscribe to the events from the ChatView
-            ChatView.NewConversationRequested += ConversationList_NewChatRequested!;
+            // This event was redundantly adding event handlers
+            // Keep it empty to avoid double registration
+            Console.WriteLine("ChatPage_Initialized called - keeping empty to avoid duplicate event registrations");
+            
+            // Do not register events here, it's already done in InitializeEvents()
+            // ChatView.NewConversationRequested += ConversationList_NewChatRequested!;
         }
     }
 } 

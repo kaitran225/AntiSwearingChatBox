@@ -5,22 +5,21 @@ using System.Windows.Data;
 
 namespace AntiSwearingChatBox.WPF.Converters
 {
-    public class MessageAlignmentConverter : IMultiValueConverter
+    public class MessageAlignmentConverter : IValueConverter
     {
-        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (values == null || values.Length < 2 || values[0] == null || values[1] == null)
+            if (value == null)
                 return HorizontalAlignment.Left;
 
-            string messageSender = values[0].ToString()!;
-            string currentUser = values[1].ToString()!;
+            bool isSent = (bool)value;
 
-            return string.Equals(messageSender, currentUser, StringComparison.OrdinalIgnoreCase) 
-                ? HorizontalAlignment.Right 
-                : HorizontalAlignment.Left;
+            return isSent
+                ? HorizontalAlignment.Right // Align sent messages to the right
+                : HorizontalAlignment.Left; // Align received messages to the left
         }
 
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }

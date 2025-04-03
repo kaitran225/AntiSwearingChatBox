@@ -16,7 +16,6 @@
     TextOptions.TextFormattingMode="Ideal"
     TextOptions.TextRenderingMode="Auto"
     Loaded="Page_Loaded"
-    Initialized="ChatPage_Initialized"
     mc:Ignorable="d">
 
     <Page.Resources>
