@@ -467,56 +467,9 @@ namespace AntiSwearingChatBox.WPF.Services.Api
                         
                         if (result != null)
                         {
-                            // After successfully sending a message through the API, try to also broadcast it via SignalR 
-                            // This helps ensure all connected clients get the update immediately
-                            try
-                            {
-                                if (_hubConnection != null && _hubConnection.State == HubConnectionState.Connected)
-                                {
-                                    // First, make sure we're in the thread group
-                                    await JoinThreadChatGroupAsync(threadId);
-                                    
-                                    // Now explicitly notify the thread group about the new message
-                                    Console.WriteLine($"SignalR: Triggering message notification for thread {threadId}");
-                                    try
-                                    {
-                                        await _hubConnection.InvokeAsync("SendMessage", 
-                                            result.MessageHistory.OriginalMessage, 
-                                            threadId);
-                                        Console.WriteLine("SignalR: Message notification sent successfully");
-                                    }
-                                    catch (Exception msgEx)
-                                    {
-                                        Console.WriteLine($"SignalR: Error sending message notification: {msgEx.Message}");
-                                    }
-                                }
-                                else
-                                {
-                                    Console.WriteLine($"SignalR: Can't trigger notification - hub is not connected (State: {_hubConnection?.State.ToString() ?? "null"})");
-                                    
-                                    // Try to reconnect if disconnected
-                                    if (_hubConnection == null || _hubConnection.State == HubConnectionState.Disconnected)
-                                    {
-                                        Console.WriteLine("SignalR: Attempting to reconnect...");
-                                        await ConnectToHubAsync();
-                                        
-                                        // Check if reconnected and try sending again
-                                        if (_hubConnection != null && _hubConnection.State == HubConnectionState.Connected)
-                                        {
-                                            Console.WriteLine("SignalR: Reconnected, trying to send message notification again");
-                                            await JoinThreadChatGroupAsync(threadId);
-                                            await _hubConnection.InvokeAsync("SendMessage", 
-                                                result.MessageHistory.OriginalMessage, 
-                                                threadId);
-                                        }
-                                    }
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                // Just log the error but don't fail the whole operation, since the message was already sent
-                                Console.WriteLine($"SignalR: Error triggering message notification: {ex.Message}");
-                            }
+                            // REMOVED: Do not manually invoke SignalR anymore
+                            // The server already sends the message to all clients via SignalR when we call the API endpoint
+                            // This was causing duplicate messages to be saved to the database
                             
                             return result.MessageHistory;
                         }

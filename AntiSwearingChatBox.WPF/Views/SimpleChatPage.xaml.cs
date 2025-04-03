@@ -460,6 +460,18 @@ namespace AntiSwearingChatBox.WPF.View
                             return;
                         }
 
+                        // Check if this message is already in the Messages collection to avoid duplicates
+                        bool isDuplicate = Messages.Any(m => 
+                            m.Text == (message.ModeratedMessage ?? message.OriginalMessage) &&
+                            m.Timestamp == message.CreatedAt.ToString("h:mm tt") &&
+                            m.Avatar == (!string.IsNullOrEmpty(message.User?.Username) ? message.User.Username[0].ToString().ToUpper() : "?"));
+                        
+                        if (isDuplicate)
+                        {
+                            Console.WriteLine($"Duplicate message detected, not adding to UI again");
+                            return;
+                        }
+
                         // Add message to chat
                         Messages.Add(new ChatMessageViewModel
                         {
@@ -579,17 +591,8 @@ namespace AntiSwearingChatBox.WPF.View
                     UpdateLayout(); // Force layout update
                 });
                 
-                // IMPORTANT: Explicitly join the thread's SignalR group
-                try
-                {
-                    Console.WriteLine($"Joining SignalR group for thread {parsedThreadId}...");
-                    await _apiService.JoinThreadChatGroupAsync(parsedThreadId);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error joining thread SignalR group: {ex.Message}");
-                    // Continue loading the conversation even if joining the group fails
-                }
+                // Temporarily unsubscribe from SignalR message events to avoid duplicate messages
+                _apiService.OnMessageReceived -= HandleMessageReceived;
                 
                 // Load messages for the selected thread
                 Console.WriteLine($"Loading messages for thread {threadId}...");
@@ -625,11 +628,30 @@ namespace AntiSwearingChatBox.WPF.View
                 {
                     Console.WriteLine("No messages found for this thread");
                 }
+                
+                // IMPORTANT: Explicitly join the thread's SignalR group AFTER loading messages
+                try
+                {
+                    Console.WriteLine($"Joining SignalR group for thread {parsedThreadId}...");
+                    await _apiService.JoinThreadChatGroupAsync(parsedThreadId);
+                    
+                    // Re-subscribe to message events now that history is loaded
+                    _apiService.OnMessageReceived += HandleMessageReceived;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error joining thread SignalR group: {ex.Message}");
+                    // Make sure to re-subscribe even if joining the group fails
+                    _apiService.OnMessageReceived += HandleMessageReceived;
+                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error loading thread messages: {ex.Message}\n{ex.StackTrace}");
                 MessageBox.Show($"Error loading messages: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                
+                // Make sure to re-subscribe in case of errors
+                _apiService.OnMessageReceived += HandleMessageReceived;
             }
         }
 
