@@ -25,6 +25,40 @@ namespace AntiSwearingChatBox.WPF.View
         private int _currentThreadId;
         private string _currentUsername = string.Empty;
         
+        // Swearing score tracking
+        private int _swearingScore = 0;
+        public int SwearingScore 
+        { 
+            get => _swearingScore; 
+            set 
+            { 
+                _swearingScore = value;
+                OnPropertyChanged(nameof(SwearingScore));
+                
+                // Check if the score exceeds the limit
+                if (_swearingScore > 5)
+                {
+                    _ = CloseThreadDueToExcessiveSwearing();
+                }
+            }
+        }
+        
+        // Flag to indicate if thread is closed due to excessive swearing
+        private bool _isThreadClosed = false;
+        public bool IsThreadClosed 
+        { 
+            get => _isThreadClosed; 
+            set 
+            { 
+                _isThreadClosed = value; 
+                OnPropertyChanged(nameof(IsThreadClosed));
+                OnPropertyChanged(nameof(CanSendMessages));
+            } 
+        }
+        
+        // Property to check if messages can be sent
+        public bool CanSendMessages => HasSelectedConversation && !IsThreadClosed;
+        
         private Dictionary<string, DateTime> _recentlySentMessages = new Dictionary<string, DateTime>();
         private object _sendLock = new object();
 
@@ -42,9 +76,13 @@ namespace AntiSwearingChatBox.WPF.View
             get => _hasSelectedConversation; 
             set
             {
-                _hasSelectedConversation = value;
-                OnPropertyChanged(nameof(HasSelectedConversation));
-                Console.WriteLine($"HasSelectedConversation set to: {value}");
+                if (_hasSelectedConversation != value)
+                {
+                    _hasSelectedConversation = value;
+                    OnPropertyChanged(nameof(HasSelectedConversation));
+                    OnPropertyChanged(nameof(CanSendMessages));
+                    Console.WriteLine($"HasSelectedConversation set to: {value}, CanSendMessages: {CanSendMessages}");
+                }
             }
         }
 
@@ -58,6 +96,11 @@ namespace AntiSwearingChatBox.WPF.View
             // Initialize collections
             Conversations = new ObservableCollection<ConversationItemViewModel>();
             Messages = new ObservableCollection<ChatMessageViewModel>();
+            
+            // Initialize properties
+            HasSelectedConversation = false;
+            IsThreadClosed = false;
+            SwearingScore = 0;
             
             // Make sure the ItemsSource is set
             if (MessagesList != null)
@@ -79,8 +122,13 @@ namespace AntiSwearingChatBox.WPF.View
             await InitializeConnection();
             await LoadChatThreads();
             
-            // Initialize with empty chat view
+            // Ensure UI state is correctly initialized
             HasSelectedConversation = false;
+            UpdateLayout();
+            
+            // Log UI state for debugging
+            Console.WriteLine($"Page loaded - HasSelectedConversation: {HasSelectedConversation}, " +
+                              $"IsThreadClosed: {IsThreadClosed}, CanSendMessages: {CanSendMessages}");
         }
 
         private void LoadCurrentUser()
@@ -282,6 +330,10 @@ namespace AntiSwearingChatBox.WPF.View
         {
             try
             {
+                // Reset the swearing score when loading a new conversation
+                SwearingScore = 0;
+                IsThreadClosed = false;
+                
                 // Parse thread ID
                 if (!int.TryParse(threadId, out int parsedThreadId))
                 {
@@ -312,7 +364,7 @@ namespace AntiSwearingChatBox.WPF.View
                     CurrentContactName = conversation.Title;
                     OnPropertyChanged(nameof(CurrentContactName));
                     
-                    // Set HasSelectedConversation to true
+                    // Set HasSelectedConversation to true before loading messages
                     HasSelectedConversation = true;
                 }
                 
@@ -494,6 +546,14 @@ namespace AntiSwearingChatBox.WPF.View
                     return;
                 }
                 
+                // Prevent sending if thread is closed
+                if (IsThreadClosed)
+                {
+                    MessageBox.Show("This conversation has been closed due to excessive swearing.", 
+                        "Conversation Closed", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                
                 // Prevent duplicate sends within a short time window
                 lock (_sendLock)
                 {
@@ -552,6 +612,14 @@ namespace AntiSwearingChatBox.WPF.View
                     // Sent successfully
                     Console.WriteLine("Message sent successfully through API");
                     
+                    // Check if the message was moderated
+                    if (result.WasModified)
+                    {
+                        // Increase the swearing score
+                        SwearingScore++;
+                        Console.WriteLine($"Message was moderated. Swearing score increased to {SwearingScore}");
+                    }
+                    
                     // Update the conversation last message
                     UpdateConversationLastMessage(_currentThreadId.ToString(), messageText, DateTime.Now.ToString("h:mm tt"));
                 }
@@ -568,6 +636,41 @@ namespace AntiSwearingChatBox.WPF.View
             {
                 Console.WriteLine($"Error sending message: {ex}");
                 MessageBox.Show($"Error sending message: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        
+        private async Task CloseThreadDueToExcessiveSwearing()
+        {
+            try
+            {
+                // Set the thread as closed
+                IsThreadClosed = true;
+                
+                // Notify users
+                Messages.Add(new ChatMessageViewModel
+                {
+                    IsSent = false,
+                    Text = "⚠️ This conversation has been closed due to excessive swearing. You can no longer send messages.",
+                    Timestamp = DateTime.Now.ToString("h:mm tt"),
+                    Avatar = "🔒"
+                });
+                
+                // Scroll to show the notification
+                ScrollToBottom();
+                
+                // TODO: Call API to update thread status (if such functionality exists)
+                // await _apiService.CloseThreadAsync(_currentThreadId);
+                
+                // Show a message box to inform the user
+                MessageBox.Show(
+                    "This conversation has been closed due to excessive swearing. Messages can no longer be sent.",
+                    "Conversation Closed",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error closing thread: {ex}");
             }
         }
         
