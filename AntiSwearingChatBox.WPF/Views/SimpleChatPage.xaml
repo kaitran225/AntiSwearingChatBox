@@ -2,30 +2,30 @@
     x:Class="AntiSwearingChatBox.WPF.View.SimpleChatPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:converters="clr-namespace:AntiSwearingChatBox.WPF.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="Chat - Anti-Swearing Chat Box"
     Background="{StaticResource PrimaryBackgroundBrush}"
     FontFamily="Segoe UI"
+    Loaded="Page_Loaded"
     TextElement.FontSize="13"
     TextElement.FontWeight="Regular"
     TextElement.Foreground="{StaticResource PrimaryTextBrush}"
     TextOptions.TextFormattingMode="Ideal"
     TextOptions.TextRenderingMode="Auto"
-    Loaded="Page_Loaded"
     mc:Ignorable="d">
 
     <Page.Resources>
-        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-        <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
-        <converters:MessageBackgroundConverter x:Key="MessageBackgroundConverter"/>
-        <converters:MessageForegroundConverter x:Key="MessageForegroundConverter"/>
-        <converters:MessageBorderThicknessConverter x:Key="MessageBorderThicknessConverter"/>
-        <converters:MessageAlignmentConverter x:Key="MessageAlignmentConverter"/>
-        <converters:BoolToColumnConverter x:Key="BoolToColumnConverter"/>
-        <converters:FirstCharConverter x:Key="FirstCharConverter"/>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter" />
+        <converters:MessageBackgroundConverter x:Key="MessageBackgroundConverter" />
+        <converters:MessageForegroundConverter x:Key="MessageForegroundConverter" />
+        <converters:MessageBorderThicknessConverter x:Key="MessageBorderThicknessConverter" />
+        <converters:MessageAlignmentConverter x:Key="MessageAlignmentConverter" />
+        <converters:BoolToColumnConverter x:Key="BoolToColumnConverter" />
+        <converters:FirstCharConverter x:Key="FirstCharConverter" />
     </Page.Resources>
 
     <Grid>
@@ -39,7 +39,7 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <!-- Left Sidebar with Conversation List -->
+            <!--  Left Sidebar with Conversation List  -->
             <Border
                 Grid.Column="0"
                 Background="{StaticResource PrimaryBackgroundBrush}"
@@ -51,14 +51,14 @@
                         <RowDefinition Height="*" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    
-                    <!-- User Display Section -->
-                    <Border 
+
+                    <!--  User Display Section  -->
+                    <Border
                         Grid.Row="0"
-                        BorderBrush="{StaticResource BorderBrush}"
-                        BorderThickness="0,0,0,1"
+                        Padding="16,12"
                         Background="{StaticResource SecondaryBackgroundBrush}"
-                        Padding="16,12">
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="0,0,0,1">
                         <StackPanel Orientation="Horizontal">
                             <Border
                                 Width="32"
@@ -67,23 +67,23 @@
                                 CornerRadius="16">
                                 <TextBlock
                                     x:Name="UserInitials"
-                                    Text="U"
-                                    Foreground="White"
-                                    FontWeight="SemiBold"
+                                    HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
-                                    HorizontalAlignment="Center"/>
+                                    FontWeight="SemiBold"
+                                    Foreground="White"
+                                    Text="U" />
                             </Border>
                             <TextBlock
                                 x:Name="UserDisplayName"
-                                Text="User"
                                 Margin="12,0,0,0"
                                 VerticalAlignment="Center"
                                 FontWeight="SemiBold"
-                                Foreground="{StaticResource PrimaryTextBrush}"/>
+                                Foreground="{StaticResource PrimaryTextBrush}"
+                                Text="User" />
                         </StackPanel>
                     </Border>
-                    
-                    <!-- Search Bar -->
+
+                    <!--  Search Bar  -->
                     <Border
                         Grid.Row="1"
                         Padding="16,12"
@@ -120,7 +120,7 @@
                         </Border>
                     </Border>
 
-                    <!-- Conversation List -->
+                    <!--  Conversation List  -->
                     <ScrollViewer
                         Grid.Row="1"
                         Margin="16,60,16,8"
@@ -135,7 +135,7 @@
                                     Text="CONVERSATIONS" />
                             </Grid>
 
-                            <!-- Conversations -->
+                            <!--  Conversations  -->
                             <ItemsControl x:Name="ConversationsItemsControl" ItemsSource="{Binding Conversations}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
@@ -148,15 +148,15 @@
                                             BorderThickness="{Binding BorderThickness, FallbackValue=0}"
                                             CornerRadius="8"
                                             Cursor="Hand"
-                                            Tag="{Binding Id}"
-                                            MouseLeftButtonDown="ConversationItem_MouseLeftButtonDown">
+                                            MouseLeftButtonDown="ConversationItem_MouseLeftButtonDown"
+                                            Tag="{Binding Id}">
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="Auto" />
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
 
-                                                <!-- Avatar -->
+                                                <!--  Avatar  -->
                                                 <Border
                                                     Width="42"
                                                     Height="42"
@@ -182,7 +182,7 @@
                                                         <ColumnDefinition Width="Auto" />
                                                     </Grid.ColumnDefinitions>
 
-                                                    <!-- Title -->
+                                                    <!--  Title  -->
                                                     <TextBlock
                                                         FontSize="14"
                                                         FontWeight="SemiBold"
@@ -190,7 +190,7 @@
                                                         Text="{Binding Title}"
                                                         TextTrimming="CharacterEllipsis" />
 
-                                                    <!-- Last Message -->
+                                                    <!--  Last Message  -->
                                                     <TextBlock
                                                         Grid.Row="1"
                                                         Margin="0,6,0,0"
@@ -199,7 +199,7 @@
                                                         Text="{Binding LastMessage}"
                                                         TextTrimming="CharacterEllipsis" />
 
-                                                    <!-- Timestamp -->
+                                                    <!--  Timestamp  -->
                                                     <TextBlock
                                                         Grid.Column="1"
                                                         HorizontalAlignment="Right"
@@ -207,7 +207,7 @@
                                                         Foreground="{StaticResource TertiaryTextBrush}"
                                                         Text="{Binding LastMessageTime}" />
 
-                                                    <!-- Unread Counter -->
+                                                    <!--  Unread Counter  -->
                                                     <Border
                                                         Grid.Row="1"
                                                         Grid.Column="1"
@@ -234,8 +234,8 @@
                             </ItemsControl>
                         </StackPanel>
                     </ScrollViewer>
-                    
-                    <!-- Bottom Actions -->
+
+                    <!--  Bottom Actions  -->
                     <Border
                         Grid.Row="2"
                         Padding="16,12"
@@ -274,7 +274,7 @@
                                 </Grid>
                             </Button>
 
-                            <!-- Admin Dashboard Button -->
+                            <!--  Admin Dashboard Button  -->
                             <Button
                                 x:Name="AdminDashboardButton"
                                 Padding="10,8"
@@ -310,292 +310,303 @@
                 </Grid>
             </Border>
 
-            <!-- Main Chat Area -->
+            <!--  Main Chat Area  -->
             <Grid Grid.Column="1">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
+                <Image
+                    Opacity="0.4"
+                    Source="/Resources/LoginPage/bg.png"
+                    Stretch="UniformToFill" />
+                <Border Background="#080808" Opacity="0.9" />
+                <Grid Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
 
-                <!-- Chat Header -->
-                <Border 
-                    Grid.Row="0"
-                    Background="{StaticResource TertiaryBackgroundBrush}"
-                    BorderBrush="{StaticResource BorderBrush}"
-                    BorderThickness="0,0,0,1"
-                    Padding="16"
-                    Visibility="{Binding HasSelectedConversation, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
+                    <!--  Chat Header  -->
+                    <Border
+                        Grid.Row="0"
+                        Padding="16"
+                        Background="{StaticResource TertiaryBackgroundBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="0,0,0,1"
+                        Visibility="{Binding HasSelectedConversation, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
 
-                        <!-- Contact Avatar -->
-                        <Border 
-                            Width="38" 
-                            Height="38" 
-                            Background="{StaticResource PrimaryGreenBrush}"
-                            CornerRadius="19"
-                            Margin="0,0,12,0">
-                            <TextBlock 
-                                x:Name="ContactAvatarText"
-                                Text="{Binding CurrentContactName, Converter={StaticResource FirstCharConverter}, FallbackValue=?}"
-                                FontSize="16"
-                                FontWeight="SemiBold"
-                                Foreground="White"
+                            <!--  Contact Avatar  -->
+                            <Border
+                                Width="38"
+                                Height="38"
+                                Margin="0,0,12,0"
+                                Background="{StaticResource PrimaryGreenBrush}"
+                                CornerRadius="19">
+                                <TextBlock
+                                    x:Name="ContactAvatarText"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="16"
+                                    FontWeight="SemiBold"
+                                    Foreground="White"
+                                    Text="{Binding CurrentContactName, Converter={StaticResource FirstCharConverter}, FallbackValue=?}" />
+
+                                <!--  Online Status Indicator  -->
+                                <Border.Effect>
+                                    <DropShadowEffect
+                                        BlurRadius="4"
+                                        Opacity="0.3"
+                                        ShadowDepth="0"
+                                        Color="#000000" />
+                                </Border.Effect>
+                            </Border>
+
+                            <!--  Online Indicator  -->
+                            <Border
+                                Width="12"
+                                Height="12"
+                                Margin="0,0,12,0"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Bottom"
+                                Background="#47D068"
+                                BorderBrush="White"
+                                BorderThickness="2"
+                                CornerRadius="6">
+                                <Border.Effect>
+                                    <DropShadowEffect
+                                        BlurRadius="4"
+                                        Opacity="0.3"
+                                        ShadowDepth="0"
+                                        Color="#000000" />
+                                </Border.Effect>
+                            </Border>
+
+                            <!--  Contact Info  -->
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock
+                                    x:Name="ContactNameDisplay"
+                                    FontSize="16"
+                                    FontWeight="SemiBold"
+                                    Foreground="{StaticResource PrimaryTextBrush}"
+                                    Text="{Binding CurrentContactName}" />
+
+                                <TextBlock
+                                    Margin="0,2,0,0"
+                                    FontSize="12"
+                                    Foreground="{StaticResource SecondaryTextBrush}"
+                                    Text="Online now" />
+                            </StackPanel>
+
+                            <!--  Action Buttons  -->
+                            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                <Button
+                                    Margin="4,0"
+                                    Click="CallButton_Click"
+                                    Style="{StaticResource WindowBarButtonStyle}">
+                                    <materialDesign:PackIcon
+                                        Width="18"
+                                        Height="18"
+                                        Foreground="{StaticResource PrimaryGreenBrush}"
+                                        Kind="Phone" />
+                                </Button>
+
+                                <Button
+                                    Margin="4,0"
+                                    Click="VideoCallButton_Click"
+                                    Style="{StaticResource WindowBarButtonStyle}">
+                                    <materialDesign:PackIcon
+                                        Width="18"
+                                        Height="18"
+                                        Foreground="{StaticResource PrimaryGreenBrush}"
+                                        Kind="Video" />
+                                </Button>
+
+                                <Button
+                                    Margin="4,0"
+                                    Click="MenuButton_Click"
+                                    Style="{StaticResource WindowBarButtonStyle}">
+                                    <TextBlock
+                                        FontSize="20"
+                                        Foreground="{StaticResource PrimaryTextBrush}"
+                                        Text="⋮" />
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!--  Empty State - No Conversation Selected  -->
+                    <Grid
+                        Grid.Row="0"
+                        Grid.RowSpan="3"
+                        Background="Transparent"
+                        Visibility="{Binding HasSelectedConversation, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                        <StackPanel
+                            MaxWidth="400"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                            <materialDesign:PackIcon
+                                Width="64"
+                                Height="64"
+                                Margin="0,0,0,16"
                                 HorizontalAlignment="Center"
-                                VerticalAlignment="Center" />
-                            
-                            <!-- Online Status Indicator -->
-                            <Border.Effect>
-                                <DropShadowEffect BlurRadius="4" ShadowDepth="0" Opacity="0.3" Color="#000000"/>
-                            </Border.Effect>
-                        </Border>
-                        
-                        <!-- Online Indicator -->
-                        <Border 
-                            Width="12" 
-                            Height="12" 
-                            Background="#47D068"
-                            BorderBrush="White"
-                            BorderThickness="2"
-                            CornerRadius="6"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Bottom"
-                            Margin="0,0,12,0">
-                            <Border.Effect>
-                                <DropShadowEffect BlurRadius="4" ShadowDepth="0" Opacity="0.3" Color="#000000"/>
-                            </Border.Effect>
-                        </Border>
-
-                        <!-- Contact Info -->
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                Foreground="{StaticResource SecondaryTextBrush}"
+                                Kind="ChatOutline" />
                             <TextBlock
-                                x:Name="ContactNameDisplay"
-                                FontSize="16"
+                                Margin="0,0,0,8"
+                                HorizontalAlignment="Center"
+                                FontSize="24"
                                 FontWeight="SemiBold"
                                 Foreground="{StaticResource PrimaryTextBrush}"
-                                Text="{Binding CurrentContactName}" />
-                            
+                                Text="Select a conversation" />
                             <TextBlock
-                                FontSize="12"
+                                Margin="0,0,0,24"
+                                FontSize="14"
                                 Foreground="{StaticResource SecondaryTextBrush}"
-                                Text="Online now"
-                                Margin="0,2,0,0" />
+                                Text="Choose an existing conversation from the list or start a new chat to begin messaging."
+                                TextAlignment="Center"
+                                TextWrapping="Wrap" />
+                            <Button
+                                Width="200"
+                                HorizontalAlignment="Center"
+                                Click="NewChat_Click"
+                                Content="New Conversation"
+                                Style="{StaticResource PrimaryButtonStyle}" />
                         </StackPanel>
+                    </Grid>
 
-                        <!-- Action Buttons -->
-                        <StackPanel Grid.Column="2" Orientation="Horizontal">
-                            <Button
-                                Margin="4,0"
-                                Style="{StaticResource WindowBarButtonStyle}"
-                                Click="CallButton_Click">
-                                <materialDesign:PackIcon
-                                    Kind="Phone"
-                                    Width="18"
-                                    Height="18"
-                                    Foreground="{StaticResource PrimaryGreenBrush}" />
-                            </Button>
-                            
-                            <Button
-                                Margin="4,0"
-                                Style="{StaticResource WindowBarButtonStyle}"
-                                Click="VideoCallButton_Click">
-                                <materialDesign:PackIcon
-                                    Kind="Video"
-                                    Width="18"
-                                    Height="18"
-                                    Foreground="{StaticResource PrimaryGreenBrush}" />
-                            </Button>
-                            
-                            <Button
-                                Margin="4,0"
-                                Click="MenuButton_Click"
-                                Style="{StaticResource WindowBarButtonStyle}">
+                    <!--  Messages List  -->
+                    <Grid Grid.Row="1">
+                        <ScrollViewer
+                            x:Name="MessagesScroll"
+                            Padding="0,12"
+                            VerticalScrollBarVisibility="Hidden"
+                            Visibility="{Binding HasSelectedConversation, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <ItemsControl x:Name="MessagesList" ItemsSource="{Binding Messages}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="16,6">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <!--  Avatar (for received messages)  -->
+                                            <Border
+                                                Grid.Column="0"
+                                                Width="36"
+                                                Height="36"
+                                                Margin="0,0,8,0"
+                                                Background="{StaticResource TertiaryBackgroundBrush}"
+                                                BorderThickness="0"
+                                                CornerRadius="18"
+                                                Visibility="{Binding IsSent, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                                                <TextBlock
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    FontWeight="SemiBold"
+                                                    Foreground="{StaticResource PrimaryGreenBrush}"
+                                                    Text="{Binding Avatar}" />
+                                            </Border>
+
+                                            <!--  Message Bubble  -->
+                                            <Border
+                                                Grid.Column="{Binding IsSent, Converter={StaticResource BoolToColumnConverter}, ConverterParameter=1:1}"
+                                                MaxWidth="600"
+                                                Padding="12,8"
+                                                HorizontalAlignment="{Binding IsSent, Converter={StaticResource MessageAlignmentConverter}}"
+                                                Background="{Binding IsSent, Converter={StaticResource MessageBackgroundConverter}}"
+                                                BorderBrush="{StaticResource MatchaGreenBrush}"
+                                                BorderThickness="{Binding IsSent, Converter={StaticResource MessageBorderThicknessConverter}}"
+                                                CornerRadius="18">
+                                                <StackPanel>
+                                                    <TextBlock
+                                                        FontSize="14"
+                                                        Foreground="{Binding IsSent, Converter={StaticResource MessageForegroundConverter}}"
+                                                        Text="{Binding Text}"
+                                                        TextWrapping="Wrap" />
+                                                    <TextBlock
+                                                        Margin="0,4,0,0"
+                                                        HorizontalAlignment="Right"
+                                                        FontSize="11"
+                                                        Foreground="{StaticResource TertiaryTextBrush}"
+                                                        Text="{Binding Timestamp}" />
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!--  Avatar (for sent messages)  -->
+                                            <Border
+                                                Grid.Column="2"
+                                                Width="36"
+                                                Height="36"
+                                                Margin="8,0,0,0"
+                                                Background="{StaticResource TertiaryBackgroundBrush}"
+                                                BorderThickness="0"
+                                                CornerRadius="18"
+                                                Visibility="{Binding IsSent, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                <TextBlock
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    FontWeight="SemiBold"
+                                                    Foreground="{StaticResource PrimaryGreenBrush}"
+                                                    Text="{Binding Avatar}" />
+                                            </Border>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+
+
+                    <!--  Message Input  -->
+                    <Border
+                        Grid.Row="2"
+                        Padding="16,12"
+                        Background="{StaticResource TertiaryBackgroundBrush}"
+                        Visibility="{Binding HasSelectedConversation, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <Button Click="AttachmentButton_Click" Style="{StaticResource WindowBarButtonStyle}">
                                 <TextBlock
                                     FontSize="20"
                                     Foreground="{StaticResource PrimaryTextBrush}"
-                                    Text="⋮" />
+                                    Text="📎" />
                             </Button>
-                        </StackPanel>
-                    </Grid>
-                </Border>
 
-                <!-- Empty State - No Conversation Selected -->
-                <Grid
-                    Grid.Row="0"
-                    Grid.RowSpan="3"
-                    Background="{StaticResource PrimaryBackgroundBrush}"
-                    Visibility="{Binding HasSelectedConversation, Converter={StaticResource InverseBoolToVisibilityConverter}}">
-                    <StackPanel
-                        MaxWidth="400"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center">
-                        <materialDesign:PackIcon
-                            Width="64"
-                            Height="64"
-                            Margin="0,0,0,16"
-                            HorizontalAlignment="Center"
-                            Foreground="{StaticResource SecondaryTextBrush}"
-                            Kind="ChatOutline" />
-                        <TextBlock
-                            Margin="0,0,0,8"
-                            HorizontalAlignment="Center"
-                            FontSize="24"
-                            FontWeight="SemiBold"
-                            Foreground="{StaticResource PrimaryTextBrush}"
-                            Text="Select a conversation" />
-                        <TextBlock
-                            Margin="0,0,0,24"
-                            FontSize="14"
-                            Foreground="{StaticResource SecondaryTextBrush}"
-                            Text="Choose an existing conversation from the list or start a new chat to begin messaging."
-                            TextAlignment="Center"
-                            TextWrapping="Wrap" />
-                        <Button
-                            Width="200"
-                            HorizontalAlignment="Center"
-                            Click="NewChat_Click"
-                            Content="New Conversation"
-                            Style="{StaticResource PrimaryButtonStyle}" />
-                    </StackPanel>
-                </Grid>
-
-                <!-- Messages List -->
-                <Grid Grid.Row="1">
-                    <Image
-                        Opacity="0.4"
-                        Source="/Resources/LoginPage/bg.png"
-                        Stretch="UniformToFill" />
-                    <Border Background="#121212" Opacity="0.85" />
-                    <ScrollViewer
-                        x:Name="MessagesScroll"
-                        Padding="0,12"
-                        VerticalScrollBarVisibility="Hidden"
-                        Visibility="{Binding HasSelectedConversation, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <ItemsControl x:Name="MessagesList" ItemsSource="{Binding Messages}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid Margin="16,6">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-
-                                        <!-- Avatar (for received messages) -->
-                                        <Border
-                                            Grid.Column="0"
-                                            Width="36"
-                                            Height="36"
-                                            Margin="0,0,8,0"
-                                            Background="{StaticResource TertiaryBackgroundBrush}"
-                                            BorderThickness="0"
-                                            CornerRadius="18"
-                                            Visibility="{Binding IsSent, Converter={StaticResource InverseBoolToVisibilityConverter}}">
-                                            <TextBlock
-                                                HorizontalAlignment="Center"
-                                                VerticalAlignment="Center"
-                                                FontWeight="SemiBold"
-                                                Foreground="{StaticResource PrimaryGreenBrush}"
-                                                Text="{Binding Avatar}" />
-                                        </Border>
-
-                                        <!-- Message Bubble -->
-                                        <Border
-                                            Grid.Column="{Binding IsSent, Converter={StaticResource BoolToColumnConverter}, ConverterParameter=1:1}"
-                                            MaxWidth="600"
-                                            Padding="12,8"
-                                            HorizontalAlignment="{Binding IsSent, Converter={StaticResource MessageAlignmentConverter}}"
-                                            Background="{Binding IsSent, Converter={StaticResource MessageBackgroundConverter}}"
-                                            BorderBrush="{StaticResource MatchaGreenBrush}"
-                                            BorderThickness="{Binding IsSent, Converter={StaticResource MessageBorderThicknessConverter}}"
-                                            CornerRadius="18">
-                                            <StackPanel>
-                                                <TextBlock
-                                                    FontSize="14"
-                                                    Foreground="{Binding IsSent, Converter={StaticResource MessageForegroundConverter}}"
-                                                    Text="{Binding Text}"
-                                                    TextWrapping="Wrap" />
-                                                <TextBlock
-                                                    Margin="0,4,0,0"
-                                                    HorizontalAlignment="Right"
-                                                    FontSize="11"
-                                                    Foreground="{StaticResource TertiaryTextBrush}"
-                                                    Text="{Binding Timestamp}" />
-                                            </StackPanel>
-                                        </Border>
-
-                                        <!-- Avatar (for sent messages) -->
-                                        <Border
-                                            Grid.Column="2"
-                                            Width="36"
-                                            Height="36"
-                                            Margin="8,0,0,0"
-                                            Background="{StaticResource TertiaryBackgroundBrush}"
-                                            BorderThickness="0"
-                                            CornerRadius="18"
-                                            Visibility="{Binding IsSent, Converter={StaticResource BoolToVisibilityConverter}}">
-                                            <TextBlock
-                                                HorizontalAlignment="Center"
-                                                VerticalAlignment="Center"
-                                                FontWeight="SemiBold"
-                                                Foreground="{StaticResource PrimaryGreenBrush}"
-                                                Text="{Binding Avatar}" />
-                                        </Border>
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
-                </Grid>
-
-                <!-- Message Input -->
-                <Border
-                    Grid.Row="2"
-                    Padding="16,12"
-                    Background="{StaticResource TertiaryBackgroundBrush}"
-                    Visibility="{Binding HasSelectedConversation, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-
-                        <Button Click="AttachmentButton_Click" Style="{StaticResource WindowBarButtonStyle}">
-                            <TextBlock
-                                FontSize="20"
+                            <TextBox
+                                x:Name="MessageTextBox"
+                                Grid.Column="1"
+                                Margin="10,0"
+                                AcceptsReturn="False"
+                                Background="{StaticResource SecondaryBackgroundBrush}"
+                                CaretBrush="{StaticResource PrimaryGreenBrush}"
                                 Foreground="{StaticResource PrimaryTextBrush}"
-                                Text="📎" />
-                        </Button>
+                                KeyDown="MessageTextBox_KeyDown"
+                                Style="{StaticResource ChatInputStyle}" />
 
-                        <TextBox
-                            x:Name="MessageTextBox"
-                            Grid.Column="1"
-                            Margin="10,0"
-                            AcceptsReturn="False"
-                            Background="{StaticResource SecondaryBackgroundBrush}"
-                            CaretBrush="{StaticResource PrimaryGreenBrush}"
-                            Foreground="{StaticResource PrimaryTextBrush}"
-                            Style="{StaticResource ChatInputStyle}"
-                            KeyDown="MessageTextBox_KeyDown" />
-
-                        <Button
-                            Grid.Column="2"
-                            Background="{StaticResource PrimaryGreenBrush}"
-                            Click="SendButton_Click"
-                            Style="{StaticResource WindowBarButtonStyle}">
-                            <TextBlock
-                                FontSize="18"
-                                Foreground="White"
-                                Text="➤" />
-                        </Button>
-                    </Grid>
-                </Border>
+                            <Button
+                                Grid.Column="2"
+                                Background="{StaticResource PrimaryGreenBrush}"
+                                Click="SendButton_Click"
+                                Style="{StaticResource WindowBarButtonStyle}">
+                                <TextBlock
+                                    FontSize="18"
+                                    Foreground="White"
+                                    Text="➤" />
+                            </Button>
+                        </Grid>
+                    </Border>
+                </Grid>
             </Grid>
         </Grid>
     </Grid>
