@@ -460,25 +460,7 @@ namespace AntiSwearingChatBox.WPF.View
                             return;
                         }
 
-                        // IMPORTANT: Skip messages from current user as we already added them when sending
-                        if (message.UserId == _apiService.CurrentUser?.UserId)
-                        {
-                            Console.WriteLine("Skipping message from current user to avoid duplication");
-                            
-                            // Update the message content in case it was moderated
-                            var existingMessage = FindExistingMessage(message);
-                            if (existingMessage != null)
-                            {
-                                // Update existing message with server's version (which might be moderated)
-                                existingMessage.Text = message.ModeratedMessage ?? message.OriginalMessage;
-                                existingMessage.OriginalText = message.OriginalMessage;
-                                existingMessage.ContainsProfanity = message.WasModified;
-                                Console.WriteLine("Updated existing message with server version");
-                            }
-                            return;
-                        }
-
-                        // For messages from other users, add to chat
+                        // Add message to chat
                         Messages.Add(new ChatMessageViewModel
                         {
                             IsSent = message.UserId == _apiService.CurrentUser?.UserId,
@@ -513,15 +495,6 @@ namespace AntiSwearingChatBox.WPF.View
             {
                 Console.WriteLine($"Error in HandleMessageReceived: {ex.Message}");
             }
-        }
-        
-        // Helper method to find an existing message that matches the received one
-        private ChatMessageViewModel? FindExistingMessage(ChatMessage message)
-        {
-            // Look for messages that match the received message's content and are from the current user
-            return Messages.LastOrDefault(m => 
-                m.IsSent && 
-                (m.Text == message.OriginalMessage || m.OriginalText == message.OriginalMessage));
         }
 
         private async void ConversationItem_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
