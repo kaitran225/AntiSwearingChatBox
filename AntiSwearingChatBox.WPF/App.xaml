@@ -13,6 +13,12 @@
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
             </ResourceDictionary.MergedDictionaries>
             
+            <!-- Converters -->
+            <converters:MessageBackgroundConverter x:Key="MessageBackgroundConverter"/>
+            <converters:MessageForegroundConverter x:Key="MessageForegroundConverter"/>
+            <converters:MessageBorderThicknessConverter x:Key="MessageBorderThicknessConverter"/>
+            <converters:MessageAlignmentConverter x:Key="MessageAlignmentConverter"/>
+            
             <!-- Main Colors -->
             <Color x:Key="PrimaryBlackColor">#121212</Color>
             <Color x:Key="SecondaryBlackColor">#1A1A1A</Color>
@@ -295,8 +301,6 @@
             <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
             <converters:IntToBoolConverter x:Key="IntToBoolConverter"/>
             <converters:BoolToAlignmentConverter x:Key="BoolToAlignmentConverter"/>
-            <converters:MessageBackgroundConverter x:Key="MessageBackgroundConverter"/>
-            <converters:MessageForegroundConverter x:Key="MessageForegroundConverter"/>
             <converters:SenderVisibilityConverter x:Key="SenderVisibilityConverter"/>
 
             <!-- Placeholder TextBox Style -->

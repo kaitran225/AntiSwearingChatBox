@@ -13,6 +13,10 @@
     <UserControl.Resources>
         <converters:BoolToColumnConverter x:Key="BoolToColumnConverter"/>
         <converters:BoolToAlignmentConverter x:Key="BoolToAlignmentConverter"/>
+        <converters:MessageBackgroundConverter x:Key="MessageBackgroundConverter"/>
+        <converters:MessageForegroundConverter x:Key="MessageForegroundConverter"/>
+        <converters:MessageBorderThicknessConverter x:Key="MessageBorderThicknessConverter"/>
+        <converters:MessageAlignmentConverter x:Key="MessageAlignmentConverter"/>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
     </UserControl.Resources>
 
