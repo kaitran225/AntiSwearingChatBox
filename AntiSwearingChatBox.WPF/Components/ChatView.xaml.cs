@@ -173,7 +173,7 @@ namespace AntiSwearingChatBox.WPF.Components
                     return;
                 }
 
-                var textToSend = MessageTextBox.Text.TrimEnd();
+                var textToSend = MessageTextBox.Text.Trim();
                 Console.WriteLine($"Sending message: '{textToSend}'");
                 MessageSent?.Invoke(this, textToSend);
                 

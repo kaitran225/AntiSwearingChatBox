@@ -15,7 +15,7 @@ namespace AntiSwearingChatBox.WPF.Converters
             bool isSent = (bool)value;
 
             return isSent
-                ? new Thickness(1) // Thin border for sent messages
+                ? new Thickness(2) // Increased border thickness for sent messages
                 : new Thickness(0); // No border for received messages
         }
 

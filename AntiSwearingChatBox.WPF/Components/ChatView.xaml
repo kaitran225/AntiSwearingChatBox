@@ -18,6 +18,7 @@
         <converters:MessageBorderThicknessConverter x:Key="MessageBorderThicknessConverter"/>
         <converters:MessageAlignmentConverter x:Key="MessageAlignmentConverter"/>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
     </UserControl.Resources>
 
     <Grid>
@@ -104,12 +105,13 @@
                             </Grid.ColumnDefinitions>
 
                             <!-- Avatar (for received messages) -->
-                            <Border Grid.Column="{Binding IsSent, Converter={StaticResource BoolToColumnConverter}}"
+                            <Border Grid.Column="0"
                                     Width="36" Height="36"
                                     Background="{StaticResource TertiaryBackgroundBrush}"
                                     BorderThickness="0"
                                     CornerRadius="18"
-                                    Margin="0,0,8,0">
+                                    Margin="0,0,8,0"
+                                    Visibility="{Binding IsSent, Converter={StaticResource InverseBoolToVisibilityConverter}}">
                                 <TextBlock Text="{Binding Avatar}"
                                          Foreground="{StaticResource PrimaryGreenBrush}"
                                          FontWeight="SemiBold"
@@ -119,11 +121,12 @@
 
                             <!-- Message Bubble -->
                             <Border x:Name="MessageBubble" 
+                                    Grid.Column="{Binding IsSent, Converter={StaticResource BoolToColumnConverter}, ConverterParameter=1:1}"
                                     CornerRadius="18" 
                                     Padding="12,8"
                                     Background="{Binding IsSent, Converter={StaticResource MessageBackgroundConverter}}"
                                     BorderThickness="{Binding IsSent, Converter={StaticResource MessageBorderThicknessConverter}}"
-                                    BorderBrush="#555555"
+                                    BorderBrush="{StaticResource MatchaGreenBrush}"
                                     MaxWidth="600"
                                     HorizontalAlignment="{Binding IsSent, Converter={StaticResource MessageAlignmentConverter}}">
                                 <StackPanel>
@@ -137,6 +140,21 @@
                                              HorizontalAlignment="Right"
                                              Margin="0,4,0,0"/>
                                 </StackPanel>
+                            </Border>
+                            
+                            <!-- Avatar (for sent messages) -->
+                            <Border Grid.Column="2"
+                                    Width="36" Height="36"
+                                    Background="{StaticResource TertiaryBackgroundBrush}"
+                                    BorderThickness="0"
+                                    CornerRadius="18"
+                                    Margin="8,0,0,0"
+                                    Visibility="{Binding IsSent, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <TextBlock Text="{Binding Avatar}"
+                                         Foreground="{StaticResource PrimaryGreenBrush}"
+                                         FontWeight="SemiBold"
+                                         HorizontalAlignment="Center"
+                                         VerticalAlignment="Center"/>
                             </Border>
                         </Grid>
                     </DataTemplate>
