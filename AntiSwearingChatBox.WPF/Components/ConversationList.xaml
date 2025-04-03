@@ -59,7 +59,7 @@
             Grid.Row="1"
             Margin="16,12"
             Padding="16,0,16,8"
-            VerticalScrollBarVisibility="Auto">
+            VerticalScrollBarVisibility="Hidden">
             <StackPanel>
                 <Grid Margin="0,12,0,8">
                     <TextBlock

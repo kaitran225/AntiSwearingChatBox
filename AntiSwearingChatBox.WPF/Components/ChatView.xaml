@@ -89,7 +89,7 @@
         <!-- Messages List -->
         <ScrollViewer Grid.Row="1" 
                       x:Name="MessagesScroll"
-                      VerticalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Hidden"
                       Background="{StaticResource PrimaryBackgroundBrush}"
                       Padding="0,12"
                       Visibility="{Binding HasSelectedConversation, Converter={StaticResource BoolToVisibilityConverter}}">

@@ -312,6 +312,14 @@ namespace AntiSwearingChatBox.WPF.View
                     Console.WriteLine("Forcing UI update in ChatView");
                     ChatView.ShowChatView();
                     ChatView.UpdateLayout(); // Force layout update
+                    
+                    // Debug - check visibility of message controls
+                    var messagesScroll = ChatView.FindName("MessagesScroll") as ScrollViewer;
+                    var messagesList = ChatView.FindName("MessagesList") as ItemsControl;
+                    Console.WriteLine($"ChatView.MessagesScroll visibility: {messagesScroll?.Visibility}");
+                    Console.WriteLine($"ChatView.MessagesList visibility: {messagesList?.Visibility}");
+                    Console.WriteLine($"ChatView HasSelectedConversation: {ChatView.HasSelectedConversation}");
+                    Console.WriteLine($"Messages count: {ChatView.Messages?.Count}");
                 });
                 
                 // Load messages for the selected thread

@@ -71,7 +71,7 @@ namespace AntiSwearingChatBox.WPF.View
             MainFrame.Navigate(_loginPage);
             try
             {
-                WindowTitleBar?.SetWindowTitle("Login");
+                // Set window title directly
                 this.Title = "Login - Anti-Swearing Chat Box";
             }
             catch (Exception ex)
@@ -85,7 +85,7 @@ namespace AntiSwearingChatBox.WPF.View
             MainFrame.Navigate(_registerPage);
             try
             {
-                WindowTitleBar?.SetWindowTitle("Register");
+                // Set window title directly
                 this.Title = "Register - Anti-Swearing Chat Box";
             }
             catch (Exception ex)
@@ -99,7 +99,7 @@ namespace AntiSwearingChatBox.WPF.View
             MainFrame.Navigate(_chatPage);
             try
             {
-                WindowTitleBar?.SetWindowTitle("Chat");
+                // Set window title directly
                 this.Title = "Chat - Anti-Swearing Chat Box";
             }
             catch (Exception ex)

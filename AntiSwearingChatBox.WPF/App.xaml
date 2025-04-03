@@ -20,7 +20,7 @@
             <converters:MessageAlignmentConverter x:Key="MessageAlignmentConverter"/>
             
             <!-- Main Colors -->
-            <Color x:Key="PrimaryBlackColor">#121212</Color>
+            <Color x:Key="PrimaryBlackColor">#050505</Color>
             <Color x:Key="SecondaryBlackColor">#1A1A1A</Color>
             <Color x:Key="TertiaryBlackColor">#222222</Color>
             <Color x:Key="QuaternaryBlackColor">#2A2A2A</Color>
@@ -177,7 +177,7 @@
                                     CornerRadius="20">
                                 <ScrollViewer x:Name="PART_ContentHost"
                                             Margin="{TemplateBinding Padding}"
-                                            VerticalScrollBarVisibility="{TemplateBinding VerticalScrollBarVisibility}"/>
+                                            VerticalScrollBarVisibility="Hidden"/>
                             </Border>
                         </ControlTemplate>
                     </Setter.Value>

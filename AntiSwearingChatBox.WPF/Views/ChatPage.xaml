@@ -156,10 +156,9 @@
                 </Border>
 
                 <!-- Admin Dashboard Content -->
-                <ScrollViewer 
-                    Grid.Row="1"
-                    VerticalScrollBarVisibility="Auto"
-                    HorizontalScrollBarVisibility="Disabled">
+                <ScrollViewer x:Name="ContactsScroll"
+                              VerticalScrollBarVisibility="Hidden"
+                              HorizontalScrollBarVisibility="Hidden">
                     <StackPanel Margin="24">
                         <TextBlock
                             FontSize="18"
