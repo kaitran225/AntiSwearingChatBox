@@ -8,8 +8,12 @@ using Microsoft.AspNetCore.SignalR.Client;
 using AntiSwearingChatBox.WPF.Services.Api;
 using AntiSwearingChatBox.WPF.Components;
 using AntiSwearingChatBox.WPF.ViewModels;
+using AntiSwearingChatBox.WPF.Models.Api;
 using System.Linq;
 using System.Windows.Input;
+using System.IO;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace AntiSwearingChatBox.WPF.View
 {
@@ -20,10 +24,11 @@ namespace AntiSwearingChatBox.WPF.View
     {
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        private HubConnection? _connection;
         private readonly IApiService _apiService;
         private int _currentThreadId;
         private string _currentUsername = string.Empty;
+        private System.Timers.Timer? _connectionCheckTimer;
+        private const int CONNECTION_CHECK_INTERVAL_MS = 5000; // Check every 5 seconds
         
         // Swearing score tracking
         private int _swearingScore = 0;
@@ -67,7 +72,16 @@ namespace AntiSwearingChatBox.WPF.View
         public bool IsAdmin { get; set; } = true;  // Default to true for testing
         
         // Properties for the chat view
-        public ObservableCollection<ChatMessageViewModel> Messages { get; private set; }
+        private ObservableCollection<ChatMessageViewModel> _chatMessages = new ObservableCollection<ChatMessageViewModel>();
+        public ObservableCollection<ChatMessageViewModel> Messages
+        {
+            get => _chatMessages;
+            private set
+            {
+                _chatMessages = value;
+                OnPropertyChanged(nameof(Messages));
+            }
+        }
         public string CurrentContactName { get; set; } = string.Empty;
         private bool _hasSelectedConversation = false;
         
@@ -83,6 +97,18 @@ namespace AntiSwearingChatBox.WPF.View
                     OnPropertyChanged(nameof(CanSendMessages));
                     Console.WriteLine($"HasSelectedConversation set to: {value}, CanSendMessages: {CanSendMessages}");
                 }
+            }
+        }
+
+        private bool _isConnected = true;
+        public bool IsConnected
+        {
+            get => _isConnected;
+            set
+            {
+                _isConnected = value;
+                OnPropertyChanged(nameof(IsConnected));
+                UpdateConnectionStatus();
             }
         }
 
@@ -112,9 +138,11 @@ namespace AntiSwearingChatBox.WPF.View
             {
                 ConversationsItemsControl.ItemsSource = Conversations;
             }
+            
+            // Register page unload event
+            this.Unloaded += Page_Unloaded;
         }
 
-        #region Event Handlers
         
         private async void Page_Loaded(object sender, RoutedEventArgs e)
         {
@@ -129,6 +157,47 @@ namespace AntiSwearingChatBox.WPF.View
             // Log UI state for debugging
             Console.WriteLine($"Page loaded - HasSelectedConversation: {HasSelectedConversation}, " +
                               $"IsThreadClosed: {IsThreadClosed}, CanSendMessages: {CanSendMessages}");
+                              
+            // Start connection checking timer
+            StartConnectionChecker();
+        }
+        
+        private async void Page_Unloaded(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Console.WriteLine("Page unloading - cleaning up resources");
+                
+                // Stop the connection checker timer
+                StopConnectionChecker();
+                
+                // Unsubscribe from event handlers
+                if (_apiService != null)
+                {
+                    // If we're in a thread, leave the SignalR group
+                    if (_currentThreadId > 0)
+                    {
+                        try
+                        {
+                            Console.WriteLine($"Leaving SignalR group for thread {_currentThreadId}...");
+                            await _apiService.LeaveThreadChatGroupAsync(_currentThreadId);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Error leaving thread SignalR group: {ex.Message}");
+                        }
+                    }
+                    
+                    _apiService.OnMessageReceived -= HandleMessageReceived;
+                    
+                    // Disconnect from SignalR
+                    await _apiService.DisconnectFromHubAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error during page unload: {ex.Message}");
+            }
         }
 
         private void LoadCurrentUser()
@@ -235,91 +304,248 @@ namespace AntiSwearingChatBox.WPF.View
             }
         }
         
+        private void StartConnectionChecker()
+        {
+            // Dispose any existing timer
+            StopConnectionChecker();
+            
+            // Create a new timer that checks connection state
+            _connectionCheckTimer = new System.Timers.Timer(CONNECTION_CHECK_INTERVAL_MS);
+            _connectionCheckTimer.Elapsed += async (sender, e) => await CheckSignalRConnection();
+            _connectionCheckTimer.Start();
+            
+            Console.WriteLine($"SignalR connection checker started with interval of {CONNECTION_CHECK_INTERVAL_MS}ms");
+        }
+        
+        private void StopConnectionChecker()
+        {
+            if (_connectionCheckTimer != null)
+            {
+                _connectionCheckTimer.Stop();
+                _connectionCheckTimer.Dispose();
+                _connectionCheckTimer = null;
+                Console.WriteLine("SignalR connection checker stopped");
+            }
+        }
+        
+        private async Task CheckSignalRConnection()
+        {
+            try
+            {
+                // Check if the SignalR connection is still active
+                bool isConnected = await _apiService.IsHubConnectedAsync();
+                Console.WriteLine($"[CONNECTION CHECK] SignalR connection state check - Connected: {isConnected}");
+                
+                // Only update UI if connection state changed
+                if (IsConnected != isConnected)
+                {
+                    Console.WriteLine($"[CONNECTION CHECK] SignalR connection state changed: {IsConnected} -> {isConnected}");
+                    
+                    // Update the connection status
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        IsConnected = isConnected;
+                        UpdateConnectionStatus();
+                    });
+                    
+                    // Try to reconnect if disconnected
+                    if (!isConnected)
+                    {
+                        Console.WriteLine("[CONNECTION CHECK] Connection lost. Attempting to reconnect...");
+                        try
+                        {
+                            // Try to reconnect to the hub
+                            await _apiService.ConnectToHubAsync();
+                            
+                            // Delay a bit to allow connection to establish
+                            await Task.Delay(2000); 
+                            
+                            // Check if reconnection was successful
+                            bool reconnected = await _apiService.IsHubConnectedAsync();
+                            Console.WriteLine($"[CONNECTION CHECK] Reconnect attempt result: {(reconnected ? "SUCCESS" : "FAILED")}");
+                            
+                            // Update UI with new status
+                            Application.Current.Dispatcher.Invoke(() =>
+                            {
+                                IsConnected = reconnected;
+                                UpdateConnectionStatus();
+                            });
+                            
+                            // If reconnected, re-join current thread
+                            if (reconnected && _currentThreadId > 0)
+                            {
+                                Console.WriteLine($"[CONNECTION CHECK] Successfully reconnected. Rejoining thread {_currentThreadId}");
+                                await _apiService.JoinThreadChatGroupAsync(_currentThreadId);
+                            }
+                        }
+                        catch (Exception reconnectEx)
+                        {
+                            Console.WriteLine($"[CONNECTION CHECK] Error during reconnection: {reconnectEx.Message}");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[CONNECTION CHECK] Error checking SignalR connection: {ex.Message}");
+            }
+        }
+        
+        private void UpdateConnectionStatus()
+        {
+            // Update connection indicator based on IsConnected
+            if (ConnectionIndicator != null)
+            {
+                ConnectionIndicator.Fill = IsConnected ? 
+                    new SolidColorBrush(Colors.Green) : 
+                    new SolidColorBrush(Colors.Red);
+                
+                ConnectionStatusText.Text = IsConnected ? 
+                    "Connected" : 
+                    "Disconnected";
+            }
+        }
+        
         private async Task InitializeConnection()
         {
             try
             {
                 Console.WriteLine("Initializing SignalR connection...");
                 
-                // Use the hub URL from ApiConfig
-                _connection = new HubConnectionBuilder()
-                    .WithUrl(ApiConfig.ChatHubUrl)
-                    .WithAutomaticReconnect(new[] { TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(10) })
-                    .Build();
+                // Use the API service's built-in SignalR connection
+                await _apiService.ConnectToHubAsync();
                 
-                Console.WriteLine("Registering message handler...");
+                // Subscribe to message events from the API service
+                _apiService.OnMessageReceived += HandleMessageReceived;
                 
-                // Handle incoming messages
-                _connection.On<string, string, int, DateTime, int, string, bool>("ReceiveMessage", 
-                    (username, filteredMessage, userId, timestamp, threadId, originalMessage, containsProfanity) =>
+                // Verify connection is working
+                bool isConnected = await _apiService.IsHubConnectedAsync();
+                Console.WriteLine($"SignalR connection initialized - IsConnected: {isConnected}");
+                
+                // Don't show warning popup anymore, just log to console
+                if (!isConnected)
                 {
-                    Console.WriteLine($"Received message in thread {threadId} from {username}: {filteredMessage} (Contains profanity: {containsProfanity})");
-                    
-                    // Track message details for duplication check
-                    var isCurrentThread = threadId == _currentThreadId;
-                    var isFromSelf = string.Equals(username, _currentUsername, StringComparison.OrdinalIgnoreCase);
-                    
-                    Console.WriteLine($"Message check - isCurrentThread: {isCurrentThread}, isFromSelf: {isFromSelf}, currentUsername: '{_currentUsername}', sender: '{username}'");
-                    
-                    // Always update the conversation list preview, even for our own messages
-                    Dispatcher.Invoke(() => UpdateConversationLastMessage(threadId.ToString(), filteredMessage, timestamp.ToString("h:mm tt")));
-
-                    // Only process messages for the current thread AND from other users
-                    // This prevents duplicate messages when we send a message
-                    if (isCurrentThread && !isFromSelf)
-                    {
-                        Dispatcher.Invoke(() =>
-                        {
-                            var sender = username ?? "Unknown";
-                            var avatar = !string.IsNullOrEmpty(sender) ? sender[0].ToString().ToUpper() : "?";
-                            
-                            Console.WriteLine($"Adding message from {sender} to chat view (Contains profanity: {containsProfanity})");
-                            
-                            Messages.Add(new ChatMessageViewModel
-                            {
-                                IsSent = false,
-                                Text = filteredMessage,
-                                OriginalText = originalMessage,
-                                Timestamp = timestamp.ToString("h:mm tt"),
-                                Avatar = avatar,
-                                ContainsProfanity = containsProfanity,
-                                IsUncensored = false // Initially show censored version
-                            });
-                            
-                            // Scroll to bottom to show the new message
-                            ScrollToBottom();
-                        });
-                    }
-                    else if (!isCurrentThread)
-                    {
-                        // If the message is for a different thread, update the unread count
-                        Dispatcher.Invoke(() =>
-                        {
-                            var conversation = Conversations.FirstOrDefault(c => c.Id == threadId.ToString());
-                            if (conversation != null)
-                            {
-                                conversation.UnreadCount++;
-                            }
-                        });
-                    }
-                });
-                
-                // Start the connection
-                await _connection.StartAsync();
-                Console.WriteLine("SignalR connection started successfully");
+                    Console.WriteLine("Warning: Real-time chat connection could not be established. Messages may be delayed.");
+                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error initializing connection: {ex.Message}");
-                MessageBox.Show($"Error connecting to chat server: {ex.Message}", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                // Don't show MessageBox
             }
         }
+        
+        private void HandleMessageReceived(ChatMessage message)
+        {
+            if (message == null)
+            {
+                Console.WriteLine("WARNING: Received null message in HandleMessageReceived");
+                return;
+            }
+            
+            try
+            {
+                // Log receipt of message
+                Console.WriteLine($"Received message from {message.User?.Username ?? "Unknown"}: {message.ModeratedMessage ?? message.OriginalMessage}");
+                
+                // Ensure we update the UI on the UI thread
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    try
+                    {
+                        // Check if this message belongs to the current thread
+                        if (_currentThreadId > 0 && message.ThreadId != _currentThreadId)
+                        {
+                            Console.WriteLine($"Message is for thread {message.ThreadId}, but we're viewing {_currentThreadId} - not adding to UI");
+                            return;
+                        }
 
-        private void ConversationItem_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+                        // IMPORTANT: Skip messages from current user as we already added them when sending
+                        if (message.UserId == _apiService.CurrentUser?.UserId)
+                        {
+                            Console.WriteLine("Skipping message from current user to avoid duplication");
+                            
+                            // Update the message content in case it was moderated
+                            var existingMessage = FindExistingMessage(message);
+                            if (existingMessage != null)
+                            {
+                                // Update existing message with server's version (which might be moderated)
+                                existingMessage.Text = message.ModeratedMessage ?? message.OriginalMessage;
+                                existingMessage.OriginalText = message.OriginalMessage;
+                                existingMessage.ContainsProfanity = message.WasModified;
+                                Console.WriteLine("Updated existing message with server version");
+                            }
+                            return;
+                        }
+
+                        // For messages from other users, add to chat
+                        Messages.Add(new ChatMessageViewModel
+                        {
+                            IsSent = message.UserId == _apiService.CurrentUser?.UserId,
+                            Text = message.ModeratedMessage ?? message.OriginalMessage,
+                            OriginalText = message.OriginalMessage,
+                            Timestamp = message.CreatedAt.ToString("h:mm tt"),
+                            Avatar = !string.IsNullOrEmpty(message.User?.Username) ? message.User.Username[0].ToString().ToUpper() : "?",
+                            ContainsProfanity = message.WasModified,
+                            IsUncensored = false // Initially show censored version
+                        });
+                        
+                        // Only auto-scroll if the user is already at the bottom
+                        if (IsScrolledToBottom())
+                        {
+                            ScrollToBottom();
+                        }
+                        
+                        // Update unread count indicator if needed (only for messages not from current user)
+                        if (message.UserId != _apiService.CurrentUser?.UserId && message.ThreadId != _currentThreadId)
+                        {
+                            // Update UI to indicate a new message
+                            Console.WriteLine($"New message in thread {message.ThreadId} while viewing {_currentThreadId}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error updating UI with received message: {ex.Message}");
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in HandleMessageReceived: {ex.Message}");
+            }
+        }
+        
+        // Helper method to find an existing message that matches the received one
+        private ChatMessageViewModel? FindExistingMessage(ChatMessage message)
+        {
+            // Look for messages that match the received message's content and are from the current user
+            return Messages.LastOrDefault(m => 
+                m.IsSent && 
+                (m.Text == message.OriginalMessage || m.OriginalText == message.OriginalMessage));
+        }
+
+        private async void ConversationItem_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (sender is FrameworkElement element && element.Tag is string threadId)
             {
                 Console.WriteLine($"Conversation clicked: {threadId}");
+                
+                // If we're already in a thread, leave that group first
+                if (_currentThreadId > 0 && int.TryParse(threadId, out int newThreadId) && _currentThreadId != newThreadId)
+                {
+                    try
+                    {
+                        Console.WriteLine($"Leaving previous thread group {_currentThreadId} before joining new one...");
+                        await _apiService.LeaveThreadChatGroupAsync(_currentThreadId);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error leaving previous thread group: {ex.Message}");
+                        // Continue even if there's an error
+                    }
+                }
+                
+                // Now load the new conversation
                 LoadConversation(threadId);
                 e.Handled = true;
             }
@@ -380,6 +606,18 @@ namespace AntiSwearingChatBox.WPF.View
                     UpdateLayout(); // Force layout update
                 });
                 
+                // IMPORTANT: Explicitly join the thread's SignalR group
+                try
+                {
+                    Console.WriteLine($"Joining SignalR group for thread {parsedThreadId}...");
+                    await _apiService.JoinThreadChatGroupAsync(parsedThreadId);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error joining thread SignalR group: {ex.Message}");
+                    // Continue loading the conversation even if joining the group fails
+                }
+                
                 // Load messages for the selected thread
                 Console.WriteLine($"Loading messages for thread {threadId}...");
                 var messages = await _apiService.GetMessagesAsync(parsedThreadId);
@@ -432,19 +670,21 @@ namespace AntiSwearingChatBox.WPF.View
             }
         }
         
+        private bool IsScrolledToBottom()
+        {
+            if (MessagesScroll == null)
+                return true;
+                
+            // Check if scroll viewer is at the bottom
+            return MessagesScroll.VerticalOffset >= MessagesScroll.ScrollableHeight - 20;
+        }
+        
         private void ScrollToBottom()
         {
-            try
-            {
-                if (MessagesScroll != null)
-                {
-                    MessagesScroll.ScrollToBottom();
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error scrolling to bottom: {ex.Message}");
-            }
+            if (MessagesScroll == null)
+                return;
+                
+            MessagesScroll.ScrollToEnd();
         }
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -845,17 +1085,23 @@ namespace AntiSwearingChatBox.WPF.View
                     }
                 }
                 
-                Console.WriteLine($"Sending message: '{messageText}'");
+                Console.WriteLine($"SENDING: '{messageText}' to thread {_currentThreadId}");
                 
-                // Add the message to the UI immediately
+                // Add the message to the UI immediately for responsive feedback
                 var avatar = !string.IsNullOrEmpty(_currentUsername) ? _currentUsername[0].ToString().ToUpper() : "?";
-                Messages.Add(new ChatMessageViewModel
+                var currentTimestamp = DateTime.Now.ToString("h:mm tt");
+                
+                var sentMessage = new ChatMessageViewModel
                 {
                     IsSent = true,
                     Text = messageText,
-                    Timestamp = DateTime.Now.ToString("h:mm tt"),
-                    Avatar = avatar
-                });
+                    OriginalText = messageText,
+                    Timestamp = currentTimestamp,
+                    Avatar = avatar,
+                    ContainsProfanity = false // We don't know yet, will be set by server response
+                };
+                
+                Messages.Add(sentMessage);
                 
                 // Clear the text box
                 MessageTextBox.Clear();
@@ -863,13 +1109,18 @@ namespace AntiSwearingChatBox.WPF.View
                 // Scroll to bottom to show the new message
                 ScrollToBottom();
                 
-                // Send to API (this will trigger the server to send to others)
+                // Send to API (this will trigger the server to notify all clients via SignalR)
                 Console.WriteLine($"Calling API to send message to thread {_currentThreadId}");
                 var result = await _apiService.SendMessageAsync(_currentThreadId, messageText);
-                if (result != null)
+                
+                if (result != null && !string.IsNullOrEmpty(result.ModeratedMessage))
                 {
                     // Sent successfully
                     Console.WriteLine("Message sent successfully through API");
+                    
+                    // Update the local message with the server's version (which might be moderated)
+                    sentMessage.Text = result.ModeratedMessage;
+                    sentMessage.ContainsProfanity = result.WasModified;
                     
                     // Check if the message was moderated
                     if (result.WasModified)
@@ -880,12 +1131,19 @@ namespace AntiSwearingChatBox.WPF.View
                     }
                     
                     // Update the conversation last message
-                    UpdateConversationLastMessage(_currentThreadId.ToString(), messageText, DateTime.Now.ToString("h:mm tt"));
+                    UpdateConversationLastMessage(_currentThreadId.ToString(), result.ModeratedMessage, currentTimestamp);
+                    
+                    // The SignalR notification is now triggered directly in ApiService.SendMessageAsync
+                    // This ensures all clients get updated even if SignalR doesn't automatically broadcast
                 }
                 else
                 {
-                    // API returned null - add error indicator to UI
-                    Console.WriteLine("Error: API returned null when sending message");
+                    // API returned null or empty - add error indicator to UI
+                    Console.WriteLine("Error: API returned null or empty when sending message");
+                    
+                    // Mark the message with an error indicator
+                    sentMessage.Text += " ⚠️";
+                    sentMessage.SendFailed = true;
                     
                     // Show an error message
                     MessageBox.Show("Failed to send message. Please try again.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -902,6 +1160,8 @@ namespace AntiSwearingChatBox.WPF.View
         {
             try
             {
+                Console.WriteLine("Closing thread due to excessive swearing");
+                
                 // Set the thread as closed
                 IsThreadClosed = true;
                 
@@ -917,24 +1177,41 @@ namespace AntiSwearingChatBox.WPF.View
                 // Scroll to show the notification
                 ScrollToBottom();
                 
-                // TODO: Call API to update thread status (if such functionality exists)
+                // Add a delay to ensure UI updates
+                await Task.Delay(100);
+                
+                // If we had an API method to close threads, we would call it here
+                // For example:
                 // await _apiService.CloseThreadAsync(_currentThreadId);
                 
                 // Show a message box to inform the user
-                MessageBox.Show(
-                    "This conversation has been closed due to excessive swearing. Messages can no longer be sent.",
-                    "Conversation Closed",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
+                await Dispatcher.InvokeAsync(() => {
+                    MessageBox.Show(
+                        "This conversation has been closed due to excessive swearing. Messages can no longer be sent.",
+                        "Conversation Closed",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                });
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error closing thread: {ex}");
+                
+                // Try to log the error to a file
+                await Task.Run(() => {
+                    try {
+                        // Simple error logging
+                        File.AppendAllText(
+                            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "error.log"), 
+                            $"{DateTime.Now}: Error closing thread: {ex}\r\n");
+                    }
+                    catch {
+                        // Ignore errors in error handling
+                    }
+                });
             }
         }
         
-        #endregion
-
         protected void OnPropertyChanged(string propertyName)
         {
             Console.WriteLine($"Property changed: {propertyName}");

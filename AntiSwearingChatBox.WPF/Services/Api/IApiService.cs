@@ -23,12 +23,16 @@ namespace AntiSwearingChatBox.WPF.Services.Api
         
         // Messages
         Task<List<ChatMessage>> GetMessagesAsync(int threadId);
+        Task<List<ChatMessage>> GetMessagesAsync(int threadId, DateTime? since);
         Task<List<ChatMessage>> GetMessagesAsync(int threadId, int limit);
         Task<ChatMessage> SendMessageAsync(int threadId, string content);
         
         // Real-time connection
         Task ConnectToHubAsync();
         Task DisconnectFromHubAsync();
+        Task<bool> IsHubConnectedAsync();
+        Task JoinThreadChatGroupAsync(int threadId);
+        Task LeaveThreadChatGroupAsync(int threadId);
         
         // Events
         event Action<ChatMessage> OnMessageReceived;

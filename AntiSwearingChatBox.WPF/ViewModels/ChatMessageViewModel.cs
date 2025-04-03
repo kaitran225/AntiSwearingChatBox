@@ -16,6 +16,7 @@ namespace AntiSwearingChatBox.WPF.Components
         private SolidColorBrush _borderBrush = new SolidColorBrush(Colors.LightGray);
         private bool _containsProfanity;
         private bool _isUncensored;
+        private bool _sendFailed;
 
         public string Text
         {
@@ -109,9 +110,22 @@ namespace AntiSwearingChatBox.WPF.Components
             }
         }
         
+        public bool SendFailed
+        {
+            get => _sendFailed;
+            set
+            {
+                _sendFailed = value;
+                OnPropertyChanged(nameof(SendFailed));
+                OnPropertyChanged(nameof(HasErrorIndicator));
+            }
+        }
+        
         public string DisplayText => IsUncensored ? OriginalText : Text;
         
         public bool HasWarningIndicator => ContainsProfanity;
+        
+        public bool HasErrorIndicator => SendFailed;
         
         public void ToggleCensorship()
         {

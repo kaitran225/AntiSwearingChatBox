@@ -68,8 +68,15 @@
                         BorderBrush="{StaticResource BorderBrush}"
                         BorderThickness="0,0,0,1"
                         CornerRadius="4">
-                        <StackPanel Orientation="Horizontal">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
                             <Border
+                                Grid.Column="0"
                                 Width="32"
                                 Height="32"
                                 Background="{StaticResource PrimaryGreenBrush}"
@@ -83,13 +90,20 @@
                                     Text="U" />
                             </Border>
                             <TextBlock
+                                Grid.Column="1"
                                 x:Name="UserDisplayName"
                                 Margin="12,0,0,0"
                                 VerticalAlignment="Center"
                                 FontWeight="SemiBold"
                                 Foreground="{StaticResource PrimaryTextBrush}"
                                 Text="User" />
-                        </StackPanel>
+                                
+                            <!-- Connection Status Indicator -->
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Ellipse x:Name="ConnectionIndicator" Width="10" Height="10" Fill="Green" Margin="0,0,5,0"/>
+                                <TextBlock x:Name="ConnectionStatusText" Text="Connected" FontSize="10" Foreground="{StaticResource TertiaryTextBrush}"/>
+                            </StackPanel>
+                        </Grid>
                     </Border>
 
                     <!--  Search Bar  -->
