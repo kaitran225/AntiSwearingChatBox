@@ -483,11 +483,19 @@ namespace AntiSwearingChatBox.WPF.View
         {
             try
             {
+                // Show loading cursor while getting users
+                Mouse.OverrideCursor = Cursors.Wait;
+                
                 // Get list of users
                 var users = await _apiService.GetUsersAsync();
                 
+                // Restore cursor
+                Mouse.OverrideCursor = null;
+                
                 // Filter out current user
                 var otherUsers = users.Where(u => u.UserId != _apiService.CurrentUser?.UserId).ToList();
+                
+                Console.WriteLine($"Found {otherUsers.Count} users for chat selection (excluding current user)");
                 
                 if (otherUsers.Count == 0)
                 {
@@ -505,7 +513,8 @@ namespace AntiSwearingChatBox.WPF.View
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                     Owner = Window.GetWindow(this),
                     ResizeMode = ResizeMode.NoResize,
-                    WindowStyle = WindowStyle.ToolWindow
+                    WindowStyle = WindowStyle.ToolWindow,
+                    Background = (SolidColorBrush)Application.Current.Resources["PrimaryBackgroundBrush"]
                 };
                 
                 var stackPanel = new StackPanel
@@ -517,22 +526,87 @@ namespace AntiSwearingChatBox.WPF.View
                 {
                     Text = "Select a user to chat with:",
                     FontSize = 16,
-                    Margin = new Thickness(0, 0, 0, 20)
+                    Margin = new Thickness(0, 0, 0, 20),
+                    Foreground = (SolidColorBrush)Application.Current.Resources["PrimaryTextBrush"]
                 };
                 
                 var userListBox = new ListBox
                 {
                     Height = 300,
-                    Margin = new Thickness(0, 0, 0, 20)
+                    Margin = new Thickness(0, 0, 0, 20),
+                    Background = (SolidColorBrush)Application.Current.Resources["SecondaryBackgroundBrush"],
+                    BorderThickness = new Thickness(1),
+                    BorderBrush = (SolidColorBrush)Application.Current.Resources["BorderBrush"]
                 };
                 
+                // Add users to the list box with additional info
                 foreach (var user in otherUsers)
                 {
-                    userListBox.Items.Add(new ListBoxItem
+                    // Create a more informative user list item
+                    var userPanel = new StackPanel 
+                    { 
+                        Orientation = Orientation.Horizontal 
+                    };
+                    
+                    // Create avatar
+                    var avatarBorder = new Border
                     {
-                        Content = user.Username,
-                        Tag = user.UserId
-                    });
+                        Width = 32,
+                        Height = 32,
+                        CornerRadius = new CornerRadius(16),
+                        Background = (SolidColorBrush)Application.Current.Resources["TertiaryBackgroundBrush"],
+                        Margin = new Thickness(0, 0, 10, 0)
+                    };
+                    
+                    // Get first character of username for avatar
+                    string firstChar = "?";
+                    if (!string.IsNullOrEmpty(user.Username))
+                    {
+                        firstChar = user.Username.Substring(0, 1).ToUpper();
+                    }
+                    
+                    var avatarText = new TextBlock
+                    {
+                        Text = firstChar,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        Foreground = (SolidColorBrush)Application.Current.Resources["PrimaryGreenBrush"],
+                        FontWeight = FontWeights.SemiBold
+                    };
+                    
+                    avatarBorder.Child = avatarText;
+                    userPanel.Children.Add(avatarBorder);
+                    
+                    // Create user info
+                    var userInfo = new StackPanel();
+                    var nameText = new TextBlock
+                    {
+                        Text = user.Username ?? $"User {user.UserId}",
+                        Foreground = (SolidColorBrush)Application.Current.Resources["PrimaryTextBrush"],
+                        FontWeight = FontWeights.SemiBold
+                    };
+                    
+                    var emailText = new TextBlock
+                    {
+                        Text = user.Email ?? "",
+                        Foreground = (SolidColorBrush)Application.Current.Resources["SecondaryTextBrush"],
+                        FontSize = 12
+                    };
+                    
+                    userInfo.Children.Add(nameText);
+                    userInfo.Children.Add(emailText);
+                    userPanel.Children.Add(userInfo);
+                    
+                    // Add to list box
+                    var item = new ListBoxItem
+                    {
+                        Content = userPanel,
+                        Tag = user.UserId,
+                        Padding = new Thickness(8),
+                        Margin = new Thickness(0, 2, 0, 2)
+                    };
+                    
+                    userListBox.Items.Add(item);
                 }
                 
                 var buttonsPanel = new StackPanel
@@ -546,7 +620,10 @@ namespace AntiSwearingChatBox.WPF.View
                     Content = "Cancel",
                     Width = 100,
                     Height = 30,
-                    Margin = new Thickness(0, 0, 10, 0)
+                    Margin = new Thickness(0, 0, 10, 0),
+                    Background = Brushes.Transparent,
+                    BorderBrush = (SolidColorBrush)Application.Current.Resources["BorderBrush"],
+                    Foreground = (SolidColorBrush)Application.Current.Resources["PrimaryTextBrush"]
                 };
                 
                 var startChatButton = new Button
@@ -554,7 +631,9 @@ namespace AntiSwearingChatBox.WPF.View
                     Content = "Start Chat",
                     Width = 100,
                     Height = 30,
-                    IsEnabled = false
+                    IsEnabled = false,
+                    Background = (SolidColorBrush)Application.Current.Resources["PrimaryGreenBrush"],
+                    Foreground = Brushes.White
                 };
                 
                 // Enable start chat button only when a user is selected
@@ -571,7 +650,17 @@ namespace AntiSwearingChatBox.WPF.View
                     if (userListBox.SelectedItem is ListBoxItem selectedItem)
                     {
                         int userId = (int)selectedItem.Tag;
-                        string username = selectedItem.Content.ToString() ?? "User";
+                        string username = "User";
+                        
+                        // Extract the username from the content if possible
+                        if (selectedItem.Content is StackPanel panel && 
+                            panel.Children.Count > 1 && 
+                            panel.Children[1] is StackPanel infoPanel &&
+                            infoPanel.Children.Count > 0 &&
+                            infoPanel.Children[0] is TextBlock nameBlock)
+                        {
+                            username = nameBlock.Text;
+                        }
                         
                         dialog.Close();
                         
@@ -604,13 +693,12 @@ namespace AntiSwearingChatBox.WPF.View
                         }
                         finally
                         {
-                            // Reset cursor
                             Mouse.OverrideCursor = null;
                         }
                     }
                 };
                 
-                // Add controls to the dialog
+                // Add all controls to the main stack panel
                 buttonsPanel.Children.Add(cancelButton);
                 buttonsPanel.Children.Add(startChatButton);
                 
@@ -623,8 +711,10 @@ namespace AntiSwearingChatBox.WPF.View
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error opening user selection dialog: {ex.Message}", "Error", 
+                Mouse.OverrideCursor = null;
+                MessageBox.Show($"Error opening user selection: {ex.Message}", "Error", 
                     MessageBoxButton.OK, MessageBoxImage.Error);
+                Console.WriteLine($"Error in NewChatDialog: {ex.Message}\n{ex.StackTrace}");
             }
         }
 
