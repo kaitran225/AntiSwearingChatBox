@@ -20,6 +20,7 @@ using Microsoft.OpenApi.Models;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using AntiSwearingChatBox.Server.Middleware;
+using Microsoft.AspNetCore.SignalR;
 
 namespace AntiSwearingChatBox.Server
 {
@@ -39,6 +40,9 @@ namespace AntiSwearingChatBox.Server
             {
                 options.JsonSerializerOptions.PropertyNamingPolicy = null;
             });
+
+            // Add SignalR services
+            services.AddSignalR();
 
             // Register database context
             services.AddDbContext<AntiSwearingChatBoxContext>(options =>
@@ -145,6 +149,7 @@ namespace AntiSwearingChatBox.Server
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHub<Hubs.ChatHub>("/chatHub");
             });
         }
     }
