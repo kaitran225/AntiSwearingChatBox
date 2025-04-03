@@ -148,11 +148,31 @@ namespace AntiSwearingChatBox.WPF.View
                         }
                     }
                     
+                    var threadName = thread.Name ?? $"Chat {thread.ThreadId}";
+                    
+                    // Extract a good avatar character from the thread name
+                    // A thread name might be the other person's username or a custom name
+                    var avatarChar = "?";
+                    if (!string.IsNullOrEmpty(threadName))
+                    {
+                        // Get the first character, ensuring it's a letter if possible
+                        var firstChar = threadName.Trim().FirstOrDefault(c => char.IsLetter(c));
+                        if (firstChar != '\0')
+                        {
+                            avatarChar = firstChar.ToString().ToUpper();
+                        }
+                        else if (threadName.Length > 0)
+                        {
+                            // Fallback to first character if no letter found
+                            avatarChar = threadName[0].ToString().ToUpper();
+                        }
+                    }
+                    
                     // Add conversation to UI with last message info
                     Conversations.Add(new ConversationItemViewModel
                     {
                         Id = thread.ThreadId.ToString(),
-                        Title = thread.Name ?? $"Chat {thread.ThreadId}",
+                        Title = threadName,
                         LastMessage = lastMessageContent,
                         LastMessageTime = lastMessageTime,
                         UnreadCount = 0,
@@ -411,6 +431,20 @@ namespace AntiSwearingChatBox.WPF.View
         {
             // Handle attachment button click
             MessageBox.Show("Attachment functionality will be added here.", "Attachment", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void CallButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Handle audio call button click
+            MessageBox.Show($"Audio call with {CurrentContactName} will be implemented in a future version.", 
+                "Coming Soon", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void VideoCallButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Handle video call button click
+            MessageBox.Show($"Video call with {CurrentContactName} will be implemented in a future version.", 
+                "Coming Soon", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private async void SendButton_Click(object sender, RoutedEventArgs e)
