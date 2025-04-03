@@ -23,14 +23,15 @@
     </UserControl.Resources>
 
     <Border
+        x:Name="RootBorder"
         Margin="4,3"
         Padding="12,12"
         Background="{Binding Background, FallbackValue={StaticResource SecondaryBackgroundBrush}}"
         BorderBrush="{Binding BorderBrush, FallbackValue={StaticResource BorderBrush}}"
         BorderThickness="{Binding BorderThickness, FallbackValue=0}"
         CornerRadius="8"
-        Cursor="Hand"
-        MouseLeftButtonDown="Border_MouseLeftButtonDown">
+        MouseLeftButtonDown="Border_MouseLeftButtonDown"
+        Cursor="Hand">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />

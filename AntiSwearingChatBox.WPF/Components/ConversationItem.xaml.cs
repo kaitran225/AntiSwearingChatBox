@@ -245,12 +245,22 @@ namespace AntiSwearingChatBox.WPF.Components
 
         private void Border_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            Console.WriteLine($"ConversationItem clicked with Tag: {this.Tag}");
             if (this.Tag is string id)
             {
+                Console.WriteLine($"Firing Selected event with id: {id}");
                 Selected?.Invoke(this, id);
+                
+                // Mark as selected in UI
+                IsSelected = true;
                 IsActive = true;
-                HasUnread = false;
-                UnreadCount = 0;
+                
+                // Mark as handled to prevent event bubbling
+                e.Handled = true;
+            }
+            else
+            {
+                Console.WriteLine($"ConversationItem clicked but Tag is not a string: {this.Tag}");
             }
         }
 

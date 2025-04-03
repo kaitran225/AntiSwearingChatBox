@@ -11,6 +11,9 @@ namespace AntiSwearingChatBox.WPF
     /// </summary>
     public partial class MainWindow : Window
     {
+        // We don't need to create pages here since this window has a LaunchButton
+        // that will open the actual View.MainWindow
+
         public MainWindow()
         {
             InitializeComponent();

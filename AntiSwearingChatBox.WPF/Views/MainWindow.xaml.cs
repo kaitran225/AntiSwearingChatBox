@@ -9,7 +9,7 @@ namespace AntiSwearingChatBox.WPF.View
     {
         private readonly LoginPage _loginPage;
         private readonly RegisterPage _registerPage;
-        private readonly ChatPage _chatPage;
+        private readonly SimpleChatPage _chatPage;
 
         
         public MainWindow()
@@ -18,7 +18,7 @@ namespace AntiSwearingChatBox.WPF.View
             
             _loginPage = new LoginPage();
             _registerPage = new RegisterPage();
-            _chatPage = new ChatPage();
+            _chatPage = new SimpleChatPage();
             
             // Start with login page
             NavigateToLogin();

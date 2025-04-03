@@ -409,7 +409,8 @@ namespace AntiSwearingChatBox.WPF.Components
             return null;
         }
 
-        protected virtual void OnPropertyChanged(string propertyName)
+        // Helper method to raise PropertyChanged events
+        public void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
