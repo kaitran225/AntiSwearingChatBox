@@ -362,12 +362,57 @@ namespace AntiSwearingChatBox.Server.AI
 
         public async Task<string> ModerateMultiLanguageMessageAsync(string message, string detectedLanguage)
         {
-            string promptTemplate = $"Moderate the following message which is in {detectedLanguage}. " +
-                           $"Identify and replace any inappropriate language specific to this language and culture. " +
-                           $"Return ONLY a JSON object with the structure: " +
-                           $"{{\"originalMessage\": \"original message here\", \"moderatedMessage\": \"moderated message\", " +
-                           $"\"language\": \"{detectedLanguage}\", \"wasModified\": true/false, " +
-                           $"\"culturalContext\": \"any important cultural notes\"}}";
+            string promptTemplate;
+            
+            if (detectedLanguage.ToLower() == "auto-detect" || detectedLanguage.ToLower() == "auto")
+            {
+                promptTemplate = 
+                    $"You are an expert multi-language profanity filter for an anti-swearing chatbox. " +
+                    $"TASK: First detect the language of the following message, then identify and censor ALL inappropriate language in that language.\n\n" +
+                    
+                    $"Message to moderate: \"{message}\"\n\n" +
+                    
+                    $"Step 1: Detect the language. Consider ALL possible languages including English, Spanish, French, German, Italian, Vietnamese, Portuguese, Russian, etc.\n" +
+                    $"Step 2: Once you identify the language, identify ANY profanity, slurs, or inappropriate words in that language.\n" +
+                    $"Step 3: Replace profanity with the same number of asterisks (*).\n" +
+                    $"Step 4: Return a JSON object with these properties:\n" +
+                    $"- \"originalMessage\": the original message you received\n" +
+                    $"- \"moderatedMessage\": the message with profanity replaced by asterisks\n" +
+                    $"- \"language\": the detected language name (e.g., \"English\", \"Spanish\", \"Vietnamese\")\n" +
+                    $"- \"wasModified\": true if any profanity was detected and censored, false otherwise\n" +
+                    $"- \"culturalContext\": brief explanation of any culturally specific profanity detected\n\n" +
+                    
+                    $"IMPORTANT: You MUST detect and censor profanity in ANY language. This includes:\n" +
+                    $"- English: fuck, shit, ass, bitch, etc.\n" +
+                    $"- Spanish: puta, mierda, joder, etc.\n" +
+                    $"- French: putain, merde, etc.\n" +
+                    $"- German: scheiße, arschloch, etc.\n" +
+                    $"- Vietnamese: đụ, dcm, đmm, du ma, etc.\n" +
+                    $"- And ALL other languages\n\n" +
+                    
+                    $"Even if you're only 70% sure something is profanity, you should censor it. Be thorough and conservative.";
+            }
+            else
+            {
+                promptTemplate = 
+                    $"You are an expert multi-language profanity filter for an anti-swearing chatbox. " +
+                    $"TASK: Moderate the following message which is in {detectedLanguage}. " +
+                    $"Identify and replace ANY inappropriate language specific to {detectedLanguage} with asterisks (*).\n\n" +
+                    
+                    $"Message to moderate: \"{message}\"\n\n" +
+                    
+                    $"IMPORTANT: You MUST detect and censor ALL types of profanity in {detectedLanguage}, including:\n" +
+                    $"- Common profanity/swear words\n" +
+                    $"- Slurs and derogatory terms\n" +
+                    $"- Sexual references\n" +
+                    $"- Obfuscated profanity (like f*ck, sh!t, etc.)\n" +
+                    $"- Culturally specific inappropriate terms\n\n" +
+                    
+                    $"Return ONLY a JSON object with the structure: " +
+                    $"{{\"originalMessage\": \"{message}\", \"moderatedMessage\": \"censored message\", " +
+                    $"\"language\": \"{detectedLanguage}\", \"wasModified\": true/false, " +
+                    $"\"culturalContext\": \"any important cultural notes\"}}";
+            }
 
             return await RequestProcessor.ProcessModeration(this, message, promptTemplate);
         }

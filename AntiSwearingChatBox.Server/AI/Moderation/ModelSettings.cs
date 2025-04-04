@@ -33,10 +33,8 @@ namespace AntiSwearingChatBox.AI.Moderation
             {
                 string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ModelSettings.json");
                 
-                // If file doesn't exist at runtime path, try development path
                 if (!File.Exists(path))
                 {
-                    // Find the correct path relative to the executing assembly
                     string assemblyLocation = typeof(ModelSettings).Assembly.Location;
                     string assemblyDirectory = Path.GetDirectoryName(assemblyLocation) ?? string.Empty;
                     string projectPath = Path.GetFullPath(Path.Combine(assemblyDirectory, "..\\..\\..\\"));
@@ -52,11 +50,9 @@ namespace AntiSwearingChatBox.AI.Moderation
             }
             catch (Exception ex)
             {
-                // Log the exception if possible
                 Console.WriteLine($"Error loading settings: {ex.Message}");
             }
 
-            // Return default settings if loading fails
             return new ModelSettings();
         }
 

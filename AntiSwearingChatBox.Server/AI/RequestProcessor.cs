@@ -26,8 +26,21 @@ namespace AntiSwearingChatBox.AI
             {
                 case "profanity":
                     enhancedPrompt = 
-                        $"You are a highly sensitive content moderator trained to detect ANY form of profanity or inappropriate language with MAXIMUM SEVERITY.\n\n" +
-                        $"CRITICAL TASK: This system is for an anti-swearing chatbox that MUST filter all profanity including deliberate obfuscation attempts and creative variants.\n\n" +
+                        $"You are a highly sensitive content moderator trained to detect ANY form of profanity or inappropriate language in ANY LANGUAGE with MAXIMUM SEVERITY.\n\n" +
+                        $"CRITICAL TASK: This system is for a multi-language anti-swearing chatbox that MUST filter all profanity including deliberate obfuscation attempts and creative variants.\n\n" +
+                        
+                        $"MULTI-LANGUAGE PROFANITY DETECTION:\n" +
+                        $"You MUST detect profanity across all these languages:\n" +
+                        $"- English: fuck, shit, ass, bitch, etc.\n" +
+                        $"- Spanish: puta, mierda, joder, coño, etc.\n" +
+                        $"- French: putain, merde, salope, etc.\n" +
+                        $"- German: scheiße/scheisse, arschloch, ficken, etc.\n" +
+                        $"- Italian: cazzo, fanculo, stronzo, etc.\n" +
+                        $"- Vietnamese: đụ/du, địt/dit, lồn/lon, dcm, đmm, etc.\n" +
+                        $"- Portuguese: caralho, buceta, porra, etc.\n" +
+                        $"- Russian: (transliterated) blyat, pizda, khuy, etc.\n" +
+                        $"- ANY OTHER LANGUAGE not listed here\n\n" +
+                        
                         $"IMPORTANT: Profanity detection is CRITICAL. The following words and their variations are ALWAYS considered profanity:\n" +
                         $"- fuck, f*ck, fuk, fvck, phuck, fcuk, f0ck, fu(k, and ANY similar variations\n" +
                         $"- shit, sh*t, sh!t, sht, and ANY similar variations\n" +
@@ -62,20 +75,21 @@ namespace AntiSwearingChatBox.AI
                         $"Message to analyze: \"{originalPrompt}\"\n\n" +
                         
                         $"QUADRUPLE-CHECK: Before responding, ask yourself if:\n" +
-                        $"1. Does this message contain ANY obvious profanity or variants?\n" +
+                        $"1. Does this message contain ANY obvious profanity or variants in ANY language?\n" +
                         $"2. Could ANY word be interpreted as a deliberately obfuscated profanity?\n" +
-                        $"3. When normalized (removing spaces, special chars), does ANY part match profanity?\n" +
-                        $"4. Would a human moderator likely flag this message?\n" +
+                        $"3. Does it contain ANY profanity terms from non-English languages?\n" +
+                        $"4. When normalized (removing spaces, special chars), does ANY part match profanity?\n" +
+                        $"5. Would a human moderator likely flag this message?\n" +
                         $"If ANY answer is yes, you MUST set containsProfanity to true.\n\n" +
                         
                         $"Respond with JSON containing:\n" +
                         $"- 'containsProfanity': boolean (true if ANY variation of profanity is detected)\n" +
                         $"- 'inappropriateTerms': array of strings (specific terms detected)\n" +
+                        $"- 'language': string (likely language of any detected profanity)\n" +
                         $"- 'explanation': string (why the content was or wasn't flagged)\n" +
                         $"- 'originalMessage': the original message";
                     break;
                     
-                // ... keep other existing cases ...
             }
             
             Console.WriteLine($"Enhanced prompt for message: \"{originalPrompt}\"");
@@ -543,7 +557,28 @@ namespace AntiSwearingChatBox.AI
                 
                 // Additional profanities
                 "cunt", "c*nt", "kunt", "cnut", "c u n t", "c-nt", "c.nt", "c_nt",
-                "pussy", "puss", "pu$$y", "p*ssy", "pussi", "p u s s y", "p.ssy", "p_ssy"
+                "pussy", "puss", "pu$$y", "p*ssy", "pussi", "p u s s y", "p.ssy", "p_ssy",
+                
+                // Multi-language profanity (Spanish)
+                "puta", "mierda", "joder", "coño", "chinga", "pendejo", "cabron", "cabrón", 
+                
+                // Multi-language profanity (French)
+                "putain", "merde", "salope", "connard", "foutre", "salaud", "enculé", "connasse",
+                
+                // Multi-language profanity (German)
+                "scheiße", "scheisse", "arschloch", "ficken", "fick", "fotze", "schwanz", "hure",
+                
+                // Multi-language profanity (Italian)
+                "cazzo", "fanculo", "stronzo", "merda", "puttana", "vaffanculo",
+                
+                // Multi-language profanity (Vietnamese)
+                "đụ", "du", "địt", "dit", "lồn", "lon", "cặc", "cac", "dcm", "dmm", "du ma",
+                
+                // Multi-language profanity (Portuguese)
+                "caralho", "porra", "foda", "buceta", "cu",
+                
+                // Multi-language profanity (Russian - transliterated)
+                "blyat", "blyad", "pizda", "khuy", "suka", "yebat", "yebal", "mudak"
             };
             
             // Check for direct substring matches (relaxed matching)

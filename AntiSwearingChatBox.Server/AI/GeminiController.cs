@@ -160,12 +160,12 @@ namespace AntiSwearingChatBox.AI
                 return BadRequest("Message cannot be empty");
             }
             
-            if (string.IsNullOrEmpty(request.Language))
-            {
-                return BadRequest("Language cannot be empty");
-            }
+            // If language is empty or "auto", let the AI detect the language
+            string language = string.IsNullOrEmpty(request.Language) || request.Language.ToLower() == "auto" 
+                ? "auto-detect" 
+                : request.Language;
 
-            var result = await _geminiService.ModerateMultiLanguageMessageAsync(request.Message, request.Language);
+            var result = await _geminiService.ModerateMultiLanguageMessageAsync(request.Message, language);
             return Content(result, "application/json");
         }
         
