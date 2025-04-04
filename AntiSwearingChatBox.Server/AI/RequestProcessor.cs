@@ -526,30 +526,33 @@ namespace AntiSwearingChatBox.AI
             // First normalize the message for better detection
             string normalizedMessage = message.ToLower();
             
-            // First perform a direct check for common profanity words using word boundaries
-            // This is a fallback in case AI misses obvious profanity
+            // Extended list of profanity words with more variations
             string[] directProfanityWords = new[] { 
-                "fuck", "fuk", "fvck", "f*ck", "f**k", "fck", "fuuck", "fuuk", "phuck", "fu(k",
-                "shit", "sh*t", "sh!t", "sht", "sh1t", "shiit",
-                "ass", "a$$", "a**", "@ss",
-                "bitch", "b*tch", "b!tch", "btch",
-                "dick", "d*ck", "d!ck"
+                // F-word variations
+                "fuck", "fuk", "fvck", "f*ck", "f**k", "fck", "fuuck", "fuuk", "phuck", "fu(k", "fug", "fuc", 
+                "f u c k", "f-uck", "f.uck", "f_uck", "fuhk", "fuhck", "fock", "f0ck", "effing", "fxck", "fuq",
+                
+                // S-word variations
+                "shit", "sh*t", "sh!t", "sht", "sh1t", "shiit", "shyt", "sh.t", "sh_t", "s h i t", "sh1t", "schit",
+                
+                // A-word variations
+                "ass", "a$$", "a**", "@ss", "azz", "a$", "a**", "as$", "@ss", "@$$", "a s s", "a.ss", "a_ss",
+                
+                // B-word variations
+                "bitch", "b*tch", "b!tch", "btch", "b1tch", "biatch", "bytch", "b i t c h", "b.tch", "b_tch", "bicth",
+                
+                // D-word variations
+                "dick", "d*ck", "d!ck", "dck", "d1ck", "diick", "dikk", "dik", "d i c k", "d.ck", "d_ck",
+                
+                // Additional profanities
+                "cunt", "c*nt", "kunt", "cnut", "c u n t", "c-nt", "c.nt", "c_nt",
+                "pussy", "puss", "pu$$y", "p*ssy", "pussi", "p u s s y", "p.ssy", "p_ssy"
             };
             
-            // Use proper word boundary checking - check if the word is surrounded by spaces, punctuation, or string start/end
+            // Use proper word boundary checking with relaxed rules to catch more variations
             foreach (var word in directProfanityWords)
             {
-                // Convert to proper regex pattern with word boundaries
-                // This looks for the word as a standalone word, not part of another word
-                string wordPattern = $@"(^|\W){word}($|\W)";
-                if (System.Text.RegularExpressions.Regex.IsMatch(normalizedMessage, wordPattern, System.Text.RegularExpressions.RegexOptions.IgnoreCase))
-                {
-                    System.Diagnostics.Debug.WriteLine($"Direct profanity word detected with regex: {word}");
-                    System.Console.WriteLine($"Direct profanity word detected with regex: {word}");
-                    return true;
-                }
-                
-                // Also check with direct string contains as a backup
+                // More relaxed pattern matching to catch even partial matches within words
                 if (normalizedMessage.Contains(word, StringComparison.OrdinalIgnoreCase))
                 {
                     System.Diagnostics.Debug.WriteLine($"Direct profanity word detected with contains: {word}");
@@ -558,6 +561,54 @@ namespace AntiSwearingChatBox.AI
                 }
             }
                 
+            // Check for obscured profanity with letter substitutions (l33t speak)
+            Dictionary<char, string[]> substitutions = new Dictionary<char, string[]>
+            {
+                {'a', new[] {"@", "4", "α", "λ", "д"}},
+                {'b', new[] {"8", "6", "ß", "б"}},
+                {'c', new[] {"(", "{", "[", "<", "к", "с"}},
+                {'d', new[] {"|)", "о", "д"}},
+                {'e', new[] {"3", "€", "є", "е", "э"}},
+                {'f', new[] {"ph", "ƒ", "ф"}},
+                {'g', new[] {"6", "9", "г"}},
+                {'h', new[] {"#", "|-|", "н"}},
+                {'i', new[] {"1", "!", "|", "и", "і"}},
+                {'k', new[] {"|<", "к"}},
+                {'l', new[] {"1", "|", "л"}},
+                {'m', new[] {"|v|", "м"}},
+                {'n', new[] {"|\\|", "и", "н"}},
+                {'o', new[] {"0", "()", "о"}},
+                {'p', new[] {"|o", "п"}},
+                {'r', new[] {"|2", "я", "р"}},
+                {'s', new[] {"5", "$", "с"}},
+                {'t', new[] {"7", "+", "т"}},
+                {'u', new[] {"|_|", "у"}},
+                {'v', new[] {"\\/", "в"}},
+                {'w', new[] {"\\/\\/", "vv", "ш", "щ"}},
+                {'x', new[] {"><", "х"}},
+                {'y', new[] {"j", "у", "ү"}},
+                {'z', new[] {"2", "з"}}
+            };
+            
+            // Check for common patterns with character replacements
+            // Harder to evade by removing all special characters
+            string[] corePatterns = new[] { "fk", "fck", "fvk", "fuk", "phk", "sht", "ashole", "btch", "dck", "fvck" };
+            foreach (var pattern in corePatterns)
+            {
+                // Create variants with character substitutions
+                List<string> variants = GenerateVariants(pattern, substitutions);
+                
+                foreach (var variant in variants)
+                {
+                    if (normalizedMessage.Contains(variant, StringComparison.OrdinalIgnoreCase))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"L33t speak variant detected: {variant} from {pattern}");
+                        System.Console.WriteLine($"L33t speak variant detected: {variant} from {pattern}");
+                        return true;
+                    }
+                }
+            }
+            
             // Additional check for combined/spaced words (e.g., "b i t c h")
             string strippedMessage = new string(normalizedMessage.Where(c => !char.IsWhiteSpace(c) && !char.IsPunctuation(c)).ToArray());
             foreach (var word in directProfanityWords)
@@ -589,7 +640,10 @@ namespace AntiSwearingChatBox.AI
             
             // Check for symbol substitution patterns
             string symbolsRemoved = new string(message.Where(c => char.IsLetterOrDigit(c) || char.IsWhiteSpace(c)).ToArray());
-            string[] symbolProfanityWords = new[] { "fck", "fk", "sht", "st", "bch", "dck" };
+            string[] symbolProfanityWords = new[] { 
+                "fck", "fk", "sht", "bch", "dck", "fvk", "fvck", "cnt", "fuc", "sh1t", "fug",
+                "fcuk", "phck", "psy"
+            };
             
             foreach (var word in symbolProfanityWords)
             {
@@ -602,6 +656,31 @@ namespace AntiSwearingChatBox.AI
             }
             
             return false;
+        }
+        
+        /// <summary>
+        /// Generate variations of profanity words with character substitutions
+        /// </summary>
+        private static List<string> GenerateVariants(string pattern, Dictionary<char, string[]> substitutions)
+        {
+            List<string> variants = new List<string>();
+            variants.Add(pattern); // Add original pattern
+            
+            // Generate variations by replacing one character at a time
+            for (int i = 0; i < pattern.Length; i++)
+            {
+                char c = pattern[i];
+                if (substitutions.ContainsKey(c))
+                {
+                    foreach (string replacement in substitutions[c])
+                    {
+                        string variant = pattern.Substring(0, i) + replacement + pattern.Substring(i + 1);
+                        variants.Add(variant);
+                    }
+                }
+            }
+            
+            return variants;
         }
 
         /// <summary>

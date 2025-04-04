@@ -1217,29 +1217,36 @@ namespace AntiSwearingChatBox.WPF.View
                     sentMessage.Text = result.ModeratedMessage;
                     sentMessage.ContainsProfanity = result.WasModified;
                     
-                    // Increase the swearing score locally and on the server
-                    SwearingScore++;
-                    Console.WriteLine($"Message was moderated. Swearing score increased to {SwearingScore}");
-                    
-                    // Update the thread's swearing score on the server
-                    try
+                    // Only increase the swearing score if the message was actually moderated
+                    if (result.WasModified)
                     {
-                        await _apiService.UpdateThreadSwearingScoreAsync(_currentThreadId, SwearingScore);
+                        SwearingScore++;
+                        Console.WriteLine($"Message was moderated. Swearing score increased to {SwearingScore}");
                         
-                        // Check if we need to close the thread due to excessive swearing
-                        if (SwearingScore > 5 && !IsThreadClosed)
+                        // Update the thread's swearing score on the server
+                        try
                         {
-                            await CloseThreadDueToExcessiveSwearing();
+                            await _apiService.UpdateThreadSwearingScoreAsync(_currentThreadId, SwearingScore);
+                            
+                            // Check if we need to close the thread due to excessive swearing
+                            if (SwearingScore > 5 && !IsThreadClosed)
+                            {
+                                await CloseThreadDueToExcessiveSwearing();
+                            }
+                            else if (SwearingScore > 0)
+                            {
+                                // Show a warning based on the current swearing score
+                                ShowSwearingWarning(SwearingScore);
+                            }
                         }
-                        else if (SwearingScore > 0)
+                        catch (Exception ex)
                         {
-                            // Show a warning based on the current swearing score
-                            ShowSwearingWarning(SwearingScore);
+                            Console.WriteLine($"Error updating thread swearing score: {ex.Message}");
                         }
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        Console.WriteLine($"Error updating thread swearing score: {ex.Message}");
+                        Console.WriteLine("Message was not moderated, swearing score remains unchanged.");
                     }
                     
                     // Update the conversation last message

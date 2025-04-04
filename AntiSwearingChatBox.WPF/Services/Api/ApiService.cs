@@ -724,15 +724,9 @@ namespace AntiSwearingChatBox.WPF.Services.Api
             {
                 if (_hubConnection != null)
                 {
-                    // Keep a temporary reference to the hub connection to dispose it
                     var hubConnectionToDispose = _hubConnection;
-                    
-                    // Set _hubConnection to null BEFORE stopping/disposing to avoid race conditions
-                    // This ensures that any code trying to use _hubConnection (including event handlers)
-                    // will see it as null and handle that case appropriately
                     _hubConnection = null;
                     
-                    // Now safely dispose the connection through our temporary reference
                     try
                     {
                         await hubConnectionToDispose.StopAsync();
