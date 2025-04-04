@@ -314,7 +314,26 @@ namespace AntiSwearingChatBox.WPF.View
                         }
                     }
                     
-                    var threadName = thread.Name ?? $"Chat {thread.ThreadId}";
+                    // Get proper thread name by checking participants
+                    string threadName = thread.Name ?? $"Chat {thread.ThreadId}";
+                    
+                    // Try to get participants to find the other person's name
+                    var participants = await _apiService.GetThreadParticipantsAsync(thread.ThreadId);
+                    if (participants != null && participants.Count > 0)
+                    {
+                        int currentUserId = _apiService.CurrentUser?.UserId ?? -1;
+                        
+                        // Find the other user in the chat (not the current user)
+                        var otherParticipant = participants.FirstOrDefault(p => p.UserId != currentUserId);
+                        if (otherParticipant != null && otherParticipant.User != null)
+                        {
+                            // Use the other user's name as the thread name for private chats
+                            threadName = otherParticipant.User.Username ?? threadName;
+                            
+                            // Log for debugging
+                            Console.WriteLine($"[CHAT THREADS] Found participant name: {threadName} for thread {thread.ThreadId}");
+                        }
+                    }
                     
                     // Extract a good avatar character from the thread name
                     // A thread name might be the other person's username or a custom name
@@ -1577,8 +1596,38 @@ namespace AntiSwearingChatBox.WPF.View
                 var conversation = Conversations.FirstOrDefault(c => c.Id == threadId);
                 if (conversation != null)
                 {
+                    string contactName = conversation.Title;
+                    
+                    // Try to get the most up-to-date participant name
+                    try 
+                    {
+                        var participants = await _apiService.GetThreadParticipantsAsync(parsedThreadId);
+                        if (participants != null && participants.Count > 0)
+                        {
+                            int currentUserId = _apiService.CurrentUser?.UserId ?? -1;
+                            
+                            // Find the other user in the chat (not the current user)
+                            var otherParticipant = participants.FirstOrDefault(p => p.UserId != currentUserId);
+                            if (otherParticipant != null && otherParticipant.User != null && !string.IsNullOrEmpty(otherParticipant.User.Username))
+                            {
+                                // Update the contact name with the other user's username
+                                contactName = otherParticipant.User.Username;
+                                
+                                // Also update the conversation title in the list
+                                conversation.Title = contactName;
+                                
+                                Console.WriteLine($"[CONVERSATION] Updated contact name to: {contactName}");
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[CONVERSATION] Error getting participants: {ex.Message}");
+                        // Continue with existing contact name
+                    }
+                    
                     // Set the current contact info
-                    CurrentContactName = conversation.Title;
+                    CurrentContactName = contactName;
                     OnPropertyChanged(nameof(CurrentContactName));
                     
                     // Update contact header UI elements
@@ -1964,8 +2013,36 @@ namespace AntiSwearingChatBox.WPF.View
                             }
                         }
                         
+                        // Get thread name - first try to get participants to determine the other user's name
+                        string threadName = thread.Name ?? $"Chat {thread.ThreadId}";
+                        
+                        // Try to get participants to find the other user's name
+                        var participants = await _apiService.GetThreadParticipantsAsync(thread.ThreadId);
+                        if (participants != null && participants.Count > 0)
+                        {
+                            int currentUserId = _apiService.CurrentUser?.UserId ?? -1;
+                            
+                            // Find the other user in the chat (not the current user)
+                            var otherParticipant = participants.FirstOrDefault(p => p.UserId != currentUserId);
+                            if (otherParticipant != null && otherParticipant.User != null)
+                            {
+                                // Use the other user's name as the thread name for private chats
+                                threadName = otherParticipant.User.Username ?? threadName;
+                                
+                                // Log for debugging
+                                Console.WriteLine($"[CONVERSATION] Found participant name: {threadName} for thread {thread.ThreadId}");
+                            }
+                            else
+                            {
+                                Console.WriteLine($"[CONVERSATION] No other participant found for thread {thread.ThreadId}, using default name");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine($"[CONVERSATION] No participants found for thread {thread.ThreadId}, using default name");
+                        }
+                        
                         // Get avatar and name
-                        var threadName = thread.Name ?? $"Chat {thread.ThreadId}";
                         var avatarChar = "?";
                         if (!string.IsNullOrEmpty(threadName))
                         {
