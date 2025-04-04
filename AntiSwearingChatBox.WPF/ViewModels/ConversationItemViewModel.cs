@@ -26,6 +26,7 @@ namespace AntiSwearingChatBox.WPF.ViewModels // Changed namespace to match ViewM
         private int? _swearingScore;
         private bool _isClosed;
         private string? _avatarText;
+        private DateTime _sortTimestamp = DateTime.Now; // Default to current time
 
         public string Id
         {
@@ -125,6 +126,13 @@ namespace AntiSwearingChatBox.WPF.ViewModels // Changed namespace to match ViewM
         {
             get => _isClosed;
             set { SetField(ref _isClosed, value); }
+        }
+        
+        // Timestamp used for sorting conversations (not visible in UI)
+        public DateTime SortTimestamp
+        {
+            get => _sortTimestamp;
+            set { SetField(ref _sortTimestamp, value); }
         }
 
         protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)

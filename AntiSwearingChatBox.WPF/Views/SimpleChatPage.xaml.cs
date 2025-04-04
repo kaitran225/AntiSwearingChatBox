@@ -288,13 +288,17 @@ namespace AntiSwearingChatBox.WPF.View
                 var threads = await _apiService.GetThreadsAsync();
                 Console.WriteLine($"Retrieved {threads.Count} threads from API");
                 
-                // Add each thread to the UI
+                // Temporary list to hold conversations for sorting
+                var conversationsToSort = new List<ConversationItemViewModel>();
+                
+                // Add each thread to the list for sorting
                 foreach (var thread in threads)
                 {
                     // Try to get the latest message for the thread
                     var messages = await _apiService.GetMessagesAsync(thread.ThreadId);
                     string lastMessageContent = "No messages yet";
                     string lastMessageTime = thread.CreatedAt.ToString("g");
+                    DateTime messageTimestamp = thread.CreatedAt;
                     
                     // If there are messages in this thread, display the latest one
                     if (messages != null && messages.Count > 0)
@@ -306,6 +310,7 @@ namespace AntiSwearingChatBox.WPF.View
                         {
                             lastMessageContent = latestMessage.ModeratedMessage ?? latestMessage.OriginalMessage;
                             lastMessageTime = latestMessage.CreatedAt.ToString("g");
+                            messageTimestamp = latestMessage.CreatedAt;
                         }
                     }
                     
@@ -329,7 +334,7 @@ namespace AntiSwearingChatBox.WPF.View
                         }
                     }
                     
-                    // Add conversation to UI with last message info
+                    // Add conversation to sorting list with last message info
                     var newConversation = new ConversationItemViewModel
                     {
                         Id = thread.ThreadId.ToString(),
@@ -338,12 +343,26 @@ namespace AntiSwearingChatBox.WPF.View
                         LastMessageTime = lastMessageTime,
                         AvatarText = avatarChar,
                         UnreadCount = 0,
-                        IsSelected = false
+                        IsSelected = false,
+                        SwearingScore = thread.SwearingScore,
+                        IsClosed = thread.IsClosed,
+                        // Add a timestamp for sorting (not visible in UI)
+                        SortTimestamp = messageTimestamp
                     };
-                    newConversation.SwearingScore = thread.SwearingScore;
-                    newConversation.IsClosed = thread.IsClosed;
-                    Conversations.Add(newConversation);
+                    
+                    conversationsToSort.Add(newConversation);
                 }
+                
+                // Sort conversations by most recent message timestamp
+                conversationsToSort.Sort((a, b) => b.SortTimestamp.CompareTo(a.SortTimestamp));
+                
+                // Add sorted conversations to the UI collection
+                foreach (var conversation in conversationsToSort)
+                {
+                    Conversations.Add(conversation);
+                }
+                
+                Console.WriteLine($"Added {Conversations.Count} sorted conversations to UI");
             }
             catch (Exception ex)
             {
@@ -554,6 +573,9 @@ namespace AntiSwearingChatBox.WPF.View
                             conversation.LastMessage = message.ModeratedMessage ?? message.OriginalMessage;
                             conversation.LastMessageTime = message.CreatedAt.ToString("g");
                             
+                            // Update the timestamp used for sorting
+                            conversation.SortTimestamp = message.CreatedAt;
+                            
                             // If this message was modified (contained profanity), update the thread's swearing score
                             if (message.WasModified && message.ThreadId == _currentThreadId)
                             {
@@ -582,11 +604,27 @@ namespace AntiSwearingChatBox.WPF.View
                                 conversation.UnreadCount++;
                             }
                             
-                            // Move updated conversation to the top of the list if it's not already there
-                            if (Conversations.Count > 1 && Conversations.IndexOf(conversation) > 0)
+                            // Move updated conversation to the top of the list
+                            if (Conversations.Count > 1)
                             {
+                                // Remove the conversation
                                 Conversations.Remove(conversation);
-                                Conversations.Insert(0, conversation);
+                                
+                                // Create a sorted list of conversations
+                                var sortedConversations = new List<ConversationItemViewModel>(Conversations);
+                                
+                                // Add the updated conversation
+                                sortedConversations.Add(conversation);
+                                
+                                // Sort by most recent message timestamp
+                                sortedConversations.Sort((a, b) => b.SortTimestamp.CompareTo(a.SortTimestamp));
+                                
+                                // Clear and rebuild the collection
+                                Conversations.Clear();
+                                foreach (var conv in sortedConversations)
+                                {
+                                    Conversations.Add(conv);
+                                }
                             }
                         }
                         
@@ -905,12 +943,35 @@ namespace AntiSwearingChatBox.WPF.View
                 conversation.LastMessage = message;
                 conversation.LastMessageTime = timestamp;
                 
-                // Move this conversation to the top of the list (most recent)
-                if (Conversations.Count > 1 && Conversations.IndexOf(conversation) > 0)
+                // Try to parse the timestamp into a DateTime for sorting
+                DateTime messageTime;
+                if (DateTime.TryParse(timestamp, out messageTime))
                 {
-                    Dispatcher.Invoke(() => {
-                        Conversations.Remove(conversation);
-                        Conversations.Insert(0, conversation);
+                    conversation.SortTimestamp = messageTime;
+                }
+                else
+                {
+                    // If parsing fails, set to current time to put it at the top
+                    conversation.SortTimestamp = DateTime.Now;
+                }
+                
+                // Sort the conversation list by most recent message
+                if (Conversations.Count > 1)
+                {
+                    // Create a temporary sorted list
+                    var sortedList = new List<ConversationItemViewModel>(Conversations);
+                    
+                    // Sort by timestamp (most recent first)
+                    sortedList.Sort((a, b) => b.SortTimestamp.CompareTo(a.SortTimestamp));
+                    
+                    // Update UI with sorted list
+                    Dispatcher.Invoke(() => 
+                    {
+                        Conversations.Clear();
+                        foreach (var conv in sortedList)
+                        {
+                            Conversations.Add(conv);
+                        }
                     });
                 }
             }
@@ -1843,6 +1904,24 @@ namespace AntiSwearingChatBox.WPF.View
                         // New thread - add it to conversations
                         hasChanges = true;
                         
+                        // Try to get the latest message for the thread
+                        var threadMessages = await _apiService.GetMessagesAsync(thread.ThreadId);
+                        string lastMessageContent = "No messages yet";
+                        string lastMessageTime = thread.CreatedAt.ToString("g");
+                        
+                        // If there are messages in this thread, display the latest one
+                        if (threadMessages != null && threadMessages.Count > 0)
+                        {
+                            // The messages should be ordered chronologically, 
+                            // so the last one is the most recent
+                            var latestMessage = threadMessages.LastOrDefault();
+                            if (latestMessage != null)
+                            {
+                                lastMessageContent = latestMessage.ModeratedMessage ?? latestMessage.OriginalMessage;
+                                lastMessageTime = latestMessage.CreatedAt.ToString("g");
+                            }
+                        }
+                        
                         // Get avatar and name
                         var threadName = thread.Name ?? $"Chat {thread.ThreadId}";
                         var avatarChar = "?";
@@ -1859,8 +1938,8 @@ namespace AntiSwearingChatBox.WPF.View
                         {
                             Id = thread.ThreadId.ToString(),
                             Title = threadName,
-                            LastMessage = "Loading...",
-                            LastMessageTime = thread.CreatedAt.ToString("g"),
+                            LastMessage = lastMessageContent,
+                            LastMessageTime = lastMessageTime,
                             AvatarText = avatarChar,
                             UnreadCount = 0,
                             IsSelected = (_currentThreadId == thread.ThreadId),
@@ -1868,8 +1947,8 @@ namespace AntiSwearingChatBox.WPF.View
                             IsClosed = thread.IsClosed
                         };
                         
-                        // Insert at the beginning for new threads
-                        Conversations.Insert(0, newConversation);
+                        // Add to conversations collection
+                        Conversations.Add(newConversation);
                     }
                 }
                 
@@ -1884,9 +1963,41 @@ namespace AntiSwearingChatBox.WPF.View
                     }
                 }
                 
+                // Sort conversations by most recent message
+                if (Conversations.Count > 1)
+                {
+                    // Create a new sorted list to avoid collection change errors
+                    var sortedList = new List<ConversationItemViewModel>(Conversations);
+                    
+                    // Sort by most recent message time
+                    sortedList.Sort((a, b) => 
+                    {
+                        // Parse timestamps to DateTime for proper comparison
+                        DateTime aTime = DateTime.MinValue;
+                        DateTime bTime = DateTime.MinValue;
+                        
+                        // Try to parse message times - fall back to LastMessageTime string comparison
+                        // if parsing fails
+                        DateTime.TryParse(a.LastMessageTime, out aTime);
+                        DateTime.TryParse(b.LastMessageTime, out bTime);
+                        
+                        // Sort descending (most recent first)
+                        return bTime.CompareTo(aTime);
+                    });
+                    
+                    // Update collection with sorted list
+                    Conversations.Clear();
+                    foreach (var conv in sortedList)
+                    {
+                        Conversations.Add(conv);
+                    }
+                    
+                    hasChanges = true;
+                }
+                
                 if (hasChanges)
                 {
-                    Console.WriteLine("[CHAT REFRESH] Updated conversations list");
+                    Console.WriteLine("[CHAT REFRESH] Updated and sorted conversations list");
                 }
             }
             catch (Exception ex)
