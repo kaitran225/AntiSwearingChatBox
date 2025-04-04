@@ -413,31 +413,28 @@ public class ProfanityFilterService : IProfanityFilter
         return false;
     }
 
-    // Helper class for deserializing response
     private class TextWrapper
     {
-        public string Text { get; set; }
+        public string? Text { get; set; }
     }
 
     private class ProfanityDetectionResult
     {
         public bool ContainsProfanity { get; set; }
-        public List<string> InappropriateTerms { get; set; }
-        public string Explanation { get; set; }
-        public string OriginalMessage { get; set; }
+        public List<string>? InappropriateTerms { get; set; }
+        public string? Explanation { get; set; }
+        public string? OriginalMessage { get; set; }
     }
 
     private class ModerationResult
     {
-        public string OriginalMessage { get; set; }
-        public string ModeratedMessage { get; set; }
+        public string? OriginalMessage { get; set; }
+        public string? ModeratedMessage { get; set; }
         public bool WasModified { get; set; }
     }
 
-    /// <inheritdoc />
     public string FilterProfanity(string text)
     {
-        // In AI-ONLY mode, we'll always use the async version and wait for it
-        return FilterProfanityAsync(text).GetAwaiter().GetResult();
+        return FilterProfanityAsync(text).GetAwaiter().GetResult(); // For AI-ONLY mode
     }
 } 

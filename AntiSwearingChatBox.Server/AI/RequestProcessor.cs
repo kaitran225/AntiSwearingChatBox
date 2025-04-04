@@ -278,9 +278,6 @@ namespace AntiSwearingChatBox.AI
             }
         }
 
-        /// <summary>
-        /// Validate response JSON and fix common issues
-        /// </summary>
         private static string ValidateAndFixResponse(string response, string originalMessage)
         {
             try
@@ -303,32 +300,23 @@ namespace AntiSwearingChatBox.AI
                     }
                 }
                 
-                // Check if we should override AI's decision for known evasion patterns
                 bool containsKnownEvasion = ContainsKnownEvasionPatterns(originalMessage);
                 if (containsKnownEvasion)
                 {
-                    // For detection endpoint
                     if (doc.RootElement.TryGetProperty("containsProfanity", out var containsProfanity))
                     {
                         bool currentValue = containsProfanity.GetBoolean();
                         if (!currentValue)
                         {
-                            System.Diagnostics.Debug.WriteLine($"Overriding AI decision due to evasion pattern in: \"{originalMessage}\"");
-                            System.Console.WriteLine($"Overriding AI decision due to evasion pattern in: \"{originalMessage}\"");
                             return UpdateProfanityDetectionInJson(response, true);
                         }
                     }
                     
-                    // For moderation endpoint
                     if (doc.RootElement.TryGetProperty("wasModified", out var wasModified))
                     {
                         bool currentValue = wasModified.GetBoolean();
                         if (!currentValue)
                         {
-                            System.Diagnostics.Debug.WriteLine($"Overriding AI moderation due to evasion pattern in: \"{originalMessage}\"");
-                            System.Console.WriteLine($"Overriding AI moderation due to evasion pattern in: \"{originalMessage}\"");
-                            
-                            // Create censored text
                             string censored = new string('*', originalMessage.Length);
                             return UpdateModerationInJson(response, censored, true);
                         }
@@ -337,17 +325,12 @@ namespace AntiSwearingChatBox.AI
                 
                 return response; // Valid and no issues detected
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                System.Diagnostics.Debug.WriteLine($"Error validating response: {ex.Message}");
-                System.Console.WriteLine($"Error validating response: {ex.Message}");
                 return CreateFallbackResponse(originalMessage);
             }
         }
 
-        /// <summary>
-        /// Check if two strings are relatively close matches
-        /// </summary>
         private static bool IsCloseMatch(string str1, string str2)
         {
             if (str1.Length < 5 || str2.Length < 5)
@@ -373,9 +356,6 @@ namespace AntiSwearingChatBox.AI
             return str1.Contains(str2) || str2.Contains(str1);
         }
 
-        /// <summary>
-        /// Update the original message in a JSON response
-        /// </summary>
         private static string UpdateOriginalMessageInJson(string jsonResponse, string correctOriginalMessage)
         {
             try
@@ -413,9 +393,6 @@ namespace AntiSwearingChatBox.AI
             }
         }
 
-        /// <summary>
-        /// Update containsProfanity in a JSON response
-        /// </summary>
         private static string UpdateProfanityDetectionInJson(string jsonResponse, bool containsProfanity)
         {
             try
@@ -434,7 +411,7 @@ namespace AntiSwearingChatBox.AI
                     {
                         writer.WriteBoolean(property.Name, containsProfanity);
                     }
-                    else if (containsProfanity && property.Name.ToLower() == "explanation" && !property.Value.GetString().Contains("override"))
+                    else if (containsProfanity && property.Name.ToLower() == "explanation" && !property.Value.GetString()!.Contains("override"))
                     {
                         writer.WriteString(property.Name, property.Value.GetString() + " (Override: Known evasion pattern detected)");
                     }
@@ -451,7 +428,6 @@ namespace AntiSwearingChatBox.AI
             }
             catch
             {
-                // If we can't update the JSON, create a new response
                 var response = new
                 {
                     containsProfanity = containsProfanity,

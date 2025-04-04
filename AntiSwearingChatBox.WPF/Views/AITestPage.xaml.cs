@@ -8,9 +8,6 @@ using Newtonsoft.Json;
 
 namespace AntiSwearingChatBox.WPF.View
 {
-    /// <summary>
-    /// Interaction logic for AITestPage.xaml
-    /// </summary>
     public partial class AITestPage : Page
     {
         private readonly IApiService _apiService;
@@ -19,35 +16,28 @@ namespace AntiSwearingChatBox.WPF.View
         {
             InitializeComponent();
             
-            // Get the API service with proper null checking
             _apiService = Services.ServiceProvider.ApiService;
-            
-            // Initialize connection on page load
             Loaded += AITestPage_Loaded;
         }
         
         private async void AITestPage_Loaded(object sender, RoutedEventArgs e)
         {
-            // Display a loading message
             ResultsTextBox.Text = "Initializing connection to server...";
             
             try
             {
-                // Ensure we have a valid API service
                 if (_apiService == null)
                 {
                     ResultsTextBox.Text = "Error: Could not initialize API service.";
                     return;
                 }
                 
-                // Connect to the SignalR hub if needed
                 bool isConnected = await _apiService.IsHubConnectedAsync();
                 if (!isConnected)
                 {
                     ResultsTextBox.Text = "Connecting to server...";
                     await _apiService.ConnectToHubAsync();
                     
-                    // Verify connection was successful
                     isConnected = await _apiService.IsHubConnectedAsync();
                     if (!isConnected)
                     {
@@ -73,7 +63,6 @@ namespace AntiSwearingChatBox.WPF.View
         {
             try
             {
-                // Ensure we have a valid API service
                 if (_apiService == null)
                 {
                     ResultsTextBox.Text = "Error: API service is not initialized.";
@@ -87,19 +76,15 @@ namespace AntiSwearingChatBox.WPF.View
                     return;
                 }
                 
-                // Disable button while processing
                 RunTestButton.IsEnabled = false;
                 ResultsTextBox.Text = "Processing...";
                 
-                // Get selected test type
                 var selectedItem = TestTypeComboBox.SelectedItem as ComboBoxItem;
                 string testType = selectedItem?.Content.ToString() ?? "Profanity Detection";
                 
-                // Always use verbose mode for the test page to show detailed results
                 bool verboseMode = true;
                 
-                // Run the selected test
-                object result = null;
+                object? result = null;
                 
                 switch (testType)
                 {
@@ -116,7 +101,6 @@ namespace AntiSwearingChatBox.WPF.View
                         break;
                         
                     case "Context-Aware Filtering":
-                        // Simple context for testing
                         string context = "Previous messages in this conversation were about technology and programming.";
                         result = await _apiService.ContextAwareFilteringAsync(message, context);
                         break;
@@ -134,7 +118,6 @@ namespace AntiSwearingChatBox.WPF.View
                         break;
                 }
                 
-                // Format and display the result
                 string formattedResult = FormatResult(result);
                 ResultsTextBox.Text = formattedResult;
             }
@@ -144,7 +127,6 @@ namespace AntiSwearingChatBox.WPF.View
             }
             finally
             {
-                // Re-enable button
                 RunTestButton.IsEnabled = true;
             }
         }
@@ -161,7 +143,6 @@ namespace AntiSwearingChatBox.WPF.View
                 
             try
             {
-                // Pretty print the JSON representation of the result
                 string json = JsonConvert.SerializeObject(result, Formatting.Indented);
                 return json;
             }
