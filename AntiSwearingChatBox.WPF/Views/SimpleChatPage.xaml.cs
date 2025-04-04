@@ -131,6 +131,9 @@ namespace AntiSwearingChatBox.WPF.View
         private System.Timers.Timer? _scorePollingTimer;
         private const int SCORE_POLLING_INTERVAL_MS = 3000; // Check every 3 seconds
 
+        // Add a flag to prevent simultaneous refreshes
+        private int _isRefreshing = 0;
+
         // Method to force UI refresh for swearing score and other indicators
         private void RefreshUIElements()
         {
@@ -1756,33 +1759,39 @@ namespace AntiSwearingChatBox.WPF.View
             _chatRefreshTimer = new System.Timers.Timer(CHAT_REFRESH_INTERVAL_MS);
             _chatRefreshTimer.Elapsed += async (sender, e) => 
             {
+                // Skip if currently processing an update
+                if (Interlocked.CompareExchange(ref _isRefreshing, 1, 0) != 0)
+                    return;
+                
                 try
                 {
-                    // Load the chat threads list
                     await Dispatcher.InvokeAsync(async () => 
                     {
-                        // Refresh chat threads list
-                        await LoadChatThreads();
-                        
-                        // If we have a selected conversation, refresh it
-                        if (_currentThreadId > 0 && HasSelectedConversation)
+                        // Only refresh threads list every 3 seconds to reduce UI updates
+                        if (DateTime.Now.Second % 3 == 0)
                         {
-                            // Load current conversation messages in a non-disruptive way
-                            // Only if user isn't actively typing or scrolling
-                            if (!MessageTextBox.IsFocused && IsScrolledToBottom())
-                            {
-                                // Save current thread ID to reload it
-                                int threadToReload = _currentThreadId;
-                                await LoadMessagesForThread(threadToReload);
-                            }
+                            await RefreshConversationsList();
                         }
                         
-                        Console.WriteLine("[CHAT REFRESH] Refreshed chat page");
+                        // If we have a selected conversation, refresh its messages
+                        if (_currentThreadId > 0 && HasSelectedConversation)
+                        {
+                            // Only update messages if user isn't typing and scrolled to bottom
+                            if (!MessageTextBox.IsFocused && IsScrolledToBottom())
+                            {
+                                await RefreshCurrentConversationMessages();
+                            }
+                        }
                     });
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"[CHAT REFRESH ERROR] {ex.Message}");
+                }
+                finally
+                {
+                    // Release the lock
+                    Interlocked.Exchange(ref _isRefreshing, 0);
                 }
             };
             
@@ -1790,41 +1799,161 @@ namespace AntiSwearingChatBox.WPF.View
             Console.WriteLine("[CHAT REFRESH] Started chat refresh polling timer");
         }
         
-        private void StopChatRefreshPolling()
-        {
-            if (_chatRefreshTimer != null)
-            {
-                _chatRefreshTimer.Stop();
-                _chatRefreshTimer.Dispose();
-                _chatRefreshTimer = null;
-                Console.WriteLine("[CHAT REFRESH] Stopped chat refresh polling timer");
-            }
-        }
-        
-        // Helper method to load messages for a thread without affecting UI as much
-        private async Task LoadMessagesForThread(int threadId)
+        // Separate method to refresh only the threads list
+        private async Task RefreshConversationsList()
         {
             try
             {
-                // Load messages for the selected thread
-                var messages = await _apiService.GetMessagesAsync(threadId);
-                
-                // If no messages or thread ID has changed, don't update
-                if (messages == null || messages.Count == 0 || threadId != _currentThreadId)
+                if (_apiService.CurrentUser == null)
+                    return;
+
+                // Get threads from API without clearing existing ones first
+                var threads = await _apiService.GetThreadsAsync();
+                if (threads == null)
                     return;
                     
-                // Check if we have new messages by comparing count
-                if (messages.Count != Messages.Count)
+                // First, update existing conversations
+                bool hasChanges = false;
+                foreach (var thread in threads)
                 {
-                    // We have different number of messages, so update the list
-                    // Save scroll position before updating
-                    bool wasAtBottom = IsScrolledToBottom();
-                    
-                    // Clear and rebuild messages list
-                    Messages.Clear();
-                    
-                    foreach (var message in messages)
+                    var existingConversation = Conversations.FirstOrDefault(c => c.Id == thread.ThreadId.ToString());
+                    if (existingConversation != null)
                     {
+                        // Check if any important properties need updating
+                        bool threadChanged = existingConversation.IsClosed != thread.IsClosed 
+                            || existingConversation.SwearingScore != thread.SwearingScore;
+                            
+                        if (threadChanged)
+                        {
+                            existingConversation.SwearingScore = thread.SwearingScore;
+                            existingConversation.IsClosed = thread.IsClosed;
+                            hasChanges = true;
+                            
+                            // If this is the current thread, update the UI
+                            if (_currentThreadId == thread.ThreadId)
+                            {
+                                SwearingScore = thread.SwearingScore ?? 0;
+                                IsThreadClosed = thread.IsClosed;
+                                RefreshUIElements();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // New thread - add it to conversations
+                        hasChanges = true;
+                        
+                        // Get avatar and name
+                        var threadName = thread.Name ?? $"Chat {thread.ThreadId}";
+                        var avatarChar = "?";
+                        if (!string.IsNullOrEmpty(threadName))
+                        {
+                            var firstChar = threadName.Trim().FirstOrDefault(c => char.IsLetter(c));
+                            if (firstChar != '\0')
+                                avatarChar = firstChar.ToString().ToUpper();
+                            else if (threadName.Length > 0)
+                                avatarChar = threadName[0].ToString().ToUpper();
+                        }
+                        
+                        var newConversation = new ConversationItemViewModel
+                        {
+                            Id = thread.ThreadId.ToString(),
+                            Title = threadName,
+                            LastMessage = "Loading...",
+                            LastMessageTime = thread.CreatedAt.ToString("g"),
+                            AvatarText = avatarChar,
+                            UnreadCount = 0,
+                            IsSelected = (_currentThreadId == thread.ThreadId),
+                            SwearingScore = thread.SwearingScore,
+                            IsClosed = thread.IsClosed
+                        };
+                        
+                        // Insert at the beginning for new threads
+                        Conversations.Insert(0, newConversation);
+                    }
+                }
+                
+                // Check for deleted threads
+                for (int i = Conversations.Count - 1; i >= 0; i--)
+                {
+                    var conversation = Conversations[i];
+                    if (!threads.Any(t => t.ThreadId.ToString() == conversation.Id))
+                    {
+                        Conversations.RemoveAt(i);
+                        hasChanges = true;
+                    }
+                }
+                
+                if (hasChanges)
+                {
+                    Console.WriteLine("[CHAT REFRESH] Updated conversations list");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[REFRESH ERROR] Error refreshing conversations: {ex.Message}");
+            }
+        }
+        
+        // Separate method to refresh only the current conversation's messages
+        private async Task RefreshCurrentConversationMessages()
+        {
+            try
+            {
+                int threadId = _currentThreadId;
+                if (threadId <= 0)
+                    return;
+                    
+                // Load messages for the selected thread
+                var messages = await _apiService.GetMessagesAsync(threadId);
+                if (messages == null || messages.Count == 0)
+                    return;
+                
+                // If thread has changed while retrieving messages, don't update
+                if (threadId != _currentThreadId)
+                    return;
+                    
+                // Compare messages to see what needs updating
+                bool hasNewMessages = messages.Count > Messages.Count;
+                
+                if (hasNewMessages)
+                {
+                    // Only add new messages instead of rebuilding the entire list
+                    // First determine which messages are new
+                    int newMessageCount = messages.Count - Messages.Count;
+                    var newMessages = messages.Skip(Messages.Count).ToList();
+                    
+                    // Make sure we're adding the right messages by checking timestamps
+                    // Get the timestamp of the last message we have
+                    DateTime lastTimestamp = DateTime.MinValue;
+                    if (Messages.Count > 0)
+                    {
+                        // Try to parse timestamp from the last message
+                        var lastMessage = Messages[Messages.Count - 1];
+                        if (DateTime.TryParse(lastMessage.Timestamp, out DateTime timestamp))
+                        {
+                            lastTimestamp = timestamp;
+                        }
+                    }
+                    
+                    // Add only messages that are newer than our latest message
+                    bool wasAtBottom = IsScrolledToBottom();
+                    int addedCount = 0;
+                    
+                    foreach (var message in newMessages)
+                    {
+                        // Skip messages we already have
+                        if (message.CreatedAt <= lastTimestamp)
+                            continue;
+                            
+                        // Check if this message is already in the Messages collection to avoid duplicates
+                        bool isDuplicate = Messages.Any(m => 
+                            m.Text == (message.ModeratedMessage ?? message.OriginalMessage) &&
+                            m.Timestamp == message.CreatedAt.ToString("h:mm tt"));
+                        
+                        if (isDuplicate)
+                            continue;
+                            
                         var username = message.User?.Username ?? "Unknown";
                         var avatar = !string.IsNullOrEmpty(username) ? username[0].ToString().ToUpper() : "?";
                         var isSent = message.UserId == _apiService.CurrentUser?.UserId;
@@ -1839,18 +1968,36 @@ namespace AntiSwearingChatBox.WPF.View
                             ContainsProfanity = message.WasModified,
                             IsUncensored = false // Initially show censored version
                         });
+                        
+                        addedCount++;
                     }
                     
-                    // Only scroll if we were already at the bottom
-                    if (wasAtBottom)
+                    // Only scroll if we were already at the bottom and added new messages
+                    if (wasAtBottom && addedCount > 0)
                     {
                         ScrollToBottom();
+                    }
+                    
+                    if (addedCount > 0)
+                    {
+                        Console.WriteLine($"[CHAT REFRESH] Added {addedCount} new messages");
                     }
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[REFRESH ERROR] Error refreshing messages: {ex.Message}");
+            }
+        }
+        
+        private void StopChatRefreshPolling()
+        {
+            if (_chatRefreshTimer != null)
+            {
+                _chatRefreshTimer.Stop();
+                _chatRefreshTimer.Dispose();
+                _chatRefreshTimer = null;
+                Console.WriteLine("[CHAT REFRESH] Stopped chat refresh polling timer");
             }
         }
     }
