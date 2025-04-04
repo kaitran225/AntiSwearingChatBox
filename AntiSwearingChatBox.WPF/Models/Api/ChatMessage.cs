@@ -38,5 +38,7 @@ namespace AntiSwearingChatBox.WPF.Models.Api
         // Returns appropriate text color for the bubble based on message state
         public object BubbleForeground => 
             Application.Current.Resources[IsFiltered ? "WarningTextBrush" : "PrimaryTextBrush"];
+
+        public int? ThreadSwearingScore { get; set; }
     }
 } 

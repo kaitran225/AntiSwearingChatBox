@@ -7,7 +7,7 @@
         <Separator Background="#1E1E1E" Margin="0,0,0,16"/>
         <Grid>
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="© 2024 Anti-Swearing Chat Box" Foreground="#616161" FontSize="11"/>
+                <TextBlock Text="© 2025 Anti-Swearing Chat Box" Foreground="#616161" FontSize="11"/>
                 <TextBlock Text="•" Foreground="#616161" FontSize="11" Margin="8,0"/>
                 <TextBlock Text="Privacy Policy" Foreground="#909090" FontSize="11"/>
                 <TextBlock Text="•" Foreground="#616161" FontSize="11" Margin="8,0"/>

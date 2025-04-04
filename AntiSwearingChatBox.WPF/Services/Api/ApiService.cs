@@ -1,9 +1,12 @@
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
 using Newtonsoft.Json;
+using System.Linq;
 using AntiSwearingChatBox.WPF.Models.Api;
 using AntiSwearingChatBox.WPF.Models;
 
@@ -22,6 +25,8 @@ namespace AntiSwearingChatBox.WPF.Services.Api
         public event Action<ChatMessage>? OnMessageReceived;
         public event Action<ChatThread>? OnThreadCreated;
         public event Action<int, string>? OnUserJoinedThread;
+        public event Action<int, int, bool>? OnThreadInfoUpdated;
+        public event Action<int, string>? OnThreadClosed;
         
         public ApiService()
         {
@@ -432,15 +437,19 @@ namespace AntiSwearingChatBox.WPF.Services.Api
             }
         }
         
-        public async Task ConnectToHubAsync()
+        public async Task<bool> ConnectToHubAsync()
         {
             if (string.IsNullOrEmpty(_token))
             {
-                return;
+                Console.WriteLine("[HUB ERROR] Cannot connect to SignalR hub - no authentication token");
+                return false;
             }
 
             try {
+                Console.WriteLine("[HUB] Disconnecting from any existing hub connection...");
                 await DisconnectFromHubAsync();
+                
+                Console.WriteLine("[HUB] Building new hub connection...");
                 _hubConnection = new HubConnectionBuilder()
                     .WithUrl(ApiConfig.ChatHubUrl, options =>
                     {
@@ -462,9 +471,13 @@ namespace AntiSwearingChatBox.WPF.Services.Api
                     })
                     .Build();
 
-                _hubConnection.On<string, string, int, DateTime, int, string, bool>("ReceiveMessage", 
-                    (username, message, userId, timestamp, threadId, originalMessage, containsProfanity) =>
+                Console.WriteLine("[HUB] Registering ReceiveMessage handler...");
+                _hubConnection.On<string, string, int, DateTime, int, string, bool, int>("ReceiveMessage", 
+                    (username, message, userId, timestamp, threadId, originalMessage, containsProfanity, threadSwearingScore) =>
                     {
+                        Console.WriteLine($"[HUB RECEIVE] Message from {username} in thread {threadId}: {message.Substring(0, Math.Min(20, message.Length))}...");
+                        Console.WriteLine($"[HUB RECEIVE] Message details - ContainsProfanity: {containsProfanity}, ThreadSwearingScore: {threadSwearingScore}");
+                        
                         var chatMessage = new ChatMessage
                         {
                             UserId = userId,
@@ -475,7 +488,8 @@ namespace AntiSwearingChatBox.WPF.Services.Api
                             ModeratedMessage = message,
                             CreatedAt = timestamp,
                             ThreadId = threadId,
-                            WasModified = containsProfanity
+                            WasModified = containsProfanity,
+                            ThreadSwearingScore = threadSwearingScore
                         };
                         
                         OnMessageReceived?.Invoke(chatMessage);
@@ -483,16 +497,19 @@ namespace AntiSwearingChatBox.WPF.Services.Api
 
                 _hubConnection.On<ChatThread>("ThreadCreated", thread =>
                 {
+                    Console.WriteLine($"[HUB RECEIVE] Thread created: {thread.Name} (ID: {thread.ThreadId})");
                     OnThreadCreated?.Invoke(thread);
                 });
 
                 _hubConnection.On<string, int>("UserJoined", (username, userId) =>
                 {
+                    Console.WriteLine($"[HUB RECEIVE] User joined: {username} (ID: {userId})");
                     OnUserJoinedThread?.Invoke(userId, username);
                 });
                 
                 _hubConnection.Closed += async (error) =>
                 {
+                    Console.WriteLine($"[HUB] Connection closed. Error: {error?.Message}");
                     try
                     {
                         await Task.Delay(new Random().Next(0, 5) * 1000);
@@ -505,57 +522,88 @@ namespace AntiSwearingChatBox.WPF.Services.Api
                         
                         try
                         {
+                            Console.WriteLine("[HUB] Reconnecting after connection closed...");
                             await _hubConnection.StartAsync();
                             
                             if (_currentUserId > 0 && !string.IsNullOrEmpty(_currentUsername))
                             {
+                                Console.WriteLine($"[HUB] Re-joining chat as {_currentUsername}...");
                                 await _hubConnection.InvokeAsync("JoinChat", _currentUsername, _currentUserId);
                             }
                         }
                         catch (ObjectDisposedException)
                         {
+                            Console.WriteLine("[HUB] Hub connection was disposed, creating new connection");
                             _hubConnection = null;
                             await ConnectToHubAsync();
                         }
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
+                        Console.WriteLine($"[HUB ERROR] Error in Closed handler: {ex.Message}");
                     }
                 };
                 
                 _hubConnection.Reconnecting += (error) =>
                 {
+                    Console.WriteLine($"[HUB] Reconnecting... Error: {error?.Message}");
                     return Task.CompletedTask;
                 };
                 
                 _hubConnection.Reconnected += async (connectionId) =>
                 {
+                    Console.WriteLine($"[HUB] Reconnected with ID: {connectionId}");
                     try
                     {
                         if (_currentUserId > 0 && !string.IsNullOrEmpty(_currentUsername))
                         {
+                            Console.WriteLine($"[HUB] Re-joining chat as {_currentUsername} after reconnection");
                             await _hubConnection.InvokeAsync("JoinChat", _currentUsername, _currentUserId);
                         }
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
+                        Console.WriteLine($"[HUB ERROR] Error in Reconnected handler: {ex.Message}");
                     }
                 };
 
+                // Register event handlers for thread status updates
+                _hubConnection.On<int, string, bool, int, bool>("ThreadInfo", 
+                    (threadId, title, isPrivate, swearingScore, isClosed) =>
+                    {
+                        Console.WriteLine($"[HUB RECEIVE] Thread info for {threadId}: SwearingScore={swearingScore}, IsClosed={isClosed}");
+                        OnThreadInfoUpdated?.Invoke(threadId, swearingScore, isClosed);
+                    });
+                
+                _hubConnection.On<int, string>("ThreadClosed", (threadId, message) =>
+                {
+                    Console.WriteLine($"[HUB RECEIVE] Thread {threadId} closed: {message}");
+                    OnThreadClosed?.Invoke(threadId, message);
+                });
+
+                Console.WriteLine("[HUB] Starting connection...");
                 await _hubConnection.StartAsync();
                 
                 if (_currentUserId > 0 && !string.IsNullOrEmpty(_currentUsername))
                 {
                     try 
                     {
+                        Console.WriteLine($"[HUB] Joining chat as {_currentUsername}...");
                         await _hubConnection.InvokeAsync("JoinChat", _currentUsername, _currentUserId);
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
+                        Console.WriteLine($"[HUB ERROR] Error joining chat: {ex.Message}");
+                        return false;
                     }
                 }
+                
+                Console.WriteLine("[HUB] Connection established successfully");
+                return true;
             }
-            catch (Exception) {
+            catch (Exception ex) {
+                Console.WriteLine($"[HUB ERROR] Error connecting to hub: {ex.Message}");
+                return false;
             }
         }
         
@@ -608,43 +656,61 @@ namespace AntiSwearingChatBox.WPF.Services.Api
             return GetMessagesAsync(threadId, null);
         }
 
-        public async Task JoinThreadChatGroupAsync(int threadId)
+        public async Task<bool> JoinThreadChatGroupAsync(int threadId)
         {
             try
             {
+                Console.WriteLine($"[GROUP] Attempting to join thread {threadId}");
+                
                 if (_hubConnection == null || _hubConnection.State != HubConnectionState.Connected)
                 {
-                    await ConnectToHubAsync();
+                    Console.WriteLine($"[GROUP] Hub not connected, attempting to connect before joining thread {threadId}");
+                    bool connected = await ConnectToHubAsync();
                     
-                    if (_hubConnection == null || _hubConnection.State != HubConnectionState.Connected)
+                    if (!connected || _hubConnection == null || _hubConnection.State != HubConnectionState.Connected)
                     {
-                        return;
+                        Console.WriteLine($"[GROUP ERROR] Failed to connect to hub, cannot join thread {threadId}");
+                        return false;
                     }
                 }
                 
+                Console.WriteLine($"[GROUP] Invoking JoinThread({threadId}) on hub...");
                 await _hubConnection.InvokeAsync("JoinThread", threadId);
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        public async Task LeaveThreadChatGroupAsync(int threadId)
-        {
-            try
-            {
-                if (_hubConnection == null || _hubConnection.State != HubConnectionState.Connected)
-                {
-                    return;
-                }
-                
-                await _hubConnection.InvokeAsync("LeaveThreadGroup", threadId, _currentUserId);
+                Console.WriteLine($"[GROUP] Successfully joined thread {threadId}");
+                return true;
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"[GROUP ERROR] Error joining thread {threadId}: {ex.Message}");
+                return false;
+            }
+        }
+
+        public async Task<bool> LeaveThreadChatGroupAsync(int threadId)
+        {
+            try
+            {
+                Console.WriteLine($"[GROUP] Attempting to leave thread {threadId}");
+                
+                if (_hubConnection == null || _hubConnection.State != HubConnectionState.Connected)
+                {
+                    Console.WriteLine($"[GROUP] Hub not connected, cannot leave thread {threadId}");
+                    return false;
+                }
+                
+                Console.WriteLine($"[GROUP] Invoking LeaveThreadGroup({threadId}, {_currentUserId}) on hub...");
+                await _hubConnection.InvokeAsync("LeaveThreadGroup", threadId, _currentUserId);
+                Console.WriteLine($"[GROUP] Successfully left thread {threadId}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[GROUP ERROR] Error leaving thread {threadId}: {ex.Message}");
                 if (ex.InnerException != null)
                 {
+                    Console.WriteLine($"[GROUP ERROR] Inner exception: {ex.InnerException.Message}");
                 }
+                return false;
             }
         }
 
@@ -1030,6 +1096,86 @@ namespace AntiSwearingChatBox.WPF.Services.Api
             }
             catch (Exception)
             {
+                return false;
+            }
+        }
+
+        public async Task<List<ParticipantDto>> GetThreadParticipantsAsync(int threadId)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"{ApiConfig.ThreadsEndpoint}/{threadId}/participants");
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var participants = JsonConvert.DeserializeObject<List<ParticipantDto>>(content);
+                    return participants ?? [];
+                }
+                
+                return [];
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting thread participants: {ex.Message}");
+                return [];
+            }
+        }
+
+        public async Task<int> GetThreadSwearingScoreAsync(int threadId)
+        {
+            try
+            {
+                string url = $"{ApiConfig.BaseUrl}/api/threads/{threadId}";
+                    
+                if (!string.IsNullOrEmpty(_token))
+                {
+                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+                }
+                
+                var response = await _httpClient.GetAsync(url);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var thread = JsonConvert.DeserializeObject<ChatThread>(content);
+                    return thread?.SwearingScore ?? 0;
+                }
+                
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting thread swearing score: {ex.Message}");
+                return 0;
+            }
+        }
+        
+        public async Task<bool> IsThreadClosedAsync(int threadId)
+        {
+            try
+            {
+                string url = $"{ApiConfig.BaseUrl}/api/threads/{threadId}";
+                    
+                if (!string.IsNullOrEmpty(_token))
+                {
+                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+                }
+                
+                var response = await _httpClient.GetAsync(url);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var thread = JsonConvert.DeserializeObject<ChatThread>(content);
+                    return thread?.IsClosed ?? false;
+                }
+                
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error checking if thread is closed: {ex.Message}");
                 return false;
             }
         }

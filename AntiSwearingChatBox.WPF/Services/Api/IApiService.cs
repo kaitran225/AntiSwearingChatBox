@@ -28,16 +28,18 @@ namespace AntiSwearingChatBox.WPF.Services.Api
         Task<ChatMessage> SendMessageAsync(int threadId, string content);
         
         // Real-time connection
-        Task ConnectToHubAsync();
+        Task<bool> ConnectToHubAsync();
         Task DisconnectFromHubAsync();
         Task<bool> IsHubConnectedAsync();
-        Task JoinThreadChatGroupAsync(int threadId);
-        Task LeaveThreadChatGroupAsync(int threadId);
+        Task<bool> JoinThreadChatGroupAsync(int threadId);
+        Task<bool> LeaveThreadChatGroupAsync(int threadId);
         
         // Events
         event Action<ChatMessage> OnMessageReceived;
         event Action<ChatThread> OnThreadCreated;
         event Action<int, string> OnUserJoinedThread;
+        event Action<int, int, bool> OnThreadInfoUpdated; // threadId, swearingScore, isClosed
+        event Action<int, string> OnThreadClosed; // threadId, reason
         
         // AI Services
         Task<string> GenerateTextAsync(string prompt);
@@ -60,5 +62,20 @@ namespace AntiSwearingChatBox.WPF.Services.Api
         /// Marks a thread as closed (due to excessive swearing or other reasons)
         /// </summary>
         Task<bool> CloseThreadAsync(int threadId);
+
+        /// <summary>
+        /// Gets participants for a specific thread
+        /// </summary>
+        Task<List<ParticipantDto>> GetThreadParticipantsAsync(int threadId);
+
+        /// <summary>
+        /// Gets the current swearing score for a thread via direct API call (not SignalR)
+        /// </summary>
+        Task<int> GetThreadSwearingScoreAsync(int threadId);
+
+        /// <summary>
+        /// Checks if a thread is closed via direct API call (not SignalR)
+        /// </summary>
+        Task<bool> IsThreadClosedAsync(int threadId);
     }
 } 
