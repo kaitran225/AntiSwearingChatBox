@@ -454,6 +454,30 @@ namespace AntiSwearingChatBox.WPF.Services.Api
         {
             try
             {
+                // Check if the hub connection is active, if not try to reconnect
+                if (_hubConnection == null || _hubConnection.State != HubConnectionState.Connected)
+                {
+                    Console.WriteLine("SignalR not connected when sending message. Attempting to reconnect...");
+                    try
+                    {
+                        await ConnectToHubAsync();
+                        
+                        // Verify connection was successful
+                        if (_hubConnection == null || _hubConnection.State != HubConnectionState.Connected)
+                        {
+                            Console.WriteLine("Warning: Could not reconnect to SignalR. Message will be sent via REST API only.");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Successfully reconnected to SignalR.");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error reconnecting to SignalR: {ex.Message}. Will proceed with REST API only.");
+                    }
+                }
+                
                 // Log request details for debugging
                 Console.WriteLine($"Sending message to API. URL: {ApiConfig.ThreadsEndpoint}/{threadId}/messages, ThreadID: {threadId}, Content length: {content.Length}");
                 
@@ -602,15 +626,34 @@ namespace AntiSwearingChatBox.WPF.Services.Api
                         // Wait a bit and try to reconnect
                         await Task.Delay(new Random().Next(0, 5) * 1000);
                         
-                        Console.WriteLine("SignalR: Attempting to restart connection after closure");
-                            await _hubConnection.StartAsync();
-                        Console.WriteLine($"SignalR: Connection restarted with state: {_hubConnection.State}");
-                        
-                        // Re-join the chat after reconnection
-                        if (_currentUserId > 0 && !string.IsNullOrEmpty(_currentUsername))
+                        // Check if the hub connection is null or disposed
+                        if (_hubConnection == null)
                         {
-                            Console.WriteLine($"SignalR: Re-joining chat as {_currentUsername} after reconnection");
-                            await _hubConnection.InvokeAsync("JoinChat", _currentUsername, _currentUserId);
+                            Console.WriteLine("SignalR: Hub connection is null after closure, reconnecting from scratch");
+                            // Recreate the connection from scratch since it's null
+                            await ConnectToHubAsync();
+                            return;
+                        }
+                        
+                        Console.WriteLine("SignalR: Attempting to restart connection after closure");
+                        try
+                        {
+                            await _hubConnection.StartAsync();
+                            Console.WriteLine($"SignalR: Connection restarted with state: {_hubConnection.State}");
+                            
+                            // Re-join the chat after reconnection
+                            if (_currentUserId > 0 && !string.IsNullOrEmpty(_currentUsername))
+                            {
+                                Console.WriteLine($"SignalR: Re-joining chat as {_currentUsername} after reconnection");
+                                await _hubConnection.InvokeAsync("JoinChat", _currentUsername, _currentUserId);
+                            }
+                        }
+                        catch (ObjectDisposedException)
+                        {
+                            Console.WriteLine("SignalR: Hub connection was disposed, reconnecting from scratch");
+                            // If we get here, the connection was disposed but not null
+                            _hubConnection = null;
+                            await ConnectToHubAsync();
                         }
                     }
                     catch (Exception ex)
@@ -681,10 +724,25 @@ namespace AntiSwearingChatBox.WPF.Services.Api
             {
                 if (_hubConnection != null)
                 {
-                    await _hubConnection.StopAsync();
-                    await _hubConnection.DisposeAsync();
+                    // Keep a temporary reference to the hub connection to dispose it
+                    var hubConnectionToDispose = _hubConnection;
+                    
+                    // Set _hubConnection to null BEFORE stopping/disposing to avoid race conditions
+                    // This ensures that any code trying to use _hubConnection (including event handlers)
+                    // will see it as null and handle that case appropriately
                     _hubConnection = null;
-                    Console.WriteLine("SignalR hub connection stopped and disposed");
+                    
+                    // Now safely dispose the connection through our temporary reference
+                    try
+                    {
+                        await hubConnectionToDispose.StopAsync();
+                        await hubConnectionToDispose.DisposeAsync();
+                        Console.WriteLine("SignalR hub connection stopped and disposed");
+                    }
+                    catch (Exception disposeEx)
+                    {
+                        Console.WriteLine($"Error during hub connection disposal: {disposeEx.Message}");
+                    }
                 }
             }
             catch (Exception ex)
@@ -694,6 +752,9 @@ namespace AntiSwearingChatBox.WPF.Services.Api
                 {
                     Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
                 }
+                
+                // Ensure _hubConnection is set to null even if an error occurs
+                _hubConnection = null;
             }
         }
 
@@ -794,6 +855,13 @@ namespace AntiSwearingChatBox.WPF.Services.Api
         /// </summary>
         public async Task<string> GenerateTextAsync(string prompt)
         {
+            // Make sure we have authentication before calling AI services
+            if (string.IsNullOrEmpty(_token))
+            {
+                Console.WriteLine("Authentication required before accessing AI services");
+                return "Error: Authentication required";
+            }
+            
             try
             {
                 var request = new { Prompt = prompt };

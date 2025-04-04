@@ -130,7 +130,7 @@
                         Margin="4,0,0,0"
                         Background="{Binding SwearingScore, Converter={StaticResource SwearingScoreToColorConverter}}"
                         CornerRadius="12"
-                        Visibility="{Binding SwearingScore, Converter={StaticResource IntToVisibilityConverter}}">
+                        Visibility="{Binding SwearingScore, Converter={StaticResource BoolToVis}}">
                         <TextBlock
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"

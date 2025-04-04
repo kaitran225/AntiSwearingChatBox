@@ -88,6 +88,17 @@ namespace AntiSwearingChatBox.AI.Moderation
         public ResponseOptions ResponseOptions { get; set; } = new ResponseOptions();
         public AIInstructions AIInstructions { get; set; } = new AIInstructions();
         public WarningThresholds WarningThresholds { get; set; } = new WarningThresholds();
+        
+        // List of common evasion patterns to detect
+        public List<string> EvasionPatterns { get; set; } = new List<string>
+        {
+            "fuk", "fvck", "fck", "fuq", "phuck", "phuk", "fxck", "f**k", "f-ck",
+            "shi", "sht", "sh1t", "sh!t", "s**t", 
+            "a$$", "a**", "@ss", "azz", 
+            "b!tch", "b1tch", "biatch", "bytch", "btch", "b*tch",
+            "d1ck", "dik", "d!ck", "dikk",
+            "pusy", "pu$$y", "pussi", "pvssy"
+        };
 
         public string GetEffectivePromptPrefix()
         {

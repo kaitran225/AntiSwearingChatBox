@@ -28,7 +28,7 @@
         <converters:FirstCharConverter x:Key="FirstCharConverter" />
         <converters:SwearingScoreToColorConverter x:Key="SwearingScoreToColorConverter" />
         <converters:BoolToTextConverter x:Key="BoolToTextConverter" />
-        <converters:IntToVisibilityConverter x:Key="IntToVisibilityConverter" />
+        <converters:ClampValueConverter x:Key="ClampValueConverter" />
     </Page.Resources>
 
     <Grid>
@@ -262,7 +262,7 @@
                                                             Margin="4,0,0,0"
                                                             Background="{Binding SwearingScore, Converter={StaticResource SwearingScoreToColorConverter}}"
                                                             CornerRadius="12"
-                                                            Visibility="{Binding SwearingScore, Converter={StaticResource IntToVisibilityConverter}}">
+                                                            Visibility="{Binding SwearingScore, Converter={StaticResource BoolToVisibilityConverter}}">
                                                             <TextBlock
                                                                 HorizontalAlignment="Center"
                                                                 VerticalAlignment="Center"
@@ -524,7 +524,7 @@
                                         </TextBlock>
                                     </StackPanel>
                                     
-                                    <!-- Severity Indicator -->
+                                    <!-- Severity Indicator - This gets clamped for visual representation -->
                                     <ProgressBar
                                         Width="110"
                                         Height="4"
@@ -534,7 +534,7 @@
                                         Background="#EEEEEE"
                                         Foreground="{Binding SwearingScore, Converter={StaticResource SwearingScoreToColorConverter}, FallbackValue={StaticResource TertiaryTextBrush}}"
                                         Maximum="5"
-                                        Value="{Binding SwearingScore, FallbackValue=0}" />
+                                        Value="{Binding SwearingScore, FallbackValue=0, Converter={StaticResource ClampValueConverter}}" />
                                 </Grid>
                             </Border>
                             

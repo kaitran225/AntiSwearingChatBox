@@ -18,13 +18,68 @@ namespace AntiSwearingChatBox.WPF.View
         public AITestPage()
         {
             InitializeComponent();
+            
+            // Get the API service with proper null checking
             _apiService = Services.ServiceProvider.ApiService;
+            
+            // Initialize connection on page load
+            Loaded += AITestPage_Loaded;
+        }
+        
+        private async void AITestPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Display a loading message
+            ResultsTextBox.Text = "Initializing connection to server...";
+            
+            try
+            {
+                // Ensure we have a valid API service
+                if (_apiService == null)
+                {
+                    ResultsTextBox.Text = "Error: Could not initialize API service.";
+                    return;
+                }
+                
+                // Connect to the SignalR hub if needed
+                bool isConnected = await _apiService.IsHubConnectedAsync();
+                if (!isConnected)
+                {
+                    ResultsTextBox.Text = "Connecting to server...";
+                    await _apiService.ConnectToHubAsync();
+                    
+                    // Verify connection was successful
+                    isConnected = await _apiService.IsHubConnectedAsync();
+                    if (!isConnected)
+                    {
+                        ResultsTextBox.Text = "Warning: Could not connect to real-time services.\r\nYou can still use the test functions.";
+                    }
+                    else
+                    {
+                        ResultsTextBox.Text = "Connected successfully. Ready to test AI functions.";
+                    }
+                }
+                else
+                {
+                    ResultsTextBox.Text = "Connected to server. Ready to test AI functions.";
+                }
+            }
+            catch (Exception ex)
+            {
+                ResultsTextBox.Text = $"Error initializing connection: {ex.Message}\r\n\r\nYou can still use the test functions.";
+            }
         }
         
         private async void RunTestButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
+                // Ensure we have a valid API service
+                if (_apiService == null)
+                {
+                    ResultsTextBox.Text = "Error: API service is not initialized.";
+                    return;
+                }
+                
                 string message = InputTextBox.Text.Trim();
                 if (string.IsNullOrEmpty(message))
                 {

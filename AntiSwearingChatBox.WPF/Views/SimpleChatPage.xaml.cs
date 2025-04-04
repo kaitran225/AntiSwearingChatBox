@@ -588,10 +588,16 @@ namespace AntiSwearingChatBox.WPF.View
                     HasSelectedConversation = true;
                     
                     // IMPORTANT: Set swearing score and thread closed status from the conversation
-                    SwearingScore = conversation.SwearingScore ?? 0;
+                    // Add detailed logging to verify values
+                    Console.WriteLine($"Conversation data from server - SwearingScore: {conversation.SwearingScore}, IsClosed: {conversation.IsClosed}");
+                    
+                    // Forcefully set the swearing score to the proper value
+                    _swearingScore = conversation.SwearingScore ?? 0;
+                    OnPropertyChanged(nameof(SwearingScore));
+                    
                     IsThreadClosed = conversation.IsClosed;
                     
-                    Console.WriteLine($"Thread loaded - SwearingScore: {SwearingScore}, IsClosed: {IsThreadClosed}");
+                    Console.WriteLine($"Updated UI properties - SwearingScore: {_swearingScore}, IsThreadClosed: {IsThreadClosed}");
                 }
                 
                 // Clear existing messages before loading new ones

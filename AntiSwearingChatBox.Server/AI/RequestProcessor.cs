@@ -26,14 +26,27 @@ namespace AntiSwearingChatBox.AI
                 case "profanity":
                     enhancedPrompt = 
                         $"You are a highly sensitive content moderator trained to detect ANY form of profanity or inappropriate language.\n\n" +
+                        $"IMPORTANT: Profanity detection is CRITICAL. The following words and their variations are ALWAYS considered profanity:\n" +
+                        $"- fuck, f*ck, fuk, fvck, phuck, fcuk, f0ck, fu(k, and ANY similar variations\n" +
+                        $"- shit, sh*t, sh!t, sht, and ANY similar variations\n" +
+                        $"- ass, a$$, a**, @ss, and ANY similar variations\n" +
+                        $"- bitch, b*tch, b!tch, and ANY similar variations\n" +
+                        $"- dick, d*ck, d!ck, and ANY similar variations\n\n" +
+                        
                         $"Carefully analyze this message for ALL variations of profanity including:\n" +
                         $"- Common misspellings (e.g., 'fuk', 'fvck', 'phuck', 'fcuk', 'f0ck')\n" +
                         $"- Letter repetition (e.g., 'fuckk', 'fuuuck')\n" +
                         $"- Letter substitutions (e.g., 'f*ck', 'fu¢k', 'f@ck')\n" +
                         $"- Character omissions (e.g., 'fk', 'fck')\n" +
                         $"- Word fragments that suggest profanity\n\n" +
+                        
+                        $"CRITICAL INSTRUCTION: In your analysis, you MUST identify the exact profanity words or phrases found in the message.\n" +
                         $"Even if you're not 100% certain, flag potential profanity. Err on the side of caution.\n\n" +
+                        
                         $"Message to analyze: \"{originalPrompt}\"\n\n" +
+                        
+                        $"FINAL CHECK: Before responding, ask yourself - does this message contain obvious profanity like 'fuck', 'shit', etc.? If so, you MUST set containsProfanity to true.\n\n" +
+                        
                         $"Respond with JSON containing:\n" +
                         $"- 'containsProfanity': boolean (true if ANY variation of profanity is detected)\n" +
                         $"- 'inappropriateTerms': array of strings (specific terms detected)\n" +
@@ -312,32 +325,59 @@ namespace AntiSwearingChatBox.AI
         }
 
         /// <summary>
-        /// Check if message contains known evasion patterns
+        /// Check if the message contains known profanity evasion patterns
         /// </summary>
         private static bool ContainsKnownEvasionPatterns(string message)
         {
-            if (string.IsNullOrWhiteSpace(message))
+            if (string.IsNullOrEmpty(message))
                 return false;
                 
-            string normalizedText = message.ToLower();
-            
-            // Check for common evasion patterns
-            string[] evasionPatterns = new[]
-            {
-                "fuk", "fvck", "fck", "fuq", "phuck", "phuk", "fxck", "f**k", "f-ck",
-                "shi", "sht", "sh1t", "sh!t", "s**t", 
-                "a$$", "a**", "@ss", "azz", 
-                "b!tch", "b1tch", "biatch", "bytch", "btch", "b*tch",
-                "d1ck", "dik", "d!ck", "dikk",
-                "pusy", "pu$$y", "pussi", "pvssy"
+            // First perform a very direct check for common profanity words
+            // This is a fallback in case AI misses obvious profanity
+            string normalizedMessage = message.ToLower().Replace(" ", "");
+            string[] directProfanityWords = new[] { 
+                "fuck", "fuk", "fvck", "f*ck", "f**k", "fck", "fuuck", "fuuk", "phuck", "fu(k",
+                "shit", "sh*t", "sh!t", "sht", "sh1t", "shiit",
+                "ass", "a$$", "a**", "@ss",
+                "bitch", "b*tch", "b!tch", "btch",
+                "dick", "d*ck", "d!ck"
             };
             
-            foreach (var pattern in evasionPatterns)
+            foreach (var word in directProfanityWords)
             {
-                if (normalizedText.Contains(pattern))
+                if (normalizedMessage.Contains(word))
                 {
-                    System.Diagnostics.Debug.WriteLine($"Evasion pattern detected: {pattern} in \"{message}\"");
-                    System.Console.WriteLine($"Evasion pattern detected: {pattern} in \"{message}\"");
+                    System.Diagnostics.Debug.WriteLine($"Direct profanity word detected: {word}");
+                    System.Console.WriteLine($"Direct profanity word detected: {word}");
+                    return true;
+                }
+            }
+                
+            // Now check for pattern-based evasion techniques
+            // Get the configured evasion patterns from settings
+            var settings = ModelSettings.Instance;
+            var patterns = settings.Moderation.EvasionPatterns;
+            
+            foreach (var pattern in patterns)
+            {
+                if (message.Contains(pattern, StringComparison.OrdinalIgnoreCase))
+                {
+                    System.Diagnostics.Debug.WriteLine($"Evasion pattern detected: {pattern}");
+                    System.Console.WriteLine($"Evasion pattern detected: {pattern}");
+                    return true;
+                }
+            }
+            
+            // Check for symbol substitution patterns
+            string symbolsRemoved = new string(message.Where(c => char.IsLetterOrDigit(c) || char.IsWhiteSpace(c)).ToArray());
+            string[] symbolProfanityWords = new[] { "fck", "fk", "sht", "st", "bch", "dck" };
+            
+            foreach (var word in symbolProfanityWords)
+            {
+                if (symbolsRemoved.Contains(word, StringComparison.OrdinalIgnoreCase))
+                {
+                    System.Diagnostics.Debug.WriteLine($"Symbol substitution detected after cleanup: {word}");
+                    System.Console.WriteLine($"Symbol substitution detected after cleanup: {word}");
                     return true;
                 }
             }
