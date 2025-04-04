@@ -68,20 +68,20 @@
                         Background="{StaticResource SecondaryBackgroundBrush}"
                         BorderBrush="{StaticResource BorderBrush}"
                         BorderThickness="0,0,0,1"
-                        CornerRadius="4">
+                        CornerRadius="3">
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            
+
                             <Border
                                 Grid.Column="0"
                                 Width="32"
                                 Height="32"
                                 Background="{StaticResource PrimaryGreenBrush}"
-                                CornerRadius="16">
+                                CornerRadius="14">
                                 <TextBlock
                                     x:Name="UserInitials"
                                     HorizontalAlignment="Center"
@@ -91,18 +91,30 @@
                                     Text="U" />
                             </Border>
                             <TextBlock
-                                Grid.Column="1"
                                 x:Name="UserDisplayName"
+                                Grid.Column="1"
                                 Margin="12,0,0,0"
                                 VerticalAlignment="Center"
                                 FontWeight="SemiBold"
                                 Foreground="{StaticResource PrimaryTextBrush}"
                                 Text="User" />
-                                
-                            <!-- Connection Status Indicator -->
-                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                <Ellipse x:Name="ConnectionIndicator" Width="10" Height="10" Fill="Green" Margin="0,0,5,0"/>
-                                <TextBlock x:Name="ConnectionStatusText" Text="Connected" FontSize="10" Foreground="{StaticResource TertiaryTextBrush}"/>
+
+                            <!--  Connection Status Indicator  -->
+                            <StackPanel
+                                Grid.Column="2"
+                                VerticalAlignment="Center"
+                                Orientation="Horizontal">
+                                <Ellipse
+                                    x:Name="ConnectionIndicator"
+                                    Width="10"
+                                    Height="10"
+                                    Margin="0,0,5,0"
+                                    Fill="Green" />
+                                <TextBlock
+                                    x:Name="ConnectionStatusText"
+                                    FontSize="10"
+                                    Foreground="{StaticResource TertiaryTextBrush}"
+                                    Text="Connected" />
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -117,7 +129,7 @@
                         <Border
                             Padding="0"
                             Background="{StaticResource SecondaryBackgroundBrush}"
-                            CornerRadius="4">
+                            CornerRadius="3">
                             <Border>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -174,7 +186,7 @@
                                             Background="{Binding Background, FallbackValue={StaticResource SecondaryBackgroundBrush}}"
                                             BorderBrush="{Binding BorderBrush, FallbackValue={StaticResource BorderBrush}}"
                                             BorderThickness="{Binding BorderThickness, FallbackValue=0}"
-                                            CornerRadius="8"
+                                            CornerRadius="6"
                                             Cursor="Hand"
                                             MouseLeftButtonDown="ConversationItem_MouseLeftButtonDown"
                                             Tag="{Binding Id}">
@@ -190,7 +202,7 @@
                                                     Height="42"
                                                     Margin="0,0,12,0"
                                                     Background="{StaticResource TertiaryBackgroundBrush}"
-                                                    CornerRadius="21">
+                                                    CornerRadius="14">
                                                     <TextBlock
                                                         HorizontalAlignment="Center"
                                                         VerticalAlignment="Center"
@@ -211,40 +223,37 @@
                                                         <ColumnDefinition Width="Auto" />
                                                     </Grid.ColumnDefinitions>
 
-                                                    <!-- Title with Closed Indicator -->
-                                                    <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal">
+                                                    <!--  Title with Closed Indicator  -->
+                                                    <StackPanel
+                                                        Grid.Row="0"
+                                                        Grid.Column="0"
+                                                        Orientation="Horizontal">
                                                         <TextBlock
                                                             FontSize="14"
                                                             FontWeight="SemiBold"
                                                             Foreground="{StaticResource PrimaryTextBrush}"
                                                             Text="{Binding Title}" />
-                                                        
-                                                        <!-- Closed Indicator -->
-                                                        <TextBlock
-                                                            Margin="6,0,0,0"
-                                                            FontSize="14"
-                                                            FontWeight="Bold"
-                                                            Foreground="#F44336"
-                                                            Text="🔒"
-                                                            Visibility="{Binding IsClosed, Converter={StaticResource BoolToVisibilityConverter}}" />
                                                     </StackPanel>
 
-                                                    <!-- Last Message Time -->
+                                                    <!--  Last Message Time  -->
                                                     <TextBlock
                                                         Grid.Row="0"
                                                         Grid.Column="1"
                                                         FontSize="11"
                                                         Foreground="{StaticResource TertiaryTextBrush}"
                                                         Text="{Binding LastMessageTime}" />
-
-                                                    <!-- Last Message and Swearing Score -->
-                                                    <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,4,0,0">
+                                                    <!--  Last Message and Swearing Score  -->
+                                                    <Grid
+                                                        Grid.Row="1"
+                                                        Grid.Column="0"
+                                                        Grid.ColumnSpan="2"
+                                                        Margin="0,4,0,0">
                                                         <Grid.ColumnDefinitions>
                                                             <ColumnDefinition Width="*" />
                                                             <ColumnDefinition Width="Auto" />
                                                         </Grid.ColumnDefinitions>
-                                                        
-                                                        <!-- Last Message -->
+
+                                                        <!--  Last Message  -->
                                                         <TextBlock
                                                             Grid.Column="0"
                                                             MaxHeight="32"
@@ -253,12 +262,12 @@
                                                             Text="{Binding LastMessage}"
                                                             TextTrimming="CharacterEllipsis"
                                                             TextWrapping="Wrap" />
-                                                        
-                                                        <!-- Swearing Score Indicator -->
-                                                        <Border 
+
+                                                        <!--  Swearing Score Indicator  -->
+                                                        <Border
                                                             Grid.Column="1"
-                                                            Width="24" 
-                                                            Height="24" 
+                                                            Width="24"
+                                                            Height="24"
                                                             Margin="4,0,0,0"
                                                             Background="{Binding SwearingScore, Converter={StaticResource SwearingScoreToColorConverter}}"
                                                             CornerRadius="12"
@@ -271,9 +280,19 @@
                                                                 Foreground="White"
                                                                 Text="{Binding SwearingScore}" />
                                                         </Border>
+
+                                                        <!--  Closed Indicator  -->
+                                                        <TextBlock
+                                                            Margin="6,0,0,0"
+                                                            HorizontalAlignment="Right"
+                                                            FontSize="14"
+                                                            FontWeight="Bold"
+                                                            Foreground="#F44336"
+                                                            Text="🔒"
+                                                            Visibility="{Binding IsClosed, Converter={StaticResource BoolToVisibilityConverter}}" />
                                                     </Grid>
 
-                                                    <!-- Unread Count -->
+                                                    <!--  Unread Count  -->
                                                     <Border
                                                         Grid.Row="2"
                                                         Grid.Column="1"
@@ -342,7 +361,7 @@
                                 </Grid>
                             </Button>
 
-                            <!-- AI Test Tool Button -->
+                            <!--  AI Test Tool Button  -->
                             <Button
                                 x:Name="AITestButton"
                                 Margin="0,0,0,8"
@@ -427,7 +446,7 @@
                         Background="{StaticResource SecondaryBackgroundBrush}"
                         BorderBrush="{StaticResource BorderBrush}"
                         BorderThickness="0,0,0,1"
-                        CornerRadius="4"
+                        CornerRadius="3"
                         Visibility="{Binding HasSelectedConversation, Converter={StaticResource BoolToVisibilityConverter}}">
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -443,7 +462,7 @@
                                 Height="36"
                                 Margin="0,0,12,0"
                                 Background="{StaticResource PrimaryGreenBrush}"
-                                CornerRadius="18">
+                                CornerRadius="14">
                                 <TextBlock
                                     x:Name="ContactAvatarText"
                                     HorizontalAlignment="Center"
@@ -465,15 +484,15 @@
 
                             <!--  Online Indicator  -->
                             <Border
-                                Width="10"
-                                Height="10"
+                                Width="9"
+                                Height="9"
                                 Margin="0,0,12,0"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Bottom"
                                 Background="#47D068"
                                 BorderBrush="White"
                                 BorderThickness="1.5"
-                                CornerRadius="5">
+                                CornerRadius="4.5">
                                 <Border.Effect>
                                     <DropShadowEffect
                                         BlurRadius="3"
@@ -513,7 +532,7 @@
                                 Background="{StaticResource TertiaryBackgroundBrush}"
                                 BorderBrush="{Binding SwearingScore, Converter={StaticResource SwearingScoreToColorConverter}, FallbackValue={StaticResource BorderBrush}}"
                                 BorderThickness="2"
-                                CornerRadius="4">
+                                CornerRadius="3">
                                 <Grid>
                                     <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
                                         <TextBlock
@@ -526,8 +545,8 @@
                                             <Run Foreground="{StaticResource TertiaryTextBrush}" Text="/5" />
                                         </TextBlock>
                                     </StackPanel>
-                                    
-                                    <!-- Severity Indicator - This gets clamped for visual representation -->
+
+                                    <!--  Severity Indicator - This gets clamped for visual representation  -->
                                     <ProgressBar
                                         Width="110"
                                         Height="4"
@@ -540,8 +559,8 @@
                                         Value="{Binding SwearingScore, FallbackValue=0, Converter={StaticResource ClampValueConverter}}" />
                                 </Grid>
                             </Border>
-                            
-                            <!-- Swearing Warning Notification -->
+
+                            <!--  Swearing Warning Notification  -->
                             <Border
                                 x:Name="SwearingWarningBorder"
                                 Grid.Column="1"
@@ -553,7 +572,7 @@
                                 Background="#FFECB3"
                                 BorderBrush="#FFC107"
                                 BorderThickness="1"
-                                CornerRadius="4"
+                                CornerRadius="3"
                                 Visibility="Collapsed">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock
@@ -673,7 +692,7 @@
                                                 Margin="0,0,8,0"
                                                 Background="{StaticResource TertiaryBackgroundBrush}"
                                                 BorderThickness="0"
-                                                CornerRadius="18"
+                                                CornerRadius="14"
                                                 Visibility="{Binding IsSent, Converter={StaticResource InverseBoolToVisibilityConverter}}">
                                                 <TextBlock
                                                     HorizontalAlignment="Center"
@@ -692,7 +711,7 @@
                                                 Background="{Binding IsSent, Converter={StaticResource MessageBackgroundConverter}}"
                                                 BorderBrush="{StaticResource MatchaGreenBrush}"
                                                 BorderThickness="{Binding IsSent, Converter={StaticResource MessageBorderThicknessConverter}}"
-                                                CornerRadius="18"
+                                                CornerRadius="12"
                                                 MouseLeftButtonDown="MessageBubble_MouseLeftButtonDown"
                                                 Tag="{Binding}">
                                                 <Grid>
@@ -703,29 +722,38 @@
                                                             Text="{Binding DisplayText}"
                                                             TextWrapping="Wrap" />
 
-                                                        <Grid>
-                                                            <TextBlock
-                                                                Margin="0,4,0,0"
-                                                                HorizontalAlignment="Right"
-                                                                FontSize="11"
-                                                                Foreground="{StaticResource TertiaryTextBrush}"
-                                                                Text="{Binding Timestamp}" />
+                                                        <!--  Adjusted layout to prevent overlapping  -->
+                                                        <Grid Margin="0,4,0,0">
+                                                            <Grid.RowDefinitions>
+                                                                <RowDefinition Height="Auto" />
+                                                                <RowDefinition Height="Auto" />
+                                                            </Grid.RowDefinitions>
 
+                                                            <!--  Warning message in its own row  -->
                                                             <StackPanel
+                                                                Grid.Row="0"
                                                                 HorizontalAlignment="Left"
+                                                                VerticalAlignment="Bottom"
                                                                 Orientation="Horizontal"
                                                                 Visibility="{Binding ContainsProfanity, Converter={StaticResource BoolToVisibilityConverter}}">
                                                                 <TextBlock
-                                                                    Margin="0,4,0,0"
+                                                                    VerticalAlignment="Bottom"
                                                                     FontSize="11"
                                                                     Foreground="#FF4D4D"
                                                                     Text="⚠️ Warning" />
 
                                                                 <TextBlock
-                                                                    Margin="4,4,0,0"
-                                                                    FontSize="10"
+                                                                    Margin="4,0,0,0"
+                                                                    FontSize="11"
                                                                     Foreground="{StaticResource TertiaryTextBrush}"
                                                                     Text="{Binding IsUncensored, Converter={StaticResource BoolToTextConverter}, ConverterParameter=Uncensored:Click to reveal}" />
+                                                                <TextBlock
+                                                                    Grid.Row="1"
+                                                                    Margin="4,0,0,0"
+                                                                    HorizontalAlignment="Right"
+                                                                    FontSize="11"
+                                                                    Foreground="{StaticResource TertiaryTextBrush}"
+                                                                    Text="{Binding Timestamp}" />
                                                             </StackPanel>
                                                         </Grid>
                                                     </StackPanel>
@@ -740,7 +768,7 @@
                                                 Margin="8,0,0,0"
                                                 Background="{StaticResource TertiaryBackgroundBrush}"
                                                 BorderThickness="0"
-                                                CornerRadius="18"
+                                                CornerRadius="14"
                                                 Visibility="{Binding IsSent, Converter={StaticResource BoolToVisibilityConverter}}">
                                                 <TextBlock
                                                     HorizontalAlignment="Center"
@@ -765,7 +793,7 @@
                         Background="{StaticResource SecondaryBackgroundBrush}"
                         BorderBrush="{StaticResource BorderBrush}"
                         BorderThickness="0,0,0,1"
-                        CornerRadius="4"
+                        CornerRadius="3"
                         Visibility="{Binding HasSelectedConversation, Converter={StaticResource BoolToVisibilityConverter}}">
                         <Grid>
                             <Grid.ColumnDefinitions>
