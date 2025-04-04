@@ -493,10 +493,13 @@
                                     Text="{Binding CurrentContactName}" />
 
                                 <TextBlock
+                                    x:Name="ContactOnlineStatus"
                                     Margin="0,2,0,0"
                                     FontSize="11"
-                                    Foreground="{StaticResource SecondaryTextBrush}"
-                                    Text="Online now" />
+                                    Foreground="{StaticResource SecondaryTextBrush}">
+                                    <Run Text="{Binding CurrentContactName}" />
+                                    <Run Text="online now" />
+                                </TextBlock>
                             </StackPanel>
 
                             <!--  Swearing Score  -->

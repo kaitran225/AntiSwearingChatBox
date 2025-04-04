@@ -25,6 +25,7 @@ namespace AntiSwearingChatBox.WPF.ViewModels // Changed namespace to match ViewM
         private MessageStatus _messageStatus;
         private int? _swearingScore;
         private bool _isClosed;
+        private string? _avatarText;
 
         public string Id
         {
@@ -72,6 +73,13 @@ namespace AntiSwearingChatBox.WPF.ViewModels // Changed namespace to match ViewM
 
         // Calculated property based on Title
         public string Avatar => !string.IsNullOrEmpty(Title) ? Title[0].ToString().ToUpper() : "?";
+
+        // AvatarText property that can be set independently
+        public string AvatarText
+        {
+            get => _avatarText ?? Avatar;
+            set { SetField(ref _avatarText, value); }
+        }
 
         // Calculated property based on UnreadCount
         public bool HasUnread => UnreadCount > 0;

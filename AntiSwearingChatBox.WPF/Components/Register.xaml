@@ -57,16 +57,16 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
 
-                            <Border Grid.Column="0" Background="{StaticResource PrimaryGreenBrush}" CornerRadius="2,0,0,2"/>
-                            <Border Grid.Column="1" Background="{StaticResource PrimaryGreenBrush}"/>
-                            <Border Grid.Column="2" Background="{StaticResource PrimaryGreenBrush}"/>
-                            <Border Grid.Column="3" Background="#333333" CornerRadius="0,2,2,0"/>
+                            <Border x:Name="strengthBar1" Grid.Column="0" Background="#333333" CornerRadius="2,0,0,2"/>
+                            <Border x:Name="strengthBar2" Grid.Column="1" Background="#333333"/>
+                            <Border x:Name="strengthBar3" Grid.Column="2" Background="#333333"/>
+                            <Border x:Name="strengthBar4" Grid.Column="3" Background="#333333" CornerRadius="0,2,2,0"/>
                         </Grid>
 
                         <!-- Strength Text -->
                         <StackPanel Grid.Row="1" Orientation="Horizontal">
                             <TextBlock Text="Password Strength: " Foreground="{StaticResource SecondaryTextBrush}" FontSize="11"/>
-                            <TextBlock Text="Strong" Foreground="{StaticResource PrimaryGreenBrush}" FontSize="11" FontWeight="SemiBold"/>
+                            <TextBlock x:Name="passwordStrengthText" Text="None" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" FontWeight="SemiBold"/>
                         </StackPanel>
                     </Grid>
 

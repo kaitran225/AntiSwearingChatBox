@@ -225,8 +225,12 @@ namespace AntiSwearingChatBox.WPF.View
 
         private void UpdateUserDisplay(string username)
         {
-            UserDisplayName.Text = username;
-            if (!string.IsNullOrEmpty(username))
+            if (UserDisplayName != null)
+            {
+                UserDisplayName.Text = username;
+            }
+            
+            if (UserInitials != null && !string.IsNullOrEmpty(username))
             {
                 UserInitials.Text = username.Substring(0, 1).ToUpper();
             }
@@ -297,6 +301,7 @@ namespace AntiSwearingChatBox.WPF.View
                         Title = threadName,
                         LastMessage = lastMessageContent,
                         LastMessageTime = lastMessageTime,
+                        AvatarText = avatarChar,
                         UnreadCount = 0,
                         IsSelected = false
                     };
@@ -583,6 +588,18 @@ namespace AntiSwearingChatBox.WPF.View
                     // Set the current contact info
                     CurrentContactName = conversation.Title;
                     OnPropertyChanged(nameof(CurrentContactName));
+                    
+                    // Update contact header UI elements
+                    if (ContactNameDisplay != null)
+                    {
+                        ContactNameDisplay.Text = CurrentContactName;
+                    }
+                    
+                    if (ContactAvatarText != null && !string.IsNullOrEmpty(CurrentContactName))
+                    {
+                        ContactAvatarText.Text = CurrentContactName.Length > 0 ? 
+                            CurrentContactName[0].ToString().ToUpper() : "?";
+                    }
                     
                     // Set HasSelectedConversation to true before loading messages
                     HasSelectedConversation = true;
