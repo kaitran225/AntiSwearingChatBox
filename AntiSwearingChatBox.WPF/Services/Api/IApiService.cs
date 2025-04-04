@@ -42,7 +42,7 @@ namespace AntiSwearingChatBox.WPF.Services.Api
         // AI Services
         Task<string> GenerateTextAsync(string prompt);
         Task<ModerationResult> ModerateChatMessageAsync(string message);
-        Task<ProfanityDetectionResult> DetectProfanityAsync(string message);
+        Task<ProfanityDetectionResult> DetectProfanityAsync(string message, bool verbose = false);
         Task<ContextFilterResult> ContextAwareFilteringAsync(string message, string conversationContext);
         Task<SentimentAnalysisResult> AnalyzeSentimentAsync(string message);
         Task<DeescalationResult> GenerateDeescalationResponseAsync(string message);

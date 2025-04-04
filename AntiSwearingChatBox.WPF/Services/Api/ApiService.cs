@@ -926,11 +926,14 @@ namespace AntiSwearingChatBox.WPF.Services.Api
         /// <summary>
         /// Detects profanity in a message using the AI service
         /// </summary>
-        public async Task<ProfanityDetectionResult> DetectProfanityAsync(string message)
+        public async Task<ProfanityDetectionResult> DetectProfanityAsync(string message, bool verbose = false)
         {
             try
             {
-                var request = new { Message = message };
+                var request = new { 
+                    Message = message,
+                    IncludeDetails = verbose 
+                };
                 var content = CreateJsonContent(request);
                 
                 var response = await _httpClient.PostAsync("api/Gemini/detect-profanity", content);

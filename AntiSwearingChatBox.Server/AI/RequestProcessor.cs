@@ -66,6 +66,29 @@ namespace AntiSwearingChatBox.AI
         /// </summary>
         public static async Task<string> ProcessModeration(GeminiService service, string message, string promptTemplate)
         {
+            // IMPORTANT: First check for profanity before involving the AI
+            // This ensures we catch obvious profanity immediately
+            if (ContainsKnownEvasionPatterns(message))
+            {
+                System.Diagnostics.Debug.WriteLine($"Direct profanity detection caught bad word in: \"{message}\"");
+                System.Console.WriteLine($"Direct profanity detection caught bad word in: \"{message}\"");
+                
+                // Create a direct response with true for profanity detection
+                if (promptTemplate.Contains("containsProfanity"))
+                {
+                    // This is a profanity detection request
+                    var directResponse = new
+                    {
+                        containsProfanity = true,
+                        inappropriateTerms = new[] { "detected by direct pattern matching" },
+                        explanation = "Direct pattern matching detected inappropriate language",
+                        originalMessage = message
+                    };
+                    return JsonSerializer.Serialize(directResponse, new JsonSerializerOptions { WriteIndented = true });
+                }
+            }
+            
+            // Continue with AI-based detection if direct detection didn't catch anything
             string enhancedPrompt = EnhancePrompt(promptTemplate, message);
             
             try
@@ -84,6 +107,174 @@ namespace AntiSwearingChatBox.AI
                 // Create a fallback response that indicates profanity was detected
                 // This is our conservative approach when AI fails
                 return CreateFallbackResponse(message);
+            }
+        }
+
+        /// <summary>
+        /// Validate response JSON and fix common issues, returning detailed information about the process
+        /// </summary>
+        public static string ValidateAndFixResponseWithDetails(string response, string originalMessage, out object processingDetails)
+        {
+            var detailsList = new List<object>();
+            try
+            {
+                detailsList.Add(new {
+                    operation = "Parsing JSON response",
+                    status = "Attempting"
+                });
+                
+                using var doc = JsonDocument.Parse(response);
+                
+                detailsList.Add(new {
+                    operation = "Parsing JSON response",
+                    status = "Success"
+                });
+                
+                var settings = ModelSettings.Instance;
+                detailsList.Add(new {
+                    operation = "Checking model settings",
+                    modelSettings = new {
+                        preserveOriginalText = settings.Moderation.ResponseOptions.PreserveOriginalText,
+                        sensitivity = settings.Moderation.Sensitivity
+                    }
+                });
+                
+                // Check if original message needs to be fixed
+                bool originalTextFixed = false;
+                if (settings.Moderation.ResponseOptions.PreserveOriginalText)
+                {
+                    if (doc.RootElement.TryGetProperty("originalMessage", out var originalInResponse) ||
+                        doc.RootElement.TryGetProperty("original", out originalInResponse))
+                    {
+                        string originalInResponseStr = originalInResponse.GetString() ?? "";
+                        
+                        if (!IsCloseMatch(originalInResponseStr, originalMessage) && 
+                            originalInResponseStr.Length > 0 && originalMessage.Length > 0)
+                        {
+                            originalTextFixed = true;
+                            detailsList.Add(new {
+                                operation = "Original message check",
+                                status = "Fixed",
+                                aiVersion = originalInResponseStr,
+                                correctVersion = originalMessage,
+                                reason = "Original message in AI response didn't match the actual message"
+                            });
+                            
+                            response = UpdateOriginalMessageInJson(response, originalMessage);
+                        }
+                        else
+                        {
+                            detailsList.Add(new {
+                                operation = "Original message check",
+                                status = "Passed",
+                                message = "Original message in AI response matches the actual message"
+                            });
+                        }
+                    }
+                }
+                
+                // Check if we should override AI's decision for known evasion patterns
+                bool containsKnownEvasion = ContainsKnownEvasionPatterns(originalMessage);
+                bool decisionOverridden = false;
+                
+                detailsList.Add(new {
+                    operation = "Evasion pattern check",
+                    status = containsKnownEvasion ? "Detected" : "None found",
+                    patternFound = containsKnownEvasion
+                });
+                
+                if (containsKnownEvasion)
+                {
+                    // For detection endpoint
+                    if (doc.RootElement.TryGetProperty("containsProfanity", out var containsProfanity))
+                    {
+                        bool currentValue = containsProfanity.GetBoolean();
+                        if (!currentValue)
+                        {
+                            decisionOverridden = true;
+                            detailsList.Add(new {
+                                operation = "AI decision override",
+                                status = "Applied",
+                                reason = "AI didn't detect known evasion pattern",
+                                aiDecision = currentValue,
+                                overriddenTo = true
+                            });
+                            
+                            System.Diagnostics.Debug.WriteLine($"Overriding AI decision due to evasion pattern in: \"{originalMessage}\"");
+                            System.Console.WriteLine($"Overriding AI decision due to evasion pattern in: \"{originalMessage}\"");
+                            response = UpdateProfanityDetectionInJson(response, true);
+                        }
+                        else
+                        {
+                            detailsList.Add(new {
+                                operation = "AI decision check",
+                                status = "Correct",
+                                message = "AI correctly identified profanity"
+                            });
+                        }
+                    }
+                    
+                    // For moderation endpoint
+                    if (doc.RootElement.TryGetProperty("wasModified", out var wasModified))
+                    {
+                        bool currentValue = wasModified.GetBoolean();
+                        if (!currentValue)
+                        {
+                            decisionOverridden = true;
+                            detailsList.Add(new {
+                                operation = "Moderation override",
+                                status = "Applied",
+                                reason = "AI didn't flag known evasion pattern for moderation",
+                                aiDecision = currentValue,
+                                overriddenTo = true
+                            });
+                            
+                            System.Diagnostics.Debug.WriteLine($"Overriding AI moderation due to evasion pattern in: \"{originalMessage}\"");
+                            System.Console.WriteLine($"Overriding AI moderation due to evasion pattern in: \"{originalMessage}\"");
+                            
+                            // Create censored text
+                            string censored = new string('*', originalMessage.Length);
+                            response = UpdateModerationInJson(response, censored, true);
+                        }
+                        else
+                        {
+                            detailsList.Add(new {
+                                operation = "Moderation check",
+                                status = "Correct",
+                                message = "AI correctly moderated content"
+                            });
+                        }
+                    }
+                }
+                
+                // Summarize all processing actions
+                processingDetails = new {
+                    originalTextFixed,
+                    containsKnownEvasion,
+                    decisionOverridden,
+                    processingSteps = detailsList
+                };
+                
+                return response; // Valid and all issues handled
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error validating response: {ex.Message}");
+                System.Console.WriteLine($"Error validating response: {ex.Message}");
+                
+                detailsList.Add(new {
+                    operation = "Error handling",
+                    status = "Failed",
+                    error = ex.Message,
+                    action = "Creating fallback response"
+                });
+                
+                processingDetails = new {
+                    error = ex.Message,
+                    processingSteps = detailsList
+                };
+                
+                return CreateFallbackResponse(originalMessage);
             }
         }
 
@@ -332,9 +523,11 @@ namespace AntiSwearingChatBox.AI
             if (string.IsNullOrEmpty(message))
                 return false;
                 
-            // First perform a very direct check for common profanity words
+            // First normalize the message for better detection
+            string normalizedMessage = message.ToLower();
+            
+            // First perform a direct check for common profanity words using word boundaries
             // This is a fallback in case AI misses obvious profanity
-            string normalizedMessage = message.ToLower().Replace(" ", "");
             string[] directProfanityWords = new[] { 
                 "fuck", "fuk", "fvck", "f*ck", "f**k", "fck", "fuuck", "fuuk", "phuck", "fu(k",
                 "shit", "sh*t", "sh!t", "sht", "sh1t", "shiit",
@@ -343,16 +536,42 @@ namespace AntiSwearingChatBox.AI
                 "dick", "d*ck", "d!ck"
             };
             
+            // Use proper word boundary checking - check if the word is surrounded by spaces, punctuation, or string start/end
             foreach (var word in directProfanityWords)
             {
-                if (normalizedMessage.Contains(word))
+                // Convert to proper regex pattern with word boundaries
+                // This looks for the word as a standalone word, not part of another word
+                string wordPattern = $@"(^|\W){word}($|\W)";
+                if (System.Text.RegularExpressions.Regex.IsMatch(normalizedMessage, wordPattern, System.Text.RegularExpressions.RegexOptions.IgnoreCase))
                 {
-                    System.Diagnostics.Debug.WriteLine($"Direct profanity word detected: {word}");
-                    System.Console.WriteLine($"Direct profanity word detected: {word}");
+                    System.Diagnostics.Debug.WriteLine($"Direct profanity word detected with regex: {word}");
+                    System.Console.WriteLine($"Direct profanity word detected with regex: {word}");
+                    return true;
+                }
+                
+                // Also check with direct string contains as a backup
+                if (normalizedMessage.Contains(word, StringComparison.OrdinalIgnoreCase))
+                {
+                    System.Diagnostics.Debug.WriteLine($"Direct profanity word detected with contains: {word}");
+                    System.Console.WriteLine($"Direct profanity word detected with contains: {word}");
                     return true;
                 }
             }
                 
+            // Additional check for combined/spaced words (e.g., "b i t c h")
+            string strippedMessage = new string(normalizedMessage.Where(c => !char.IsWhiteSpace(c) && !char.IsPunctuation(c)).ToArray());
+            foreach (var word in directProfanityWords)
+            {
+                // Remove spaces and punctuation from the profanity word for matching
+                string strippedWord = new string(word.Where(c => !char.IsWhiteSpace(c) && !char.IsPunctuation(c)).ToArray());
+                if (strippedMessage.Contains(strippedWord, StringComparison.OrdinalIgnoreCase))
+                {
+                    System.Diagnostics.Debug.WriteLine($"Spaced profanity word detected: {word}");
+                    System.Console.WriteLine($"Spaced profanity word detected: {word}");
+                    return true;
+                }
+            }
+            
             // Now check for pattern-based evasion techniques
             // Get the configured evasion patterns from settings
             var settings = ModelSettings.Instance;
@@ -435,6 +654,14 @@ namespace AntiSwearingChatBox.AI
                 .Replace("\n", "\\n")
                 .Replace("\r", "\\r")
                 .Replace("\t", "\\t");
+        }
+
+        /// <summary>
+        /// Public method for other classes to check for profanity
+        /// </summary>
+        public static bool ContainsDirectProfanity(string message)
+        {
+            return ContainsKnownEvasionPatterns(message);
         }
     }
 } 

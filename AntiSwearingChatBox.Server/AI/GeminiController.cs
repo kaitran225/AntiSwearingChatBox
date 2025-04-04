@@ -59,8 +59,18 @@ namespace AntiSwearingChatBox.AI
                 return BadRequest("Message cannot be empty");
             }
 
-            var result = await _geminiService.DetectProfanityAsync(request.Message);
-            return Content(result, "application/json");
+            // If we're requesting verbose details, we need to include all processing steps
+            if (request.IncludeDetails)
+            {
+                var detailedResult = await _geminiService.DetectProfanityWithDetailsAsync(request.Message);
+                return Content(detailedResult, "application/json");
+            }
+            else
+            {
+                // Regular detection without details
+                var result = await _geminiService.DetectProfanityAsync(request.Message);
+                return Content(result, "application/json");
+            }
         }
         
         /// <summary>
@@ -182,6 +192,7 @@ namespace AntiSwearingChatBox.AI
     public class ModerationRequest
     {
         public string Message { get; set; } = string.Empty;
+        public bool IncludeDetails { get; set; } = false;
     }
     
     public class ContextFilterRequest

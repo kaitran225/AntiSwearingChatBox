@@ -95,13 +95,16 @@ namespace AntiSwearingChatBox.WPF.View
                 var selectedItem = TestTypeComboBox.SelectedItem as ComboBoxItem;
                 string testType = selectedItem?.Content.ToString() ?? "Profanity Detection";
                 
+                // Always use verbose mode for the test page to show detailed results
+                bool verboseMode = true;
+                
                 // Run the selected test
                 object result = null;
                 
                 switch (testType)
                 {
                     case "Profanity Detection":
-                        result = await _apiService.DetectProfanityAsync(message);
+                        result = await _apiService.DetectProfanityAsync(message, verboseMode);
                         break;
                         
                     case "Message Moderation":
