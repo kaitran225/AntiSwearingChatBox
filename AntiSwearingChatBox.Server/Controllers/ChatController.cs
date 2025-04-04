@@ -25,6 +25,8 @@ namespace AntiSwearingChatBox.Server.Controllers
         public bool ModerationEnabled { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime LastMessageAt { get; set; }
+        public int SwearingScore { get; set; }
+        public bool IsClosed { get; set; }
     }
     
     public class ParticipantDto
@@ -106,7 +108,9 @@ namespace AntiSwearingChatBox.Server.Controllers
                     IsActive = t.IsActive,
                     ModerationEnabled = t.ModerationEnabled,
                     CreatedAt = t.CreatedAt,
-                    LastMessageAt = t.LastMessageAt
+                    LastMessageAt = t.LastMessageAt,
+                    SwearingScore = t.SwearingScore,
+                    IsClosed = t.IsClosed
                 }).ToList();
                 
                 return Ok(threadDtos);
@@ -138,7 +142,9 @@ namespace AntiSwearingChatBox.Server.Controllers
                     IsActive = thread.IsActive,
                     ModerationEnabled = thread.ModerationEnabled,
                     CreatedAt = thread.CreatedAt,
-                    LastMessageAt = thread.LastMessageAt
+                    LastMessageAt = thread.LastMessageAt,
+                    SwearingScore = thread.SwearingScore,
+                    IsClosed = thread.IsClosed
                 };
                 
                 return Ok(threadDto);
@@ -203,7 +209,9 @@ namespace AntiSwearingChatBox.Server.Controllers
                     IsActive = chatThread.IsActive,
                     ModerationEnabled = chatThread.ModerationEnabled,
                     CreatedAt = chatThread.CreatedAt,
-                    LastMessageAt = chatThread.LastMessageAt
+                    LastMessageAt = chatThread.LastMessageAt,
+                    SwearingScore = chatThread.SwearingScore,
+                    IsClosed = chatThread.IsClosed
                 };
                 
                 return Ok(new { 
@@ -567,7 +575,9 @@ namespace AntiSwearingChatBox.Server.Controllers
                                 IsActive = thread.IsActive,
                                 ModerationEnabled = thread.ModerationEnabled,
                                 CreatedAt = thread.CreatedAt,
-                                LastMessageAt = thread.LastMessageAt
+                                LastMessageAt = thread.LastMessageAt,
+                                SwearingScore = thread.SwearingScore,
+                                IsClosed = thread.IsClosed
                             };
                             
                             return Ok(new { 
@@ -613,7 +623,9 @@ namespace AntiSwearingChatBox.Server.Controllers
                         IsActive = t.IsActive,
                         ModerationEnabled = t.ModerationEnabled,
                         CreatedAt = t.CreatedAt,
-                        LastMessageAt = t.LastMessageAt
+                        LastMessageAt = t.LastMessageAt,
+                        SwearingScore = t.SwearingScore,
+                        IsClosed = t.IsClosed
                     }).ToList();
                     
                     return Ok(new { 

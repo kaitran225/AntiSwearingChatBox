@@ -79,89 +79,98 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <!-- Title -->
-                <TextBlock
-                    FontSize="14"
-                    FontWeight="SemiBold"
-                    Foreground="{StaticResource PrimaryTextBrush}"
-                    Text="{Binding DisplayName}"
-                    TextTrimming="CharacterEllipsis" />
-
-                <!-- Last Message with Typing Indicator -->
-                <Grid Grid.Row="1" Margin="0,6,0,0">
+                <!-- Title with Closed Indicator -->
+                <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal">
                     <TextBlock
+                        FontSize="14"
+                        FontWeight="SemiBold"
+                        Foreground="{StaticResource PrimaryTextBrush}"
+                        Text="{Binding DisplayName}" />
+                    
+                    <!-- Closed Thread Indicator -->
+                    <TextBlock
+                        Margin="6,0,0,0"
+                        FontSize="14"
+                        FontWeight="Bold"
+                        Foreground="#F44336"
+                        Text="🔒"
+                        Visibility="{Binding IsClosed, Converter={StaticResource BoolToVisibilityConverter}}" />
+                </StackPanel>
+
+                <!-- Last Message Time -->
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    FontSize="11"
+                    Foreground="{StaticResource TertiaryTextBrush}"
+                    Text="{Binding Timestamp}" />
+
+                <!-- Last Message & Swearing Score -->
+                <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,4,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    
+                    <!-- Last Message -->
+                    <TextBlock
+                        Grid.Column="0"
+                        MaxHeight="32"
                         FontSize="12"
                         Foreground="{StaticResource SecondaryTextBrush}"
                         Text="{Binding LastMessage}"
                         TextTrimming="CharacterEllipsis"
-                        Visibility="{Binding IsTyping, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
-                    
-                    <StackPanel 
-                        Orientation="Horizontal" 
-                        Visibility="{Binding IsTyping, Converter={StaticResource BoolToVis}}">
-                        <TextBlock
-                            FontSize="12"
-                            Foreground="{StaticResource SuccessGreen}"
-                            Text="typing"/>
-                        <materialDesign:PackIcon
-                            Kind="DotsHorizontal"
-                            Width="16"
-                            Height="16"
-                            Margin="4,0,0,0"
-                            Foreground="{StaticResource SuccessGreen}"/>
-                    </StackPanel>
-                </Grid>
-
-                <!-- Last Seen / Message Status -->
-                <TextBlock
-                    Grid.Row="2"
-                    Margin="0,4,0,0"
-                    FontSize="10"
-                    Foreground="{StaticResource TertiaryTextBrush}"
-                    Text="{Binding LastSeen}"
-                    TextTrimming="CharacterEllipsis"
-                    Visibility="{Binding ShowLastSeen, Converter={StaticResource BoolToVis}}"/>
-
-                <!-- Right Side Info -->
-                <StackPanel
-                    Grid.RowSpan="3"
-                    Grid.Column="1"
-                    Margin="8,0,0,0"
-                    VerticalAlignment="Top">
-                    <!-- Timestamp -->
-                    <TextBlock
-                        HorizontalAlignment="Right"
-                        FontSize="11"
-                        Foreground="{StaticResource TertiaryTextBrush}"
-                        Text="{Binding Timestamp}" />
-                    
-                    <!-- Message Status -->
-                    <materialDesign:PackIcon
-                        Kind="{Binding MessageStatus, Converter={StaticResource MessageStatusToIconConverter}}"
-                        Width="16"
-                        Height="16"
-                        Margin="0,2,0,0"
-                        HorizontalAlignment="Right"
-                        Foreground="{Binding MessageStatus, Converter={StaticResource MessageStatusToColorConverter}}"/>
-                    
-                    <!-- Unread Counter -->
-                    <Border
-                        Width="20"
-                        Height="20"
-                        Margin="0,5,0,0"
-                        HorizontalAlignment="Right"
-                        Background="{StaticResource SuccessGreen}"
-                        CornerRadius="10"
-                        Visibility="{Binding HasUnread, Converter={StaticResource BoolToVis}}">
+                        TextWrapping="Wrap" />
+                        
+                    <!-- Swearing Score Indicator (if greater than 0) -->
+                    <Border 
+                        Grid.Column="1"
+                        Width="24" 
+                        Height="24" 
+                        Margin="4,0,0,0"
+                        Background="{Binding SwearingScore, Converter={StaticResource SwearingScoreToColorConverter}}"
+                        CornerRadius="12"
+                        Visibility="{Binding SwearingScore, Converter={StaticResource IntToVisibilityConverter}}">
                         <TextBlock
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             FontSize="10"
-                            FontWeight="SemiBold"
+                            FontWeight="Bold"
                             Foreground="White"
-                            Text="{Binding UnreadCount}" />
+                            Text="{Binding SwearingScore}" />
                     </Border>
-                </StackPanel>
+                </Grid>
+
+                <!-- Typing Indicator -->
+                <TextBlock
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    Margin="0,4,0,0"
+                    FontSize="12"
+                    Foreground="{StaticResource BrandPurple}"
+                    Text="typing..."
+                    Visibility="{Binding IsTyping, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                <!-- Unread Message Counter -->
+                <Border
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    Width="22"
+                    Height="22"
+                    Margin="0,4,0,0"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Background="{StaticResource PrimaryGreenBrush}"
+                    CornerRadius="11"
+                    Visibility="{Binding HasUnread, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        FontSize="10"
+                        FontWeight="Bold"
+                        Foreground="White"
+                        Text="{Binding UnreadCount}" />
+                </Border>
             </Grid>
         </Grid>
     </Border>
