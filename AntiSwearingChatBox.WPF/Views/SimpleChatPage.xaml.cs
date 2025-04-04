@@ -31,6 +31,10 @@ namespace AntiSwearingChatBox.WPF.View
         private System.Timers.Timer? _connectionCheckTimer;
         private const int CONNECTION_CHECK_INTERVAL_MS = 5000; // Check every 5 seconds
         
+        // New timer for chat refresh polling
+        private System.Timers.Timer? _chatRefreshTimer;
+        private const int CHAT_REFRESH_INTERVAL_MS = 1000; // Poll every 1 second
+        
         // Swearing score tracking
         private int _swearingScore = 0;
         public int SwearingScore 
@@ -187,6 +191,7 @@ namespace AntiSwearingChatBox.WPF.View
             // Start connection checking timer
             StartConnectionChecker();
             StartScorePolling();
+            StartChatRefreshPolling(); // Start the new chat refresh polling
         }
         
         private async void Page_Unloaded(object sender, RoutedEventArgs e)
@@ -198,6 +203,7 @@ namespace AntiSwearingChatBox.WPF.View
                 // Stop the connection checker timer
                 StopConnectionChecker();
                 StopScorePolling();
+                StopChatRefreshPolling(); // Stop the chat refresh polling
                 
                 // Unsubscribe from event handlers
                 if (_apiService != null)
@@ -1740,6 +1746,111 @@ namespace AntiSwearingChatBox.WPF.View
                 _scorePollingTimer.Dispose();
                 _scorePollingTimer = null;
                 Console.WriteLine("[POLL] Stopped score polling timer");
+            }
+        }
+
+        private void StartChatRefreshPolling()
+        {
+            StopChatRefreshPolling();
+            
+            _chatRefreshTimer = new System.Timers.Timer(CHAT_REFRESH_INTERVAL_MS);
+            _chatRefreshTimer.Elapsed += async (sender, e) => 
+            {
+                try
+                {
+                    // Load the chat threads list
+                    await Dispatcher.InvokeAsync(async () => 
+                    {
+                        // Refresh chat threads list
+                        await LoadChatThreads();
+                        
+                        // If we have a selected conversation, refresh it
+                        if (_currentThreadId > 0 && HasSelectedConversation)
+                        {
+                            // Load current conversation messages in a non-disruptive way
+                            // Only if user isn't actively typing or scrolling
+                            if (!MessageTextBox.IsFocused && IsScrolledToBottom())
+                            {
+                                // Save current thread ID to reload it
+                                int threadToReload = _currentThreadId;
+                                await LoadMessagesForThread(threadToReload);
+                            }
+                        }
+                        
+                        Console.WriteLine("[CHAT REFRESH] Refreshed chat page");
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[CHAT REFRESH ERROR] {ex.Message}");
+                }
+            };
+            
+            _chatRefreshTimer.Start();
+            Console.WriteLine("[CHAT REFRESH] Started chat refresh polling timer");
+        }
+        
+        private void StopChatRefreshPolling()
+        {
+            if (_chatRefreshTimer != null)
+            {
+                _chatRefreshTimer.Stop();
+                _chatRefreshTimer.Dispose();
+                _chatRefreshTimer = null;
+                Console.WriteLine("[CHAT REFRESH] Stopped chat refresh polling timer");
+            }
+        }
+        
+        // Helper method to load messages for a thread without affecting UI as much
+        private async Task LoadMessagesForThread(int threadId)
+        {
+            try
+            {
+                // Load messages for the selected thread
+                var messages = await _apiService.GetMessagesAsync(threadId);
+                
+                // If no messages or thread ID has changed, don't update
+                if (messages == null || messages.Count == 0 || threadId != _currentThreadId)
+                    return;
+                    
+                // Check if we have new messages by comparing count
+                if (messages.Count != Messages.Count)
+                {
+                    // We have different number of messages, so update the list
+                    // Save scroll position before updating
+                    bool wasAtBottom = IsScrolledToBottom();
+                    
+                    // Clear and rebuild messages list
+                    Messages.Clear();
+                    
+                    foreach (var message in messages)
+                    {
+                        var username = message.User?.Username ?? "Unknown";
+                        var avatar = !string.IsNullOrEmpty(username) ? username[0].ToString().ToUpper() : "?";
+                        var isSent = message.UserId == _apiService.CurrentUser?.UserId;
+                        
+                        Messages.Add(new ChatMessageViewModel
+                        {
+                            IsSent = isSent,
+                            Text = message.ModeratedMessage ?? message.OriginalMessage,
+                            OriginalText = message.OriginalMessage,
+                            Timestamp = message.CreatedAt.ToString("h:mm tt"),
+                            Avatar = avatar,
+                            ContainsProfanity = message.WasModified,
+                            IsUncensored = false // Initially show censored version
+                        });
+                    }
+                    
+                    // Only scroll if we were already at the bottom
+                    if (wasAtBottom)
+                    {
+                        ScrollToBottom();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[REFRESH ERROR] Error refreshing messages: {ex.Message}");
             }
         }
     }
