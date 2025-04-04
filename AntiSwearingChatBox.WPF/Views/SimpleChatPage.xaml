@@ -849,14 +849,16 @@
                     <!--  Message Input Disabled When Thread Closed  -->
                     <Border
                         Grid.Row="2"
+                        Margin="0,0,12,12"
                         Padding="12,8"
-                        Background="{StaticResource TertiaryBackgroundBrush}"
+                        Background="{StaticResource ErrorBrush}"
+                        CornerRadius="6"
                         Visibility="{Binding IsThreadClosed, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock
                             Padding="10"
                             HorizontalAlignment="Center"
                             FontSize="12"
-                            Foreground="{StaticResource SecondaryTextBrush}"
+                            Foreground="{StaticResource PrimaryBackgroundDarkBrush}"
                             TextAlignment="Center">
                             <Run FontSize="14" Text="⚠️" />
                             <Run Text="This conversation has been closed due to excessive swearing." />
