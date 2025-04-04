@@ -26,13 +26,26 @@ namespace AntiSwearingChatBox.AI
             {
                 case "profanity":
                     enhancedPrompt = 
-                        $"You are a highly sensitive content moderator trained to detect ANY form of profanity or inappropriate language.\n\n" +
+                        $"You are a highly sensitive content moderator trained to detect ANY form of profanity or inappropriate language with MAXIMUM SEVERITY.\n\n" +
+                        $"CRITICAL TASK: This system is for an anti-swearing chatbox that MUST filter all profanity including deliberate obfuscation attempts and creative variants.\n\n" +
                         $"IMPORTANT: Profanity detection is CRITICAL. The following words and their variations are ALWAYS considered profanity:\n" +
                         $"- fuck, f*ck, fuk, fvck, phuck, fcuk, f0ck, fu(k, and ANY similar variations\n" +
                         $"- shit, sh*t, sh!t, sht, and ANY similar variations\n" +
                         $"- ass, a$$, a**, @ss, and ANY similar variations\n" +
                         $"- bitch, b*tch, b!tch, and ANY similar variations\n" +
-                        $"- dick, d*ck, d!ck, and ANY similar variations\n\n" +
+                        $"- dick, d*ck, d!ck, and ANY similar variations\n" +
+                        $"- pussy, pus$y, pus*, and ANY similar variations\n" +
+                        $"- cunt, c*nt, kunt, and ANY similar variations\n\n" +
+                        
+                        $"For EACH word, check if ANY part of the message could be:\n" +
+                        $"1. THE EXACT WORD in any form (plural, possessive, etc.)\n" +
+                        $"2. DELIBERATE MISSPELLINGS designed to evade filters\n" +
+                        $"3. CHARACTER SUBSTITUTIONS (like @ for a, $ for s, etc.)\n" +
+                        $"4. PHONETIC VARIANTS (like 'fck', 'phuk', 'shi+', etc.)\n" +
+                        $"5. SPLIT WORDS with spaces or punctuation (f u c k, s.h.i.t)\n" +
+                        $"6. L33T SPEAK variants (f4ck, sh1t, @ss, etc.)\n" +
+                        $"7. MULTI-LANGUAGE variants or transliterations\n" +
+                        $"8. PARTIAL MATCHES that clearly suggest profanity\n" +
                         
                         $"Carefully analyze this message for ALL variations of profanity including:\n" +
                         $"- Common misspellings (e.g., 'fuk', 'fvck', 'phuck', 'fcuk', 'f0ck')\n" +
@@ -41,12 +54,19 @@ namespace AntiSwearingChatBox.AI
                         $"- Character omissions (e.g., 'fk', 'fck')\n" +
                         $"- Word fragments that suggest profanity\n\n" +
                         
+                        $"WORD-BY-WORD VARIANT CHECK: For each basic profanity word, check if EVERY possible variant of it appears in the message.\n\n" +
+                        
                         $"CRITICAL INSTRUCTION: In your analysis, you MUST identify the exact profanity words or phrases found in the message.\n" +
-                        $"Even if you're not 100% certain, flag potential profanity. Err on the side of caution.\n\n" +
+                        $"Even if you're not 100% certain, flag potential profanity. ALWAYS err on the side of caution - false positives are better than false negatives in this system.\n\n" +
                         
                         $"Message to analyze: \"{originalPrompt}\"\n\n" +
                         
-                        $"FINAL CHECK: Before responding, ask yourself - does this message contain obvious profanity like 'fuck', 'shit', etc.? If so, you MUST set containsProfanity to true.\n\n" +
+                        $"QUADRUPLE-CHECK: Before responding, ask yourself if:\n" +
+                        $"1. Does this message contain ANY obvious profanity or variants?\n" +
+                        $"2. Could ANY word be interpreted as a deliberately obfuscated profanity?\n" +
+                        $"3. When normalized (removing spaces, special chars), does ANY part match profanity?\n" +
+                        $"4. Would a human moderator likely flag this message?\n" +
+                        $"If ANY answer is yes, you MUST set containsProfanity to true.\n\n" +
                         
                         $"Respond with JSON containing:\n" +
                         $"- 'containsProfanity': boolean (true if ANY variation of profanity is detected)\n" +
@@ -503,7 +523,7 @@ namespace AntiSwearingChatBox.AI
             // First normalize the message for better detection
             string normalizedMessage = message.ToLower();
             
-            // Extended list of profanity words with more variations
+            // Extended list to check against direct word lists
             string[] directProfanityWords = new[] { 
                 // F-word variations
                 "fuck", "fuk", "fvck", "f*ck", "f**k", "fck", "fuuck", "fuuk", "phuck", "fu(k", "fug", "fuc", 
@@ -526,10 +546,9 @@ namespace AntiSwearingChatBox.AI
                 "pussy", "puss", "pu$$y", "p*ssy", "pussi", "p u s s y", "p.ssy", "p_ssy"
             };
             
-            // Use proper word boundary checking with relaxed rules to catch more variations
+            // Check for direct substring matches (relaxed matching)
             foreach (var word in directProfanityWords)
             {
-                // More relaxed pattern matching to catch even partial matches within words
                 if (normalizedMessage.Contains(word, StringComparison.OrdinalIgnoreCase))
                 {
                     System.Diagnostics.Debug.WriteLine($"Direct profanity word detected with contains: {word}");
@@ -537,77 +556,14 @@ namespace AntiSwearingChatBox.AI
                     return true;
                 }
             }
-                
-            // Check for obscured profanity with letter substitutions (l33t speak)
-            Dictionary<char, string[]> substitutions = new Dictionary<char, string[]>
-            {
-                {'a', new[] {"@", "4", "α", "λ", "д"}},
-                {'b', new[] {"8", "6", "ß", "б"}},
-                {'c', new[] {"(", "{", "[", "<", "к", "с"}},
-                {'d', new[] {"|)", "о", "д"}},
-                {'e', new[] {"3", "€", "є", "е", "э"}},
-                {'f', new[] {"ph", "ƒ", "ф"}},
-                {'g', new[] {"6", "9", "г"}},
-                {'h', new[] {"#", "|-|", "н"}},
-                {'i', new[] {"1", "!", "|", "и", "і"}},
-                {'k', new[] {"|<", "к"}},
-                {'l', new[] {"1", "|", "л"}},
-                {'m', new[] {"|v|", "м"}},
-                {'n', new[] {"|\\|", "и", "н"}},
-                {'o', new[] {"0", "()", "о"}},
-                {'p', new[] {"|o", "п"}},
-                {'r', new[] {"|2", "я", "р"}},
-                {'s', new[] {"5", "$", "с"}},
-                {'t', new[] {"7", "+", "т"}},
-                {'u', new[] {"|_|", "у"}},
-                {'v', new[] {"\\/", "в"}},
-                {'w', new[] {"\\/\\/", "vv", "ш", "щ"}},
-                {'x', new[] {"><", "х"}},
-                {'y', new[] {"j", "у", "ү"}},
-                {'z', new[] {"2", "з"}}
-            };
             
-            // Check for common patterns with character replacements
-            // Harder to evade by removing all special characters
-            string[] corePatterns = new[] { "fk", "fck", "fvk", "fuk", "phk", "sht", "ashole", "btch", "dck", "fvck" };
-            foreach (var pattern in corePatterns)
-            {
-                // Create variants with character substitutions
-                List<string> variants = GenerateVariants(pattern, substitutions);
-                
-                foreach (var variant in variants)
-                {
-                    if (normalizedMessage.Contains(variant, StringComparison.OrdinalIgnoreCase))
-                    {
-                        System.Diagnostics.Debug.WriteLine($"L33t speak variant detected: {variant} from {pattern}");
-                        System.Console.WriteLine($"L33t speak variant detected: {variant} from {pattern}");
-                        return true;
-                    }
-                }
-            }
-            
-            // Additional check for combined/spaced words (e.g., "b i t c h")
-            string strippedMessage = new string(normalizedMessage.Where(c => !char.IsWhiteSpace(c) && !char.IsPunctuation(c)).ToArray());
-            foreach (var word in directProfanityWords)
-            {
-                // Remove spaces and punctuation from the profanity word for matching
-                string strippedWord = new string(word.Where(c => !char.IsWhiteSpace(c) && !char.IsPunctuation(c)).ToArray());
-                if (strippedMessage.Contains(strippedWord, StringComparison.OrdinalIgnoreCase))
-                {
-                    System.Diagnostics.Debug.WriteLine($"Spaced profanity word detected: {word}");
-                    System.Console.WriteLine($"Spaced profanity word detected: {word}");
-                    return true;
-                }
-            }
-            
-            // Now check for pattern-based evasion techniques
-            // Get the configured evasion patterns from settings
+            // Check for pattern-based evasion techniques
             var settings = ModelSettings.Instance;
             var patterns = settings.Moderation.EvasionPatterns;
             
             foreach (var pattern in patterns)
             {
-                if (message.Contains(pattern, StringComparison.OrdinalIgnoreCase))
+                if (normalizedMessage.Contains(pattern, StringComparison.OrdinalIgnoreCase))
                 {
                     System.Diagnostics.Debug.WriteLine($"Evasion pattern detected: {pattern}");
                     System.Console.WriteLine($"Evasion pattern detected: {pattern}");
@@ -615,20 +571,61 @@ namespace AntiSwearingChatBox.AI
                 }
             }
             
-            // Check for symbol substitution patterns
-            string symbolsRemoved = new string(message.Where(c => char.IsLetterOrDigit(c) || char.IsWhiteSpace(c)).ToArray());
+            // Additional check for combined/spaced words (e.g., "b i t c h")
+            string strippedMessage = new string(normalizedMessage.Where(c => !char.IsWhiteSpace(c) && !char.IsPunctuation(c)).ToArray());
             string[] symbolProfanityWords = new[] { 
                 "fck", "fk", "sht", "bch", "dck", "fvk", "fvck", "cnt", "fuc", "sh1t", "fug",
-                "fcuk", "phck", "psy"
+                "fcuk", "phck", "psy", "btch", "dik", "kunt", "asshl", "fkyou", "mthrfkr",
+                // Adding specific patterns from screenshot
+                "fack", "fackyou", "fakyou", "biatch", "biatches", "biatc", "fak"
             };
             
             foreach (var word in symbolProfanityWords)
             {
-                if (symbolsRemoved.Contains(word, StringComparison.OrdinalIgnoreCase))
+                if (strippedMessage.Contains(word, StringComparison.OrdinalIgnoreCase))
                 {
-                    System.Diagnostics.Debug.WriteLine($"Symbol substitution detected after cleanup: {word}");
-                    System.Console.WriteLine($"Symbol substitution detected after cleanup: {word}");
+                    System.Diagnostics.Debug.WriteLine($"Stripped profanity word detected: {word}");
+                    System.Console.WriteLine($"Stripped profanity word detected: {word}");
                     return true;
+                }
+            }
+            
+            // Use the advanced normalization function for deep detection
+            string deepNormalizedText = AntiSwearingChatBox.AI.Services.ProfanityFilterService.NormalizeTextForProfanityDetection(message);
+            string[] coreWords = new[] {
+                "fuck", "shit", "ass", "bitch", "dick", "cunt", "pussy", "asshole", "bastard", "piss", 
+                "whore", "slut", "bullshit", "fag", "faggot", "damn", "wank", "cock", "twat", "prick"
+            };
+            
+            foreach (var word in coreWords)
+            {
+                if (deepNormalizedText.Contains(word))
+                {
+                    System.Diagnostics.Debug.WriteLine($"Deep normalized profanity detected: {word}");
+                    System.Console.WriteLine($"Deep normalized profanity detected: {word}");
+                    return true;
+                }
+            }
+            
+            // Advanced check for split word detection
+            string[] wordFragments = new[] {
+                "fu", "fuc", "fuk", "fck", "sh", "shi", "sht", "as", "ass", "btc", "btch", "dik", "dic", 
+                "cun", "cnt", "pus", "pss", "fak", "fac", "fack", "biat", "bia", "biatch", "biatc"
+            };
+            
+            // If multiple suspicious fragments are found, consider it a detection
+            int fragmentCount = 0;
+            foreach (var fragment in wordFragments)
+            {
+                if (deepNormalizedText.Contains(fragment))
+                {
+                    fragmentCount++;
+                    if (fragmentCount >= 2)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Multiple suspicious fragments detected");
+                        System.Console.WriteLine($"Multiple suspicious fragments detected");
+                        return true;
+                    }
                 }
             }
             
@@ -719,5 +716,5 @@ namespace AntiSwearingChatBox.AI
         {
             return ContainsKnownEvasionPatterns(message);
         }
-    }
+    } 
 } 

@@ -78,15 +78,41 @@ namespace AntiSwearingChatBox.Server.AI
         public async Task<string> ModerateChatMessageAsync(string message)
         {
             string promptTemplate =
-                $"CRITICAL MODERATION TASK: Analyze the following message for ANY type of profanity, swear words, or inappropriate language.\n\n" +
-                $"You must detect profanity even if it uses letter substitutions, character omissions, or unusual spellings. " +
-                $"Examples of variations to catch:\n" +
-                $"- 'fuck', 'fuk', 'fvck', 'fuuck', 'f*ck', 'f**k', 'fck'\n" +
-                $"- 'shit', 'sh*t', 'sh1t', 'sht', 'shiit'\n" +
-                $"- 'ass', 'a$$', 'a**', '@ss'\n\n" +
-                $"Err on the side of caution. If something might be profanity, treat it as profanity.\n\n" +
+                $"CRITICAL MODERATION TASK: Analyze the following message for ANY type of profanity, swear words, or inappropriate language with MAXIMUM SEVERITY.\n\n" +
+                $"This is an anti-swearing chatbox and you MUST detect and censor ALL forms of profanity, no matter how subtle or disguised.\n\n" +
+                $"DETECTION CHECKLIST - for EACH of these profanity words and their variants:\n" +
+                $"- fuck, fuk, fvck, f*ck, f**k, fck, fuuck, fuuk, phuck, etc.\n" + 
+                $"- shit, sh*t, sh1t, sht, sh!t, shiit, shyt, etc.\n" +
+                $"- ass, a$$, a**, @ss, azz, a$, etc.\n" +
+                $"- bitch, b*tch, b!tch, btch, biatch, etc.\n" +
+                $"- dick, d*ck, d!ck, dck, etc.\n" +
+                $"- pussy, pu$$y, pus$y, etc.\n" +
+                $"- cunt, c*nt, kunt, etc.\n\n" +
+                
+                $"CHECK FOR THESE EVASION TECHNIQUES:\n" +
+                $"1. Character substitutions: @ for a, $ for s, 0 for o, etc.\n" +
+                $"2. Deliberate misspellings: fuk, phuck, etc.\n" +
+                $"3. Letter spacing: f u c k, s h i t, etc.\n" +
+                $"4. Character repeats: fuuuck, shiiit, etc.\n" +
+                $"5. Character omissions: fk, sht, etc.\n" +
+                $"6. Word fragments: fuc, shi, etc.\n" +
+                $"7. Phonetic variants: fudge (for fuck), sheet (for shit), etc.\n" +
+                $"8. Leet speak: f4ck, sh1t, @ss, etc.\n\n" +
+                
+                $"VARIANT DETECTION: For each letter in each profanity word, check if it could be replaced with ANY character that looks or sounds similar.\n" +
+                $"Then check if ANY segment of the message could match these variants.\n\n" +
+                
+                $"MODERATION INSTRUCTIONS:\n" +
+                $"- Replace each detected profanity or variant with the EXACT same number of asterisks (*)\n" +
+                $"- CRITICAL: Err strongly on the side of caution - prefer false positives over missed profanity\n" +
+                $"- For borderline cases, always censor\n" +
+                $"- Preserve message structure and non-profane words\n\n" +
+                
+                $"CHECK WORD-BY-WORD: For each word in the message, analyze if it's a potential variant of ANY profanity word.\n\n" +
+                
                 $"Return the result in JSON format with the following structure:\n" +
                 $"{{\"original\": \"original message\", \"moderated\": \"moderated message with all profanity replaced by asterisks\", \"wasModified\": true/false}}\n\n" +
+                
                 $"MESSAGE TO MODERATE: \"{message}\"";
 
             Console.WriteLine($"Sending message for moderation: \"{message}\"");

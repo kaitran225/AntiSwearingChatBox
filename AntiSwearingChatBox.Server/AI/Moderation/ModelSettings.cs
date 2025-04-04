@@ -92,13 +92,45 @@ namespace AntiSwearingChatBox.AI.Moderation
         // List of common evasion patterns to detect
         public List<string> EvasionPatterns { get; set; } = new List<string>
         {
-            "fuk", "fvck", "fck", "fuq", "phuck", "phuk", "fxck", "f**k", "f-ck", "fug", "fcuk",
-            "shi", "sht", "sh1t", "sh!t", "s**t", "shyt", "sh1t", "schit",
-            "a$$", "a**", "@ss", "azz", "as$", "@$$",
-            "b!tch", "b1tch", "biatch", "bytch", "btch", "b*tch", "bicth",
-            "d1ck", "dik", "d!ck", "dikk", "dck",
-            "pusy", "pu$$y", "pussi", "pvssy", "psy", "p*ssy",
-            "c*nt", "kunt", "cnt", "c-nt", "c.nt"
+            // F-word variants
+            "fuk", "fvck", "fck", "fuq", "phuck", "phuk", "fxck", "f**k", "f-ck", "fug", "fcuk", "f.ck", "f_ck", 
+            "f0ck", "fook", "foock", "phuck", "phuq", "phvck", "fk", "fuggin", "fuggin'", "effin", "effin'", "fudge",
+            "freak", "freaking", "fvcking", "facking", "fokkin", "fokking", "fugging", "flippin", "frigging", "fack", 
+            "fackin", "facking", "feking", "fakk", "fak", "fakk", "faq", "facq", "fak you", "fack you",
+            
+            // S-word variants
+            "shi", "sht", "sh1t", "sh!t", "s**t", "shyt", "sh1t", "schit", "chit", "sheet", "shizz", "sh.t", "sh_t",
+            "5h1t", "5hit", "5h!t", "$hit", "$h!t", "shitt", "shiet", "sheeeit", "sheeit", "shiz", "schitt",
+            
+            // A-word variants
+            "a$$", "a**", "@ss", "azz", "as$", "@$$", "@$s", "a$$h0le", "a**hole", "@sshole", "ash0le", "a5s", 
+            "a5sh0le", "arse", "arsehole", "a-hole", "a.ss", "a_ss", "ahole", "ayss", "ay$",
+            
+            // B-word variants
+            "b!tch", "b1tch", "biatch", "bytch", "btch", "b*tch", "bicth", "bish", "b1sh", "beetch", "bich", "biach",
+            "beyotch", "biotch", "b!sh", "bi+ch", "b.tch", "b_tch", "beach", "bxtch", "biach", "bizitch", "bi@tch", 
+            "bi@ch", "biatc", "biatchh", "biatches", "biatchez", "biyatch", "beeatch", "beeotch", "beotch",
+            
+            // D-word variants
+            "d1ck", "dik", "d!ck", "dikk", "dck", "d*ck", "d**k", "d!k", "d1k", "d.ck", "d_ck", "deek", "dyck",
+            "dic", "dixk", "diq", "dck", "doock", "dig", "dork", "dong", "weiner", "wiener", 
+            
+            // C-word variants
+            "c*nt", "kunt", "cnt", "c-nt", "c.nt", "cvnt", "knt", "cnut", "khunt", "kant", "kunnt", "quunt",
+            "knut", "coont", "cuhnt", "kuunt", "c__t", "c**t", "cvnt", "kount", "qunt", "quunt",
+            
+            // P-word variants
+            "pusy", "pu$$y", "pussi", "pvssy", "psy", "p*ssy", "p**sy", "p.ssy", "p_ssy", "pusC", "pus$y",
+            "pu$$i", "pusss", "p*s", "puss", "pssy", "pssi", "pvssi", "poossy", "pwssy", "pu55y", "kitty", 
+            "pvssy", "pvssi", "poosy", "poosi", "punani",
+            
+            // Other offensive terms
+            "wh0re", "h0e", "sl*t", "slvt", "bit¢h", "pron", "p0rn", "sp3rm", "cum", "cuming", "cumming", 
+            "n1gga", "nigg", "n1gg", "negro", "nigga", "nigger", "n1gg3r", "n!gg3r", "niqqer", "n!qq3r", 
+            "f4g", "f4gg0t", "fagg0t", "f@g", "f@ggot",
+            
+            // Various numeric and symbol substitutions
+            "5ex", "$ex", "5ex", "s3x", "s3xy", "pr0n", "p0rn", "pen!s", "p3n!s", "vag!na", "v@g!na", "v@g!n@"
         };
 
         public string GetEffectivePromptPrefix()
