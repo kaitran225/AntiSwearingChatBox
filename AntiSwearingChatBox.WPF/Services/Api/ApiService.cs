@@ -27,6 +27,9 @@ namespace AntiSwearingChatBox.WPF.Services.Api
         public event Action<int, string>? OnUserJoinedThread;
         public event Action<int, int, bool>? OnThreadInfoUpdated;
         public event Action<int, string>? OnThreadClosed;
+        public event Action<bool>? OnConnectionStateChanged;
+        
+        private HubConnectionState _lastConnectionState = HubConnectionState.Disconnected;
         
         public ApiService()
         {
@@ -457,10 +460,12 @@ namespace AntiSwearingChatBox.WPF.Services.Api
                         
                         options.Headers["Authorization"] = $"Bearer {_token}";
                         
+                        // Add the token to query string for SignalR auth
+                        options.Headers.Add("access_token", _token);
+                        
                         options.Transports = Microsoft.AspNetCore.Http.Connections.HttpTransportType.WebSockets | 
                                           Microsoft.AspNetCore.Http.Connections.HttpTransportType.LongPolling;
                         options.SkipNegotiation = false;
-                        
                     })
                     .WithAutomaticReconnect(new[] { 
                         TimeSpan.FromSeconds(1), 
@@ -471,11 +476,18 @@ namespace AntiSwearingChatBox.WPF.Services.Api
                     })
                     .Build();
 
+                // Set up a timer to periodically check connection state
+                var stateTimer = new System.Timers.Timer(2000); // 2 seconds
+                stateTimer.Elapsed += (sender, e) => MonitorConnectionState();
+                stateTimer.Start();
+
                 Console.WriteLine("[HUB] Registering ReceiveMessage handler...");
                 _hubConnection.On<string, string, int, DateTime, int, string, bool, int>("ReceiveMessage", 
                     (username, message, userId, timestamp, threadId, originalMessage, containsProfanity, threadSwearingScore) =>
                     {
-                        Console.WriteLine($"[HUB RECEIVE] Message from {username} in thread {threadId}: {message.Substring(0, Math.Min(20, message.Length))}...");
+                        // Debug output to show the actual message content 
+                        string messagePreview = message != null ? message.Substring(0, Math.Min(20, message.Length)) : "(null)";
+                        Console.WriteLine($"[HUB RECEIVE] Message from {username} in thread {threadId}: \"{messagePreview}...\"");
                         Console.WriteLine($"[HUB RECEIVE] Message details - ContainsProfanity: {containsProfanity}, ThreadSwearingScore: {threadSwearingScore}");
                         
                         var chatMessage = new ChatMessage
@@ -568,10 +580,10 @@ namespace AntiSwearingChatBox.WPF.Services.Api
                 };
 
                 // Register event handlers for thread status updates
-                _hubConnection.On<int, string, bool, int, bool>("ThreadInfo", 
-                    (threadId, title, isPrivate, swearingScore, isClosed) =>
+                _hubConnection.On<int, bool, int, DateTime>("ThreadInfoUpdated", 
+                    (threadId, isClosed, swearingScore, lastMessageAt) =>
                     {
-                        Console.WriteLine($"[HUB RECEIVE] Thread info for {threadId}: SwearingScore={swearingScore}, IsClosed={isClosed}");
+                        Console.WriteLine($"[HUB RECEIVE] Thread info updated for {threadId}: SwearingScore={swearingScore}, IsClosed={isClosed}");
                         OnThreadInfoUpdated?.Invoke(threadId, swearingScore, isClosed);
                     });
                 
@@ -580,6 +592,13 @@ namespace AntiSwearingChatBox.WPF.Services.Api
                     Console.WriteLine($"[HUB RECEIVE] Thread {threadId} closed: {message}");
                     OnThreadClosed?.Invoke(threadId, message);
                 });
+
+                _hubConnection.On<int, int>("SwearingScoreUpdated", 
+                    (threadId, newScore) =>
+                    {
+                        Console.WriteLine($"[HUB RECEIVE] Swearing score updated for thread {threadId}: New score={newScore}");
+                        OnThreadInfoUpdated?.Invoke(threadId, newScore, false); // Reuse the same event but don't update closed status
+                    });
 
                 Console.WriteLine("[HUB] Starting connection...");
                 await _hubConnection.StartAsync();
@@ -1177,6 +1196,24 @@ namespace AntiSwearingChatBox.WPF.Services.Api
             {
                 Console.WriteLine($"Error checking if thread is closed: {ex.Message}");
                 return false;
+            }
+        }
+
+        // Helper method to monitor connection state changes
+        private void MonitorConnectionState()
+        {
+            if (_hubConnection == null) return;
+            
+            var currentState = _hubConnection.State;
+            
+            // Check if state changed
+            if (currentState != _lastConnectionState)
+            {
+                Console.WriteLine($"[HUB STATE] Connection state changed: {_lastConnectionState} -> {currentState}");
+                _lastConnectionState = currentState;
+                
+                // Notify listeners
+                OnConnectionStateChanged?.Invoke(currentState == HubConnectionState.Connected);
             }
         }
     }

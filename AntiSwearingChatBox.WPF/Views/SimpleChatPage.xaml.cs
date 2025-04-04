@@ -219,6 +219,7 @@ namespace AntiSwearingChatBox.WPF.View
                     _apiService.OnMessageReceived -= HandleMessageReceived;
                     _apiService.OnThreadInfoUpdated -= HandleThreadInfoUpdated;
                     _apiService.OnThreadClosed -= HandleThreadClosed;
+                    _apiService.OnConnectionStateChanged -= HandleConnectionStateChanged;
                     
                     // Disconnect from SignalR
                     await _apiService.DisconnectFromHubAsync();
@@ -450,6 +451,9 @@ namespace AntiSwearingChatBox.WPF.View
             {
                 Console.WriteLine("Initializing SignalR connection...");
                 
+                // Subscribe to connection state changes
+                _apiService.OnConnectionStateChanged += HandleConnectionStateChanged;
+                
                 // Use the API service's built-in SignalR connection
                 bool connectionResult = await _apiService.ConnectToHubAsync();
                 
@@ -476,6 +480,41 @@ namespace AntiSwearingChatBox.WPF.View
                 Console.WriteLine($"[ERROR] Error initializing connection: {ex.Message}");
                 IsConnected = false;
                 UpdateConnectionStatus();
+            }
+        }
+        
+        private void HandleConnectionStateChanged(bool isConnected)
+        {
+            try
+            {
+                Console.WriteLine($"[CONNECTION] SignalR connection state changed to: {(isConnected ? "Connected" : "Disconnected")}");
+                
+                // Update UI on the dispatcher thread
+                Dispatcher.Invoke(() => 
+                {
+                    IsConnected = isConnected;
+                    UpdateConnectionStatus();
+                    
+                    // If connected and in a thread, ensure we're joined to the thread group
+                    if (isConnected && _currentThreadId > 0)
+                    {
+                        Task.Run(async () => 
+                        {
+                            try
+                            {
+                                await _apiService.JoinThreadChatGroupAsync(_currentThreadId);
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"[CONNECTION] Error joining thread after reconnect: {ex.Message}");
+                            }
+                        });
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[CONNECTION] Error handling connection state change: {ex.Message}");
             }
         }
         
@@ -1623,8 +1662,18 @@ namespace AntiSwearingChatBox.WPF.View
             {
                 try
                 {
-                    if (_currentThreadId <= 0 || !IsConnected)
+                    // Only poll if SignalR is not connected or thread is active
+                    if (_currentThreadId <= 0)
                         return;
+                    
+                    // Check SignalR connection status first
+                    bool isConnected = await _apiService.IsHubConnectedAsync();
+                    
+                    // If SignalR is connected, reduce polling frequency by skipping some polls
+                    if (isConnected && DateTime.Now.Second % 2 == 0)
+                        return;
+                    
+                    Console.WriteLine($"[POLL] Polling thread {_currentThreadId} (SignalR connected: {isConnected})");
                     
                     // Poll for score and closed status
                     int score = await _apiService.GetThreadSwearingScoreAsync(_currentThreadId);
@@ -1658,6 +1707,19 @@ namespace AntiSwearingChatBox.WPF.View
                                 ScrollToBottom();
                             }
                         });
+                        
+                        // If we detected changes and SignalR is connected, trigger a SignalR refresh
+                        if (isConnected)
+                        {
+                            try
+                            {
+                                await _apiService.JoinThreadChatGroupAsync(_currentThreadId);
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"[POLL ERROR] Failed to rejoin thread group: {ex.Message}");
+                            }
+                        }
                     }
                 }
                 catch (Exception ex)

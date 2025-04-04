@@ -40,6 +40,7 @@ namespace AntiSwearingChatBox.WPF.Services.Api
         event Action<int, string> OnUserJoinedThread;
         event Action<int, int, bool> OnThreadInfoUpdated; // threadId, swearingScore, isClosed
         event Action<int, string> OnThreadClosed; // threadId, reason
+        event Action<bool> OnConnectionStateChanged; // isConnected
         
         // AI Services
         Task<string> GenerateTextAsync(string prompt);

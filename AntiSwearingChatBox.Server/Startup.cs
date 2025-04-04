@@ -37,11 +37,12 @@ namespace AntiSwearingChatBox.Server
 
         public void ConfigureServices(IServiceCollection services)
         {
-            // Add controllers with JSON options
-            services.AddControllers().AddJsonOptions(options =>
-            {
-                options.JsonSerializerOptions.PropertyNamingPolicy = null;
-            });
+            // Get logger from service provider
+            var serviceProvider = services.BuildServiceProvider();
+            var logger = serviceProvider.GetRequiredService<ILogger<Startup>>();
+        
+            // Add controllers
+            services.AddControllers();
 
             // Add SignalR services
             services.AddSignalR();
@@ -80,9 +81,38 @@ namespace AntiSwearingChatBox.Server
             });
 
             // Configure JWT
-            var jwtSettings = Configuration.GetSection("JwtSettings").Get<JwtSettings>();
-            var key = Encoding.ASCII.GetBytes(jwtSettings?.SecretKey ?? throw new InvalidOperationException("JWT SecretKey is not configured"));
-
+            logger.LogInformation("Configuring JWT authentication...");
+            
+            string? secretKey = null;
+            string? issuer = null;
+            string? audience = null;
+            
+            // Try to get JWT settings from JwtSettings section
+            var jwtSettings = Configuration.GetSection("JwtSettings");
+            secretKey = jwtSettings["SecretKey"];
+            issuer = jwtSettings["Issuer"];
+            audience = jwtSettings["Audience"];
+            
+            // If not found, try the alternative JWT section
+            if (string.IsNullOrEmpty(secretKey))
+            {
+                logger.LogInformation("JWT settings not found in JwtSettings section, trying JWT section...");
+                var jwtSection = Configuration.GetSection("JWT");
+                secretKey = jwtSection["SecretKey"];
+                issuer = jwtSection["ValidIssuer"];
+                audience = jwtSection["ValidAudience"];
+            }
+            
+            logger.LogInformation($"JWT Config - Secret: {!string.IsNullOrEmpty(secretKey)}, Issuer: {issuer}, Audience: {audience}");
+            
+            // Ensure we have the required JWT settings
+            if (string.IsNullOrEmpty(secretKey))
+            {
+                throw new InvalidOperationException("JWT SecretKey is not configured in either JwtSettings or JWT section");
+            }
+            
+            var key = Encoding.ASCII.GetBytes(secretKey);
+            
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
@@ -90,11 +120,29 @@ namespace AntiSwearingChatBox.Server
                     {
                         ValidateIssuerSigningKey = true,
                         IssuerSigningKey = new SymmetricSecurityKey(key),
-                        ValidateIssuer = true,
-                        ValidIssuer = jwtSettings.Issuer,
-                        ValidateAudience = true,
-                        ValidAudience = jwtSettings.Audience,
+                        ValidateIssuer = !string.IsNullOrEmpty(issuer),
+                        ValidIssuer = issuer ?? "AntiSwearingChatBox",
+                        ValidateAudience = !string.IsNullOrEmpty(audience),
+                        ValidAudience = audience ?? "AntiSwearingChatBox",
                         ClockSkew = TimeSpan.Zero
+                    };
+                    
+                    // Configure SignalR authentication
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+                            
+                            // If the request is for our chat hub
+                            var path = context.HttpContext.Request.Path;
+                            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/chatHub"))
+                            {
+                                // Read the token out of the query string
+                                context.Token = accessToken;
+                            }
+                            return Task.CompletedTask;
+                        }
                     };
                 });
 

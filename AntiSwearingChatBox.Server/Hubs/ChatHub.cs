@@ -325,7 +325,12 @@ namespace AntiSwearingChatBox.Server.Hubs
                 
                 // Store connection info
                 var connectionId = Context.ConnectionId;
-                var userId = Context.GetHttpContext().Request.Query["userId"].ToString();
+                var userId = Context.GetHttpContext()?.Request.Query["userId"].ToString();
+                
+                // Safely log user info
+                string userIdForLogging = !string.IsNullOrEmpty(userId) ? userId : "unknown";
+                _logger.LogInformation($"User {userIdForLogging} joined thread {threadId}");
+                
                 if (!string.IsNullOrEmpty(userId) && int.TryParse(userId, out int userIdInt))
                 {
                     _userConnections[connectionId] = new UserConnection
@@ -334,8 +339,6 @@ namespace AntiSwearingChatBox.Server.Hubs
                         UserId = userIdInt
                     };
                 }
-                
-                _logger.LogInformation($"User {userId ?? "unknown"} joined thread {threadId}");
                 
                 // Send thread info to the client
                 await Clients.Caller.SendAsync("ThreadInfoUpdated", 
