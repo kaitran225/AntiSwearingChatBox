@@ -81,7 +81,7 @@ namespace AntiSwearingChatBox.Server
             });
 
             // Configure JWT
-            logger.LogInformation("Configuring JWT authentication...");
+            logger.LogDebug("Configuring JWT authentication...");
             
             string? secretKey = null;
             string? issuer = null;
@@ -96,14 +96,18 @@ namespace AntiSwearingChatBox.Server
             // If not found, try the alternative JWT section
             if (string.IsNullOrEmpty(secretKey))
             {
-                logger.LogInformation("JWT settings not found in JwtSettings section, trying JWT section...");
+                logger.LogDebug("JWT settings not found in JwtSettings section, trying JWT section...");
                 var jwtSection = Configuration.GetSection("JWT");
                 secretKey = jwtSection["SecretKey"];
                 issuer = jwtSection["ValidIssuer"];
                 audience = jwtSection["ValidAudience"];
             }
             
-            logger.LogInformation($"JWT Config - Secret: {!string.IsNullOrEmpty(secretKey)}, Issuer: {issuer}, Audience: {audience}");
+            // Only log if secret key is missing, not the actual configuration values
+            if (string.IsNullOrEmpty(secretKey))
+            {
+                logger.LogWarning("JWT SecretKey is not configured properly");
+            }
             
             // Ensure we have the required JWT settings
             if (string.IsNullOrEmpty(secretKey))

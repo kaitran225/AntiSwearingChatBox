@@ -17,7 +17,7 @@ namespace AntiSwearingChatBox.Server
                 {
                     logging.ClearProviders();
                     logging.AddConsole();
-                    logging.SetMinimumLevel(LogLevel.Information);
+                    logging.SetMinimumLevel(LogLevel.Warning);
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {

@@ -20,82 +20,71 @@ namespace AntiSwearingChatBox.Server.Middleware
 
         public async Task InvokeAsync(HttpContext context)
         {
-            // Log the request
-            await LogRequest(context);
+            // Skip detailed logging for SignalR requests
+            bool isSignalRRequest = context.Request.Path.StartsWithSegments("/chatHub", StringComparison.OrdinalIgnoreCase);
+            
+            if (!isSignalRRequest)
+            {
+                // Log only essential request information
+                LogRequestBasicInfo(context);
+            }
 
-            // Capture the response
+            // Capture the original response body stream
             var originalBodyStream = context.Response.Body;
-            using var responseBody = new MemoryStream();
-            context.Response.Body = responseBody;
 
             try
             {
-                // Continue down the middleware pipeline
-                        await _next(context);
+                // Only create a memory stream for non-SignalR requests that we want to log
+                if (!isSignalRRequest)
+                {
+                    // Create a new memory stream for the response
+                    using var responseBody = new MemoryStream();
+                    context.Response.Body = responseBody;
 
-                // Log the response
-                await LogResponse(context, responseBody, originalBodyStream);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "An error occurred while processing the request");
-                throw;
+                    // Continue down the middleware pipeline
+                    await _next(context);
+
+                    // Log response basics 
+                    LogResponseBasicInfo(context);
+
+                    // Copy the response stream back to the original body
+                    responseBody.Seek(0, SeekOrigin.Begin);
+                    await responseBody.CopyToAsync(originalBodyStream);
+                }
+                else
+                {
+                    // For SignalR requests, just continue without any logging overhead
+                    await _next(context);
+                }
             }
             finally
             {
-                context.Response.Body = originalBodyStream;
+                // Ensure the response body is restored
+                if (!isSignalRRequest)
+                {
+                    context.Response.Body = originalBodyStream;
+                }
             }
         }
 
-        private async Task LogRequest(HttpContext context)
+        private void LogRequestBasicInfo(HttpContext context)
         {
-            context.Request.EnableBuffering();
-
-            // Keep track of the request body
-            var requestBodyText = string.Empty;
-            if (context.Request.ContentLength > 0)
-            {
-                using var reader = new StreamReader(
-                    context.Request.Body,
-                    encoding: Encoding.UTF8,
-                    detectEncodingFromByteOrderMarks: false,
-                    leaveOpen: true);
-                
-                requestBodyText = await reader.ReadToEndAsync();
-                context.Request.Body.Position = 0;
-            }
-
-            // Log the request details
-            var message = $@"
-===== HTTP REQUEST =====
-{context.Request.Method} {context.Request.Scheme}://{context.Request.Host}{context.Request.Path}{context.Request.QueryString}
-Content-Type: {context.Request.ContentType}
-{(string.IsNullOrEmpty(requestBodyText) ? "No Body" : $"Body: {requestBodyText}")}
-======================";
-
-            _logger.LogInformation(message);
+            // Log only method, path and query string
+            _logger.LogDebug(
+                "REQUEST: {Method} {Path}{QueryString}",
+                context.Request.Method,
+                context.Request.Path,
+                context.Request.QueryString);
         }
 
-        private async Task LogResponse(HttpContext context, MemoryStream responseBody, Stream originalBodyStream)
+        private void LogResponseBasicInfo(HttpContext context)
         {
-            responseBody.Position = 0;
-
-            // Read the response body
-            var responseBodyText = await new StreamReader(responseBody).ReadToEndAsync();
-            
-            // Copy the response body back to the original stream
-            responseBody.Position = 0;
-            await responseBody.CopyToAsync(originalBodyStream);
-
-            // Log the response details
-            var message = $@"
-===== HTTP RESPONSE =====
-Status: {context.Response.StatusCode}
-Content-Type: {context.Response.ContentType}
-{(string.IsNullOrEmpty(responseBodyText) ? "No Body" : $"Body: {responseBodyText}")}
-======================";
-
-            _logger.LogInformation(message);
+            // Log only status code
+            _logger.LogDebug(
+                "RESPONSE: {StatusCode} for {Method} {Path}",
+                context.Response.StatusCode,
+                context.Request.Method,
+                context.Request.Path);
         }
     }
 } 
