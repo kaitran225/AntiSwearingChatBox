@@ -25,8 +25,10 @@ namespace AntiSwearingChatBox.WPF.Services.Api
         
         public ApiService()
         {
-            _httpClient = new HttpClient();
-            _httpClient.BaseAddress = new Uri(ApiConfig.BaseUrl);
+            _httpClient = new HttpClient
+            {
+                BaseAddress = new Uri(ApiConfig.BaseUrl)
+            };
             _httpClient.DefaultRequestHeaders.Accept.Clear();
             _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
@@ -273,14 +275,14 @@ namespace AntiSwearingChatBox.WPF.Services.Api
         
         private List<UserModel> GetDummyUsers()
         {
-            return new List<UserModel>
-            {
-                new UserModel { UserId = 101, Username = "alice", Email = "alice@example.com" },
-                new UserModel { UserId = 102, Username = "bob", Email = "bob@example.com" },
-                new UserModel { UserId = 103, Username = "charlie", Email = "charlie@example.com" },
-                new UserModel { UserId = 104, Username = "diana", Email = "diana@example.com" },
-                new UserModel { UserId = 105, Username = "evan", Email = "evan@example.com" }
-            };
+            return
+            [
+                new() { UserId = 101, Username = "alice", Email = "alice@example.com" },
+                new() { UserId = 102, Username = "bob", Email = "bob@example.com" },
+                new() { UserId = 103, Username = "charlie", Email = "charlie@example.com" },
+                new() { UserId = 104, Username = "diana", Email = "diana@example.com" },
+                new() { UserId = 105, Username = "evan", Email = "evan@example.com" }
+            ];
         }
         
         public async Task<bool> JoinThreadAsync(int threadId)
@@ -362,7 +364,7 @@ namespace AntiSwearingChatBox.WPF.Services.Api
                     var result = messages?
                         .OrderByDescending(m => m.CreatedAt)
                         .Take(limit)
-                        .ToList() ?? new List<ChatMessage>();
+                        .ToList() ?? [];
                         
                     return result;
                 }

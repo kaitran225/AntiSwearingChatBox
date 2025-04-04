@@ -6,9 +6,9 @@ using AntiSwearingChatBox.Service.Interface;
 using System;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
-using AntiSwearingChatBox.AI;
 using Microsoft.Extensions.Logging;
 using System.Text.Json.Serialization;
+using AntiSwearingChatBox.Server.AI;
 
 namespace AntiSwearingChatBox.Server.Hubs;
 

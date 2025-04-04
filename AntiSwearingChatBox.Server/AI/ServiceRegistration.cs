@@ -1,3 +1,4 @@
+using AntiSwearingChatBox.Server.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 

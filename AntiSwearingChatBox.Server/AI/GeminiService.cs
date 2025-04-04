@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
+using AntiSwearingChatBox.AI;
 using Microsoft.Extensions.Options;
 using Mscc.GenerativeAI;
 
-namespace AntiSwearingChatBox.AI
+namespace AntiSwearingChatBox.Server.AI
 {
     public class GeminiService
     {
@@ -17,8 +18,8 @@ namespace AntiSwearingChatBox.AI
             _settings = options.Value;
             var googleAI = new GoogleAI(apiKey: _settings.ApiKey);
             _model = googleAI.GenerativeModel(model: _settings.ModelName);
-            
-            System.Console.WriteLine($"GeminiService initialized with model: {_settings.ModelName}");
+
+            Console.WriteLine($"GeminiService initialized with model: {_settings.ModelName}");
             System.Diagnostics.Debug.WriteLine($"GeminiService initialized with model: {_settings.ModelName}");
         }
 
@@ -37,7 +38,7 @@ namespace AntiSwearingChatBox.AI
             }
             catch (Exception ex)
             {
-                System.Console.WriteLine($"GenerateTextAsync error: {ex.Message}");
+                Console.WriteLine($"GenerateTextAsync error: {ex.Message}");
                 return $"Error: {ex.Message}";
             }
         }
@@ -47,7 +48,7 @@ namespace AntiSwearingChatBox.AI
             try
             {
                 string jsonPrompt = $"Respond to the following request in valid JSON format only: {prompt}";
-                
+
                 var config = new GenerationConfig
                 {
                     Temperature = 0.7f,
@@ -56,8 +57,8 @@ namespace AntiSwearingChatBox.AI
 
                 var response = await _model.GenerateContent(jsonPrompt, config);
                 string responseText = response.Text ?? "{}";
-                
-                try 
+
+                try
                 {
                     JsonDocument.Parse(responseText);
                     return responseText;
@@ -69,14 +70,14 @@ namespace AntiSwearingChatBox.AI
             }
             catch (Exception ex)
             {
-                System.Console.WriteLine($"GenerateJsonResponseAsync error: {ex.Message}");
+                Console.WriteLine($"GenerateJsonResponseAsync error: {ex.Message}");
                 return JsonSerializer.Serialize(new { error = ex.Message });
             }
         }
 
         public async Task<string> ModerateChatMessageAsync(string message)
         {
-            string promptTemplate = 
+            string promptTemplate =
                 $"CRITICAL MODERATION TASK: Analyze the following message for ANY type of profanity, swear words, or inappropriate language.\n\n" +
                 $"You must detect profanity even if it uses letter substitutions, character omissions, or unusual spellings. " +
                 $"Examples of variations to catch:\n" +
@@ -87,8 +88,8 @@ namespace AntiSwearingChatBox.AI
                 $"Return the result in JSON format with the following structure:\n" +
                 $"{{\"original\": \"original message\", \"moderated\": \"moderated message with all profanity replaced by asterisks\", \"wasModified\": true/false}}\n\n" +
                 $"MESSAGE TO MODERATE: \"{message}\"";
-            
-            System.Console.WriteLine($"Sending message for moderation: \"{message}\"");
+
+            Console.WriteLine($"Sending message for moderation: \"{message}\"");
             return await RequestProcessor.ProcessModeration(this, message, promptTemplate);
         }
 
@@ -100,12 +101,12 @@ namespace AntiSwearingChatBox.AI
             try
             {
                 Console.WriteLine($"Checking message for profanity: \"{message}\"");
-                
+
                 // First perform direct pattern check before using AI
                 if (RequestProcessor.ContainsDirectProfanity(message))
                 {
                     Console.WriteLine($"Direct profanity check caught inappropriate content in: \"{message}\"");
-                    
+
                     // Create a direct response for profanity detection
                     var directResponse = new
                     {
@@ -116,10 +117,10 @@ namespace AntiSwearingChatBox.AI
                     };
                     return JsonSerializer.Serialize(directResponse);
                 }
-                
+
                 // Create an enhanced prompt that specifically targets common evasion techniques
                 string enhancedPrompt = RequestProcessor.EnhancePrompt(message, "profanity");
-                
+
                 // Call Gemini with the enhanced prompt
                 var response = await GenerateJsonResponseAsync(enhancedPrompt);
                 return response;
@@ -139,7 +140,7 @@ namespace AntiSwearingChatBox.AI
             try
             {
                 Console.WriteLine($"VERBOSE MODE: Checking message for profanity: \"{message}\"");
-                
+
                 // Create response object to track all processing steps
                 var detailedResponse = new
                 {
@@ -148,40 +149,44 @@ namespace AntiSwearingChatBox.AI
                     finalResult = new { },
                     processingTimeMs = 0
                 };
-                
+
                 // Start timing the process
                 var stopwatch = new System.Diagnostics.Stopwatch();
                 stopwatch.Start();
-                
+
                 // Record initial step
-                var stepsList = new List<object>();
-                stepsList.Add(new {
-                    step = "Initialization",
-                    description = "Starting profanity detection with detailed logging",
-                    timestamp = DateTime.Now
-                });
-                
-                // Step 1: Perform direct pattern matching
+                var stepsList = new List<object>
+                {
+                    new
+                    {
+                        step = "Initialization",
+                        description = "Starting profanity detection with detailed logging",
+                        timestamp = DateTime.Now
+                    }
+                };
+
                 bool directPatternResult = RequestProcessor.ContainsDirectProfanity(message);
-                stepsList.Add(new {
+                stepsList.Add(new
+                {
                     step = "Direct Pattern Matching",
                     description = "Checking against known profanity patterns",
                     result = directPatternResult ? "Profanity detected" : "No profanity detected",
                     matchFound = directPatternResult,
                     timestamp = DateTime.Now
                 });
-                
-                // If direct pattern matching detected profanity, we can skip the AI step
+
                 object finalResult;
                 if (directPatternResult)
                 {
-                    stepsList.Add(new {
+                    stepsList.Add(new
+                    {
                         step = "AI Processing",
                         description = "Skipped - Direct pattern matching already detected profanity",
                         timestamp = DateTime.Now
                     });
-                    
-                    finalResult = new {
+
+                    finalResult = new
+                    {
                         containsProfanity = true,
                         inappropriateTerms = new[] { "detected by direct pattern matching" },
                         explanation = "Direct pattern matching detected inappropriate language",
@@ -191,91 +196,96 @@ namespace AntiSwearingChatBox.AI
                 }
                 else
                 {
-                    // Step 2: Create enhanced prompt for AI
                     string enhancedPrompt = RequestProcessor.EnhancePrompt(message, "profanity");
-                    stepsList.Add(new {
+                    stepsList.Add(new
+                    {
                         step = "AI Prompt Creation",
                         description = "Creating enhanced prompt for AI model",
-                        enhancedPrompt = enhancedPrompt,
+                        enhancedPrompt,
                         timestamp = DateTime.Now
                     });
-                    
-                    // Step 3: Generate AI response
-                    stepsList.Add(new {
+
+                    stepsList.Add(new
+                    {
                         step = "AI Model Inference",
                         description = "Sending request to Gemini AI model",
                         modelName = _settings.ModelName,
                         timestamp = DateTime.Now
                     });
-                    
+
                     string aiResponse = await GenerateJsonResponseAsync(enhancedPrompt);
-                    stepsList.Add(new {
+                    stepsList.Add(new
+                    {
                         step = "AI Response Received",
                         description = "Received raw response from AI model",
                         rawResponse = aiResponse,
                         timestamp = DateTime.Now
                     });
-                    
-                    // Step 4: Post-process the response
+
                     string processedResponse = RequestProcessor.ValidateAndFixResponseWithDetails(aiResponse, message, out var processingDetails);
-                    stepsList.Add(new {
+                    stepsList.Add(new
+                    {
                         step = "Response Validation",
                         description = "Validating and fixing AI response",
-                        processingDetails = processingDetails,
+                        processingDetails,
                         timestamp = DateTime.Now
                     });
-                    
-                    // Parse the final result
+
                     try
                     {
-                        using var doc = System.Text.Json.JsonDocument.Parse(processedResponse);
-                        finalResult = System.Text.Json.JsonSerializer.Deserialize<object>(processedResponse);
+                        using var doc = JsonDocument.Parse(processedResponse);
+                        finalResult = JsonSerializer.Deserialize<object>(processedResponse)!;
                     }
                     catch (Exception ex)
                     {
-                        finalResult = new {
+                        finalResult = new
+                        {
                             error = $"Failed to parse final result: {ex.Message}",
                             originalMessage = message,
                             containsProfanity = false
                         };
                     }
                 }
-                
+
                 // Stop timing and complete the response
                 stopwatch.Stop();
-                
-                var completeResult = new {
+
+                var completeResult = new
+                {
                     originalMessage = message,
                     processingTimeMs = stopwatch.ElapsedMilliseconds,
                     processingSteps = stepsList,
-                    finalResult = finalResult
+                    finalResult
                 };
-                
-                return System.Text.Json.JsonSerializer.Serialize(completeResult, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+
+                JsonSerializerOptions options = new JsonSerializerOptions { WriteIndented = true };
+                return JsonSerializer.Serialize(completeResult, options);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in verbose profanity detection: {ex.Message}");
                 // Return error with stack trace in verbose mode
-                return System.Text.Json.JsonSerializer.Serialize(new { 
+                JsonSerializerOptions options = new JsonSerializerOptions { WriteIndented = true };
+                return JsonSerializer.Serialize(new
+                {
                     error = ex.Message,
                     stackTrace = ex.StackTrace,
                     originalMessage = message,
                     result = new { containsProfanity = false, reason = "Error during processing" }
-                }, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                }, options);
             }
         }
 
         public async Task<string> PerformContextAwareFilteringAsync(string message, string conversationContext)
         {
-            string promptTemplate = 
+            string promptTemplate =
                 $"Review the following message in the context of the conversation. " +
                 $"Determine if it contains inappropriate language considering the full context (sarcasm, cultural references, dual meanings). " +
                 $"Return only a JSON object with the structure: " +
                 $"{{\"originalMessage\": \"original message here\", \"moderatedMessage\": \"modified version here\", " +
                 $"\"wasModified\": true/false, \"contextualExplanation\": \"explanation about the context-aware decision\"}} " +
                 $"Conversation context: {conversationContext}";
-            
+
             return await RequestProcessor.ProcessModeration(this, message, promptTemplate);
         }
 
@@ -285,7 +295,7 @@ namespace AntiSwearingChatBox.AI
                            $"Include the following keys: sentimentScore (1-10, 10 being most positive), " +
                            $"toxicityLevel (none, low, medium, high), emotions (array of emotions detected), " +
                            $"requiresIntervention (boolean), interventionReason (string), and analysis (brief explanation).";
-            
+
             return await RequestProcessor.ProcessModeration(this, message, promptTemplate);
         }
 
@@ -296,20 +306,20 @@ namespace AntiSwearingChatBox.AI
                            $"Return ONLY a JSON object with the structure: {{\"harmfulMessage\": \"original message here\", " +
                            $"\"deescalationResponse\": \"your response here\", " +
                            $"\"responseStrategy\": \"brief explanation of the strategy used\"}}";
-            
+
             return await RequestProcessor.ProcessModeration(this, harmfulMessage, promptTemplate);
         }
         public async Task<string> ReviewMessageHistoryAsync(List<string> messageHistory)
         {
             string messagesFormatted = string.Join("\n", messageHistory);
-            
+
             string promptTemplate = $"Review the following message history and identify any patterns of inappropriate language, " +
                            $"harassment, or concerning behavior. Return ONLY a JSON object with the following structure: " +
                            $"{{\"messageCount\": number, \"flaggedMessages\": [{{\"index\": 0, \"content\": \"message\", \"reason\": \"reason flagged\"}}], " +
                            $"\"overallAssessment\": \"conversation health summary\", " +
                            $"\"recommendedActions\": [\"action1\", \"action2\"]}} " +
                            $"Message history: \n{messagesFormatted}";
-            
+
             return await GenerateJsonResponseAsync(promptTemplate);
         }
 
@@ -320,7 +330,7 @@ namespace AntiSwearingChatBox.AI
                            $"Return ONLY a JSON object with the structure: " +
                            $"{{\"originalMessage\": \"original message here\", \"suggestedAlternative\": \"suggested rewrite\", " +
                            $"\"explanation\": \"why this alternative is better\"}}";
-            
+
             return await RequestProcessor.ProcessModeration(this, inappropriateMessage, promptTemplate);
         }
 
@@ -332,19 +342,19 @@ namespace AntiSwearingChatBox.AI
                            $"{{\"originalMessage\": \"original message here\", \"moderatedMessage\": \"moderated message\", " +
                            $"\"language\": \"{detectedLanguage}\", \"wasModified\": true/false, " +
                            $"\"culturalContext\": \"any important cultural notes\"}}";
-            
+
             return await RequestProcessor.ProcessModeration(this, message, promptTemplate);
         }
 
         public async Task<string> AnalyzeUserReputationAsync(List<string> userMessages, int priorWarnings)
         {
             string messagesFormatted = string.Join("\n", userMessages);
-            
+
             string promptTemplate = $"Analyze the following message history from a user with {priorWarnings} prior warnings. " +
                            $"Return ONLY a JSON object with reputationScore (1-100), behaviorPatterns (array), " +
                            $"trustworthiness (low/medium/high), recommendedActions (array), and analysis (string). " +
                            $"Message history: \n{messagesFormatted}";
-            
+
             return await GenerateJsonResponseAsync(promptTemplate);
         }
     }
@@ -405,4 +415,4 @@ namespace AntiSwearingChatBox.AI
         public int PriorWarningCount { get; set; }
         public int MessagesSampled { get; set; }
     }
-} 
+}

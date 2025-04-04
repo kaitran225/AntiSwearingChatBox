@@ -22,6 +22,7 @@ using Microsoft.Extensions.Logging;
 using AntiSwearingChatBox.Server.Middleware;
 using Microsoft.AspNetCore.SignalR;
 using AntiSwearingChatBox.AI;
+using AntiSwearingChatBox.Server.AI;
 
 namespace AntiSwearingChatBox.Server
 {

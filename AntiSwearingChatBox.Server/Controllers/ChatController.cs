@@ -7,11 +7,11 @@ using AntiSwearingChatBox.Service.Interface;
 using AntiSwearingChatBox.Repository.Models;
 //using AntiSwearingChatBox.Server.Models; // Comment out this line as it doesn't exist
 using System.Text.Json;
-using AntiSwearingChatBox.AI;
 using AntiSwearingChatBox.AI.Filter;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
+using AntiSwearingChatBox.Server.AI;
 
 namespace AntiSwearingChatBox.Server.Controllers
 {
