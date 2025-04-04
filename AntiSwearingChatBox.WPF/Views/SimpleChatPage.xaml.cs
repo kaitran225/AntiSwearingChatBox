@@ -635,15 +635,31 @@ namespace AntiSwearingChatBox.WPF.View
                             return;
                         }
 
+                        // Create a unique key for this message to avoid duplicates
+                        string messageKey = $"{message.MessageId}:{message.CreatedAt.Ticks}:{message.UserId}";
+                        
                         // Check if this message is already in the Messages collection to avoid duplicates
+                        var messageText = message.ModeratedMessage ?? message.OriginalMessage;
+                        var messageTime = message.CreatedAt.ToString("h:mm tt");
+                        var messageAvatar = !string.IsNullOrEmpty(message.User?.Username) ? 
+                            message.User.Username[0].ToString().ToUpper() : "?";
+                            
                         bool isDuplicate = Messages.Any(m => 
-                            m.Text == (message.ModeratedMessage ?? message.OriginalMessage) &&
-                            m.Timestamp == message.CreatedAt.ToString("h:mm tt") &&
-                            m.Avatar == (!string.IsNullOrEmpty(message.User?.Username) ? message.User.Username[0].ToString().ToUpper() : "?"));
+                            m.Text == messageText &&
+                            m.Timestamp == messageTime &&
+                            m.Avatar == messageAvatar);
                         
                         if (isDuplicate)
                         {
                             Console.WriteLine($"Duplicate message detected, not adding to UI again");
+                            
+                            // Force a complete refresh after a short delay to ensure we're in sync
+                            Task.Delay(500).ContinueWith(_ => {
+                                Application.Current.Dispatcher.Invoke(async () => {
+                                    await ForceCompleteMessageRefresh();
+                                });
+                            });
+                            
                             return;
                         }
 
@@ -651,10 +667,10 @@ namespace AntiSwearingChatBox.WPF.View
                         Messages.Add(new ChatMessageViewModel
                         {
                             IsSent = message.UserId == _apiService.CurrentUser?.UserId,
-                            Text = message.ModeratedMessage ?? message.OriginalMessage,
+                            Text = messageText,
                             OriginalText = message.OriginalMessage,
-                            Timestamp = message.CreatedAt.ToString("h:mm tt"),
-                            Avatar = !string.IsNullOrEmpty(message.User?.Username) ? message.User.Username[0].ToString().ToUpper() : "?",
+                            Timestamp = messageTime,
+                            Avatar = messageAvatar,
                             ContainsProfanity = message.WasModified,
                             IsUncensored = false // Initially show censored version
                         });
@@ -1826,6 +1842,33 @@ namespace AntiSwearingChatBox.WPF.View
                 
                 try
                 {
+                    // First check SignalR connection status
+                    bool isConnected = await _apiService.IsHubConnectedAsync();
+                    
+                    // If not connected, try to reconnect
+                    if (!isConnected && HasSelectedConversation)
+                    {
+                        Console.WriteLine("[CHAT REFRESH] SignalR connection lost, attempting to reconnect...");
+                        await _apiService.ConnectToHubAsync();
+                        
+                        // Check if successful
+                        isConnected = await _apiService.IsHubConnectedAsync();
+                        
+                        // Update UI
+                        await Dispatcher.InvokeAsync(() => {
+                            IsConnected = isConnected;
+                            UpdateConnectionStatus();
+                        });
+                        
+                        // If reconnected and in a thread, rejoin the thread group
+                        if (isConnected && _currentThreadId > 0)
+                        {
+                            Console.WriteLine($"[CHAT REFRESH] Reconnected to SignalR, rejoining thread {_currentThreadId}");
+                            await _apiService.JoinThreadChatGroupAsync(_currentThreadId);
+                        }
+                    }
+                    
+                    // Now proceed with regular updates
                     await Dispatcher.InvokeAsync(async () => 
                     {
                         // Only refresh threads list every 3 seconds to reduce UI updates
@@ -1834,14 +1877,13 @@ namespace AntiSwearingChatBox.WPF.View
                             await RefreshConversationsList();
                         }
                         
-                        // If we have a selected conversation, refresh its messages
+                        // Always refresh the selected conversation's messages
                         if (_currentThreadId > 0 && HasSelectedConversation)
                         {
-                            // Only update messages if user isn't typing and scrolled to bottom
-                            if (!MessageTextBox.IsFocused && IsScrolledToBottom())
-                            {
-                                await RefreshCurrentConversationMessages();
-                            }
+                            // We need to ensure messages are always refreshed, but
+                            // only update the UI when necessary
+                            bool shouldUpdateUI = !MessageTextBox.IsFocused && IsScrolledToBottom();
+                            await RefreshCurrentConversationMessages();
                         }
                     });
                 }
@@ -2029,42 +2071,97 @@ namespace AntiSwearingChatBox.WPF.View
                 
                 if (hasNewMessages)
                 {
-                    // Only add new messages instead of rebuilding the entire list
-                    // First determine which messages are new
-                    int newMessageCount = messages.Count - Messages.Count;
-                    var newMessages = messages.Skip(Messages.Count).ToList();
-                    
-                    // Make sure we're adding the right messages by checking timestamps
-                    // Get the timestamp of the last message we have
-                    DateTime lastTimestamp = DateTime.MinValue;
-                    if (Messages.Count > 0)
-                    {
-                        // Try to parse timestamp from the last message
-                        var lastMessage = Messages[Messages.Count - 1];
-                        if (DateTime.TryParse(lastMessage.Timestamp, out DateTime timestamp))
-                        {
-                            lastTimestamp = timestamp;
-                        }
-                    }
-                    
-                    // Add only messages that are newer than our latest message
+                    // Track if UI needs to be updated
                     bool wasAtBottom = IsScrolledToBottom();
                     int addedCount = 0;
                     
-                    foreach (var message in newMessages)
+                    // Store IDs of messages we already have to avoid duplicates more reliably
+                    var existingMessageIds = new HashSet<int>();
+                    var existingMessageTexts = new HashSet<string>();
+                    
+                    // Collect information about messages we already have
+                    foreach (var message in Messages)
                     {
-                        // Skip messages we already have
-                        if (message.CreatedAt <= lastTimestamp)
-                            continue;
-                            
-                        // Check if this message is already in the Messages collection to avoid duplicates
-                        bool isDuplicate = Messages.Any(m => 
-                            m.Text == (message.ModeratedMessage ?? message.OriginalMessage) &&
-                            m.Timestamp == message.CreatedAt.ToString("h:mm tt"));
+                        existingMessageTexts.Add(message.Text + message.Timestamp + message.Avatar);
+                    }
+                    
+                    // Process all messages instead of just the new ones at the end
+                    // This ensures we don't miss any, even if the order changes or timestamps are off
+                    for (int i = 0; i < messages.Count; i++)
+                    {
+                        var message = messages[i];
                         
-                        if (isDuplicate)
+                        // Skip this message if we already have it
+                        var messageKey = (message.ModeratedMessage ?? message.OriginalMessage) + 
+                                        message.CreatedAt.ToString("h:mm tt") +
+                                        (!string.IsNullOrEmpty(message.User?.Username) ? 
+                                        message.User.Username[0].ToString().ToUpper() : "?");
+                        
+                        if (existingMessageTexts.Contains(messageKey))
                             continue;
                             
+                        // We need to add this message
+                        var username = message.User?.Username ?? "Unknown";
+                        var avatar = !string.IsNullOrEmpty(username) ? username[0].ToString().ToUpper() : "?";
+                        var isSent = message.UserId == _apiService.CurrentUser?.UserId;
+                        
+                        var chatMessage = new ChatMessageViewModel
+                        {
+                            IsSent = isSent,
+                            Text = message.ModeratedMessage ?? message.OriginalMessage,
+                            OriginalText = message.OriginalMessage,
+                            Timestamp = message.CreatedAt.ToString("h:mm tt"),
+                            Avatar = avatar,
+                            ContainsProfanity = message.WasModified,
+                            IsUncensored = false
+                        };
+                        
+                        // Add the message to the UI in the right place
+                        if (i >= Messages.Count)
+                        {
+                            // Add at the end
+                            Messages.Add(chatMessage);
+                        }
+                        else if (i < Messages.Count / 2)
+                        {
+                            // Only insert in the first half of messages
+                            // to avoid disrupting recent messages view
+                            Messages.Insert(i, chatMessage);
+                        }
+                        else
+                        {
+                            // For the second half, just add to the end
+                            Messages.Add(chatMessage);
+                        }
+                        
+                        addedCount++;
+                        existingMessageTexts.Add(messageKey);
+                    }
+                    
+                    // Only scroll if we were already at the bottom and added new messages
+                    if (wasAtBottom && addedCount > 0)
+                    {
+                        ScrollToBottom();
+                    }
+                    
+                    if (addedCount > 0)
+                    {
+                        Console.WriteLine($"[CHAT REFRESH] Added {addedCount} new messages");
+                    }
+                }
+                else if (messages.Count < Messages.Count)
+                {
+                    // Messages were deleted, update the UI
+                    Console.WriteLine($"[CHAT REFRESH] Message count decreased from {Messages.Count} to {messages.Count}, resetting messages");
+                    
+                    // Save scroll position
+                    bool wasAtBottom = IsScrolledToBottom();
+                    
+                    // Clear and rebuild the messages list
+                    Messages.Clear();
+                    
+                    foreach (var message in messages)
+                    {
                         var username = message.User?.Username ?? "Unknown";
                         var avatar = !string.IsNullOrEmpty(username) ? username[0].ToString().ToUpper() : "?";
                         var isSent = message.UserId == _apiService.CurrentUser?.UserId;
@@ -2077,21 +2174,14 @@ namespace AntiSwearingChatBox.WPF.View
                             Timestamp = message.CreatedAt.ToString("h:mm tt"),
                             Avatar = avatar,
                             ContainsProfanity = message.WasModified,
-                            IsUncensored = false // Initially show censored version
+                            IsUncensored = false
                         });
-                        
-                        addedCount++;
                     }
                     
-                    // Only scroll if we were already at the bottom and added new messages
-                    if (wasAtBottom && addedCount > 0)
+                    // Restore scroll position if needed
+                    if (wasAtBottom)
                     {
                         ScrollToBottom();
-                    }
-                    
-                    if (addedCount > 0)
-                    {
-                        Console.WriteLine($"[CHAT REFRESH] Added {addedCount} new messages");
                     }
                 }
             }
@@ -2109,6 +2199,65 @@ namespace AntiSwearingChatBox.WPF.View
                 _chatRefreshTimer.Dispose();
                 _chatRefreshTimer = null;
                 Console.WriteLine("[CHAT REFRESH] Stopped chat refresh polling timer");
+            }
+        }
+
+        // Method to force a complete refresh of all messages
+        private async Task ForceCompleteMessageRefresh()
+        {
+            try
+            {
+                if (_currentThreadId <= 0)
+                    return;
+                    
+                Console.WriteLine($"[FORCE REFRESH] Forcing complete message refresh for thread {_currentThreadId}");
+                
+                // Save scroll position
+                bool wasAtBottom = IsScrolledToBottom();
+                double scrollPosition = MessagesScroll?.VerticalOffset ?? 0;
+                
+                // Get all messages from API
+                var messages = await _apiService.GetMessagesAsync(_currentThreadId);
+                if (messages == null)
+                    return;
+                    
+                // Clear existing messages
+                Messages.Clear();
+                
+                // Add all messages fresh
+                foreach (var message in messages)
+                {
+                    var username = message.User?.Username ?? "Unknown";
+                    var avatar = !string.IsNullOrEmpty(username) ? username[0].ToString().ToUpper() : "?";
+                    var isSent = message.UserId == _apiService.CurrentUser?.UserId;
+                    
+                    Messages.Add(new ChatMessageViewModel
+                    {
+                        IsSent = isSent,
+                        Text = message.ModeratedMessage ?? message.OriginalMessage,
+                        OriginalText = message.OriginalMessage,
+                        Timestamp = message.CreatedAt.ToString("h:mm tt"),
+                        Avatar = avatar,
+                        ContainsProfanity = message.WasModified,
+                        IsUncensored = false
+                    });
+                }
+                
+                // Restore scroll position
+                if (wasAtBottom)
+                {
+                    ScrollToBottom();
+                }
+                else if (MessagesScroll != null)
+                {
+                    MessagesScroll.ScrollToVerticalOffset(scrollPosition);
+                }
+                
+                Console.WriteLine($"[FORCE REFRESH] Complete refresh done, {messages.Count} messages loaded");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[FORCE REFRESH ERROR] {ex.Message}");
             }
         }
     }
