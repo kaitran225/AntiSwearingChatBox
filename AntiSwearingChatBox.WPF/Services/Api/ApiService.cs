@@ -147,7 +147,19 @@ namespace AntiSwearingChatBox.WPF.Services.Api
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"GetThreadsAsync response content: {content.Substring(0, Math.Min(1000, content.Length))}");
+                    
                     var threads = JsonConvert.DeserializeObject<List<ChatThread>>(content);
+                    
+                    // Log the threads to check if SwearingScore and IsClosed are properly deserialized
+                    if (threads != null)
+                    {
+                        foreach (var thread in threads)
+                        {
+                            Console.WriteLine($"Thread {thread.ThreadId}: SwearingScore={thread.SwearingScore}, IsClosed={thread.IsClosed}");
+                        }
+                    }
+                    
                     return threads ?? new List<ChatThread>();
                 }
                 
@@ -591,7 +603,7 @@ namespace AntiSwearingChatBox.WPF.Services.Api
                         await Task.Delay(new Random().Next(0, 5) * 1000);
                         
                         Console.WriteLine("SignalR: Attempting to restart connection after closure");
-                        await _hubConnection.StartAsync();
+                            await _hubConnection.StartAsync();
                         Console.WriteLine($"SignalR: Connection restarted with state: {_hubConnection.State}");
                         
                         // Re-join the chat after reconnection

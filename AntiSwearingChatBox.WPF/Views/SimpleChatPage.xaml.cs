@@ -552,10 +552,6 @@ namespace AntiSwearingChatBox.WPF.View
         {
             try
             {
-                // Reset the swearing score when loading a new conversation
-                SwearingScore = 0;
-                IsThreadClosed = false;
-                
                 // Parse thread ID
                 if (!int.TryParse(threadId, out int parsedThreadId))
                 {
@@ -567,6 +563,7 @@ namespace AntiSwearingChatBox.WPF.View
                 _currentThreadId = parsedThreadId;
                 
                 // Set up UI immediately to provide user feedback
+                ConversationItemViewModel? selectedConversation = null;
                 foreach (var conv in Conversations)
                 {
                     conv.IsSelected = conv.Id == threadId;
@@ -575,6 +572,7 @@ namespace AntiSwearingChatBox.WPF.View
                     if (conv.Id == threadId)
                     {
                         conv.UnreadCount = 0;
+                        selectedConversation = conv;
                     }
                 }
                 
@@ -588,6 +586,12 @@ namespace AntiSwearingChatBox.WPF.View
                     
                     // Set HasSelectedConversation to true before loading messages
                     HasSelectedConversation = true;
+                    
+                    // IMPORTANT: Set swearing score and thread closed status from the conversation
+                    SwearingScore = conversation.SwearingScore ?? 0;
+                    IsThreadClosed = conversation.IsClosed;
+                    
+                    Console.WriteLine($"Thread loaded - SwearingScore: {SwearingScore}, IsClosed: {IsThreadClosed}");
                 }
                 
                 // Clear existing messages before loading new ones
@@ -652,10 +656,6 @@ namespace AntiSwearingChatBox.WPF.View
                     // Make sure to re-subscribe even if joining the group fails
                     _apiService.OnMessageReceived += HandleMessageReceived;
                 }
-
-                // Update local swearing score and thread closed status from server data
-                SwearingScore = conversation.SwearingScore ?? 0;
-                IsThreadClosed = conversation.IsClosed;
             }
             catch (Exception ex)
             {
