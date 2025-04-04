@@ -1,8 +1,9 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using AntiSwearingChatBox.WPF.Components; // Added for MessageStatus enum
 
-namespace AntiSwearingChatBox.WPF.Components
+namespace AntiSwearingChatBox.WPF.ViewModels // Changed namespace to match ViewModels folder
 {
     /// <summary>
     /// ViewModel for conversation items in the conversation list
@@ -17,85 +18,118 @@ namespace AntiSwearingChatBox.WPF.Components
         private string? _lastMessageTime;
         private bool _isSelected;
         private int _unreadCount;
+        private bool _isOnline;
+        private string? _lastSeen;
+        private bool _showLastSeen;
+        private bool _isTyping;
+        private MessageStatus _messageStatus;
+        private int? _swearingScore;
+        private bool _isClosed;
 
         public string Id
         {
             get => _id!;
-            set
-            {
-                _id = value;
-                OnPropertyChanged(nameof(Id));
-            }
+            set { SetField(ref _id, value); }
         }
 
         public string Title
         {
             get => _title!;
-            set
-            {
-                _title = value;
-                OnPropertyChanged(nameof(Title));
-                OnPropertyChanged(nameof(Avatar));
+            set 
+            { 
+                SetField(ref _title, value);
+                OnPropertyChanged(nameof(Avatar)); // Update Avatar when Title changes
             }
         }
 
         public string LastMessage
         {
             get => _lastMessage!;
-            set
-            {
-                _lastMessage = value;
-                OnPropertyChanged(nameof(LastMessage));
-            }
+            set { SetField(ref _lastMessage, value); }
         }
 
         public string LastMessageTime
         {
             get => _lastMessageTime!;
-            set
-            {
-                _lastMessageTime = value;
-                OnPropertyChanged(nameof(LastMessageTime));
-            }
+            set { SetField(ref _lastMessageTime, value); }
         }
 
         public bool IsSelected
         {
             get => _isSelected;
-            set
-            {
-                _isSelected = value;
-                OnPropertyChanged(nameof(IsSelected));
-            }
+            set { SetField(ref _isSelected, value); }
         }
 
         public int UnreadCount
         {
             get => _unreadCount;
-            set
-            {
-                _unreadCount = value;
-                OnPropertyChanged(nameof(UnreadCount));
-                OnPropertyChanged(nameof(HasUnread));
+            set 
+            { 
+                SetField(ref _unreadCount, value);
+                OnPropertyChanged(nameof(HasUnread)); // Update HasUnread when UnreadCount changes
             }
         }
 
+        // Calculated property based on Title
+        public string Avatar => !string.IsNullOrEmpty(Title) ? Title[0].ToString().ToUpper() : "?";
+
+        // Calculated property based on UnreadCount
         public bool HasUnread => UnreadCount > 0;
 
-        public string Avatar
+        // New properties added to fix build errors
+        public bool IsOnline
         {
-            get
-            {
-                if (string.IsNullOrEmpty(Title))
-                    return "?";
-
-                return Title.Substring(0, 1).ToUpper();
-            }
+            get => _isOnline;
+            set { SetField(ref _isOnline, value); }
         }
 
-        protected void OnPropertyChanged(string propertyName)
+        public string? LastSeen
+        {
+            get => _lastSeen;
+            set { SetField(ref _lastSeen, value); }
+        }
+
+        public bool ShowLastSeen
+        {
+            get => _showLastSeen;
+            set { SetField(ref _showLastSeen, value); }
+        }
+
+        public bool IsTyping
+        {
+            get => _isTyping;
+            set { SetField(ref _isTyping, value); }
+        }
+
+        public MessageStatus MessageStatus
+        {
+            get => _messageStatus;
+            set { SetField(ref _messageStatus, value); }
+        }
+
+        public int? SwearingScore
+        {
+            get => _swearingScore;
+            set { SetField(ref _swearingScore, value); }
+        }
+
+        public bool IsClosed
+        {
+            get => _isClosed;
+            set { SetField(ref _isClosed, value); }
+        }
+
+        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        protected bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
+        {
+            if (EqualityComparer<T>.Default.Equals(field, value)) return false;
+            field = value;
+            OnPropertyChanged(propertyName);
+            return true;
         }
     }
 } 

@@ -5,18 +5,18 @@ using System.Windows.Data;
 
 namespace AntiSwearingChatBox.WPF.Converters
 {
-    public class MessageAlignmentConverter : IValueConverter
+    public class MessageBorderThicknessConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value == null)
-                return HorizontalAlignment.Left;
+                return new Thickness(0);
 
             bool isSent = (bool)value;
 
             return isSent
-                ? HorizontalAlignment.Right // Align sent messages to the right
-                : HorizontalAlignment.Left; // Align received messages to the left
+                ? new Thickness(2) // Increased border thickness for sent messages
+                : new Thickness(0); // No border for received messages
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

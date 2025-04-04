@@ -13,8 +13,14 @@
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
             </ResourceDictionary.MergedDictionaries>
             
+            <!-- Converters -->
+            <converters:MessageBackgroundConverter x:Key="MessageBackgroundConverter"/>
+            <converters:MessageForegroundConverter x:Key="MessageForegroundConverter"/>
+            <converters:MessageBorderThicknessConverter x:Key="MessageBorderThicknessConverter"/>
+            <converters:MessageAlignmentConverter x:Key="MessageAlignmentConverter"/>
+            
             <!-- Main Colors -->
-            <Color x:Key="PrimaryBlackColor">#121212</Color>
+            <Color x:Key="PrimaryBlackColor">#050505</Color>
             <Color x:Key="SecondaryBlackColor">#1A1A1A</Color>
             <Color x:Key="TertiaryBlackColor">#222222</Color>
             <Color x:Key="QuaternaryBlackColor">#2A2A2A</Color>
@@ -171,7 +177,7 @@
                                     CornerRadius="20">
                                 <ScrollViewer x:Name="PART_ContentHost"
                                             Margin="{TemplateBinding Padding}"
-                                            VerticalScrollBarVisibility="{TemplateBinding VerticalScrollBarVisibility}"/>
+                                            VerticalScrollBarVisibility="Hidden"/>
                             </Border>
                         </ControlTemplate>
                     </Setter.Value>
@@ -295,8 +301,6 @@
             <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
             <converters:IntToBoolConverter x:Key="IntToBoolConverter"/>
             <converters:BoolToAlignmentConverter x:Key="BoolToAlignmentConverter"/>
-            <converters:MessageBackgroundConverter x:Key="MessageBackgroundConverter"/>
-            <converters:MessageForegroundConverter x:Key="MessageForegroundConverter"/>
             <converters:SenderVisibilityConverter x:Key="SenderVisibilityConverter"/>
 
             <!-- Placeholder TextBox Style -->
@@ -324,6 +328,12 @@
                     </Setter.Value>
                 </Setter>
             </Style>
+
+            <!-- Converters -->
+            <converters:BoolToOnlineColorConverter x:Key="BoolToOnlineColorConverter"/>
+            <converters:MessageStatusToIconConverter x:Key="MessageStatusToIconConverter"/>
+            <converters:MessageStatusToColorConverter x:Key="MessageStatusToColorConverter"/>
+            <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
 
         </ResourceDictionary>
 

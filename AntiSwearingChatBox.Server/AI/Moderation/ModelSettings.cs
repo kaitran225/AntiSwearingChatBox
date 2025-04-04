@@ -82,12 +82,24 @@ namespace AntiSwearingChatBox.AI.Moderation
     public class ModerationSettings
     {
         public string DefaultLanguage { get; set; } = "English";
-        public string Sensitivity { get; set; } = "Medium";
+        public string Sensitivity { get; set; } = "High";
         public List<string> AlwaysModerateLanguages { get; set; } = new List<string> { "English" };
         public List<FilteringRule> FilteringRules { get; set; } = new List<FilteringRule>();
         public ResponseOptions ResponseOptions { get; set; } = new ResponseOptions();
         public AIInstructions AIInstructions { get; set; } = new AIInstructions();
         public WarningThresholds WarningThresholds { get; set; } = new WarningThresholds();
+        
+        // List of common evasion patterns to detect
+        public List<string> EvasionPatterns { get; set; } = new List<string>
+        {
+            "fuk", "fvck", "fck", "fuq", "phuck", "phuk", "fxck", "f**k", "f-ck", "fug", "fcuk",
+            "shi", "sht", "sh1t", "sh!t", "s**t", "shyt", "sh1t", "schit",
+            "a$$", "a**", "@ss", "azz", "as$", "@$$",
+            "b!tch", "b1tch", "biatch", "bytch", "btch", "b*tch", "bicth",
+            "d1ck", "dik", "d!ck", "dikk", "dck",
+            "pusy", "pu$$y", "pussi", "pvssy", "psy", "p*ssy",
+            "c*nt", "kunt", "cnt", "c-nt", "c.nt"
+        };
 
         public string GetEffectivePromptPrefix()
         {

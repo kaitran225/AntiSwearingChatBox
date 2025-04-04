@@ -25,6 +25,10 @@ public partial class ChatThread
     public int? MaxParticipants { get; set; }
 
     public int? AutoDeleteAfterDays { get; set; }
+    
+    public int SwearingScore { get; set; } = 0;
+    
+    public bool IsClosed { get; set; } = false;
 
     public virtual ICollection<MessageHistory> MessageHistories { get; set; } = new List<MessageHistory>();
 

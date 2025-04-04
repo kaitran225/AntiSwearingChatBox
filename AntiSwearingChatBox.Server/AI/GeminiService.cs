@@ -17,6 +17,9 @@ namespace AntiSwearingChatBox.AI
             _settings = options.Value;
             var googleAI = new GoogleAI(apiKey: _settings.ApiKey);
             _model = googleAI.GenerativeModel(model: _settings.ModelName);
+            
+            System.Console.WriteLine($"GeminiService initialized with model: {_settings.ModelName}");
+            System.Diagnostics.Debug.WriteLine($"GeminiService initialized with model: {_settings.ModelName}");
         }
 
         public async Task<string> GenerateTextAsync(string prompt)
@@ -34,6 +37,7 @@ namespace AntiSwearingChatBox.AI
             }
             catch (Exception ex)
             {
+                System.Console.WriteLine($"GenerateTextAsync error: {ex.Message}");
                 return $"Error: {ex.Message}";
             }
         }
@@ -65,40 +69,212 @@ namespace AntiSwearingChatBox.AI
             }
             catch (Exception ex)
             {
+                System.Console.WriteLine($"GenerateJsonResponseAsync error: {ex.Message}");
                 return JsonSerializer.Serialize(new { error = ex.Message });
             }
         }
 
         public async Task<string> ModerateChatMessageAsync(string message)
         {
-            string promptTemplate = $"Review the following message and determine if it contains swear words or inappropriate language. " +
-                            $"If it does, replace those words with appropriate alternatives or censorship. " +
-                            $"Return the result in JSON format with the following structure: {{\"original\": \"original message\", \"moderated\": \"moderated message\", \"wasModified\": true/false}}.";
+            string promptTemplate = 
+                $"CRITICAL MODERATION TASK: Analyze the following message for ANY type of profanity, swear words, or inappropriate language.\n\n" +
+                $"You must detect profanity even if it uses letter substitutions, character omissions, or unusual spellings. " +
+                $"Examples of variations to catch:\n" +
+                $"- 'fuck', 'fuk', 'fvck', 'fuuck', 'f*ck', 'f**k', 'fck'\n" +
+                $"- 'shit', 'sh*t', 'sh1t', 'sht', 'shiit'\n" +
+                $"- 'ass', 'a$$', 'a**', '@ss'\n\n" +
+                $"Err on the side of caution. If something might be profanity, treat it as profanity.\n\n" +
+                $"Return the result in JSON format with the following structure:\n" +
+                $"{{\"original\": \"original message\", \"moderated\": \"moderated message with all profanity replaced by asterisks\", \"wasModified\": true/false}}\n\n" +
+                $"MESSAGE TO MODERATE: \"{message}\"";
             
+            System.Console.WriteLine($"Sending message for moderation: \"{message}\"");
             return await RequestProcessor.ProcessModeration(this, message, promptTemplate);
         }
 
+        /// <summary>
+        /// Detects profanity and inappropriate language in a message
+        /// </summary>
         public async Task<string> DetectProfanityAsync(string message)
         {
-            string promptTemplate = $"Review the following message and determine if it contains swear words or inappropriate language. " +
-                            $"If it does, identify the specific inappropriate words or phrases and explain why they might be offensive. " +
-                            $"Respond only in JSON format with the following structure: " +
-                            $"{{\"containsProfanity\": true/false, \"inappropriateTerms\": [\"word1\", \"word2\"], " +
-                            $"\"explanation\": \"explanation of why these terms are inappropriate\", " +
-                            $"\"originalMessage\": \"original message here\"}} " +
-                            $"If no inappropriate language is found, set containsProfanity to false and leave the inappropriateTerms array empty.";
-            
-            return await RequestProcessor.ProcessModeration(this, message, promptTemplate);
+            try
+            {
+                Console.WriteLine($"Checking message for profanity: \"{message}\"");
+                
+                // First perform direct pattern check before using AI
+                if (RequestProcessor.ContainsDirectProfanity(message))
+                {
+                    Console.WriteLine($"Direct profanity check caught inappropriate content in: \"{message}\"");
+                    
+                    // Create a direct response for profanity detection
+                    var directResponse = new
+                    {
+                        containsProfanity = true,
+                        inappropriateTerms = new[] { "detected by direct pattern matching" },
+                        explanation = "Direct pattern matching detected inappropriate language",
+                        originalMessage = message
+                    };
+                    return JsonSerializer.Serialize(directResponse);
+                }
+                
+                // Create an enhanced prompt that specifically targets common evasion techniques
+                string enhancedPrompt = RequestProcessor.EnhancePrompt(message, "profanity");
+                
+                // Call Gemini with the enhanced prompt
+                var response = await GenerateJsonResponseAsync(enhancedPrompt);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"GenerateJsonResponseAsync error: {ex.Message}");
+                return $"{{\"error\":\"{ex.Message}\"}}";
+            }
+        }
+
+        /// <summary>
+        /// Detects profanity with detailed explanations of all AI processing steps
+        /// </summary>
+        public async Task<string> DetectProfanityWithDetailsAsync(string message)
+        {
+            try
+            {
+                Console.WriteLine($"VERBOSE MODE: Checking message for profanity: \"{message}\"");
+                
+                // Create response object to track all processing steps
+                var detailedResponse = new
+                {
+                    originalMessage = message,
+                    processingSteps = new List<object>(),
+                    finalResult = new { },
+                    processingTimeMs = 0
+                };
+                
+                // Start timing the process
+                var stopwatch = new System.Diagnostics.Stopwatch();
+                stopwatch.Start();
+                
+                // Record initial step
+                var stepsList = new List<object>();
+                stepsList.Add(new {
+                    step = "Initialization",
+                    description = "Starting profanity detection with detailed logging",
+                    timestamp = DateTime.Now
+                });
+                
+                // Step 1: Perform direct pattern matching
+                bool directPatternResult = RequestProcessor.ContainsDirectProfanity(message);
+                stepsList.Add(new {
+                    step = "Direct Pattern Matching",
+                    description = "Checking against known profanity patterns",
+                    result = directPatternResult ? "Profanity detected" : "No profanity detected",
+                    matchFound = directPatternResult,
+                    timestamp = DateTime.Now
+                });
+                
+                // If direct pattern matching detected profanity, we can skip the AI step
+                object finalResult;
+                if (directPatternResult)
+                {
+                    stepsList.Add(new {
+                        step = "AI Processing",
+                        description = "Skipped - Direct pattern matching already detected profanity",
+                        timestamp = DateTime.Now
+                    });
+                    
+                    finalResult = new {
+                        containsProfanity = true,
+                        inappropriateTerms = new[] { "detected by direct pattern matching" },
+                        explanation = "Direct pattern matching detected inappropriate language",
+                        detectionMethod = "Direct pattern matching",
+                        originalMessage = message
+                    };
+                }
+                else
+                {
+                    // Step 2: Create enhanced prompt for AI
+                    string enhancedPrompt = RequestProcessor.EnhancePrompt(message, "profanity");
+                    stepsList.Add(new {
+                        step = "AI Prompt Creation",
+                        description = "Creating enhanced prompt for AI model",
+                        enhancedPrompt = enhancedPrompt,
+                        timestamp = DateTime.Now
+                    });
+                    
+                    // Step 3: Generate AI response
+                    stepsList.Add(new {
+                        step = "AI Model Inference",
+                        description = "Sending request to Gemini AI model",
+                        modelName = _settings.ModelName,
+                        timestamp = DateTime.Now
+                    });
+                    
+                    string aiResponse = await GenerateJsonResponseAsync(enhancedPrompt);
+                    stepsList.Add(new {
+                        step = "AI Response Received",
+                        description = "Received raw response from AI model",
+                        rawResponse = aiResponse,
+                        timestamp = DateTime.Now
+                    });
+                    
+                    // Step 4: Post-process the response
+                    string processedResponse = RequestProcessor.ValidateAndFixResponseWithDetails(aiResponse, message, out var processingDetails);
+                    stepsList.Add(new {
+                        step = "Response Validation",
+                        description = "Validating and fixing AI response",
+                        processingDetails = processingDetails,
+                        timestamp = DateTime.Now
+                    });
+                    
+                    // Parse the final result
+                    try
+                    {
+                        using var doc = System.Text.Json.JsonDocument.Parse(processedResponse);
+                        finalResult = System.Text.Json.JsonSerializer.Deserialize<object>(processedResponse);
+                    }
+                    catch (Exception ex)
+                    {
+                        finalResult = new {
+                            error = $"Failed to parse final result: {ex.Message}",
+                            originalMessage = message,
+                            containsProfanity = false
+                        };
+                    }
+                }
+                
+                // Stop timing and complete the response
+                stopwatch.Stop();
+                
+                var completeResult = new {
+                    originalMessage = message,
+                    processingTimeMs = stopwatch.ElapsedMilliseconds,
+                    processingSteps = stepsList,
+                    finalResult = finalResult
+                };
+                
+                return System.Text.Json.JsonSerializer.Serialize(completeResult, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in verbose profanity detection: {ex.Message}");
+                // Return error with stack trace in verbose mode
+                return System.Text.Json.JsonSerializer.Serialize(new { 
+                    error = ex.Message,
+                    stackTrace = ex.StackTrace,
+                    originalMessage = message,
+                    result = new { containsProfanity = false, reason = "Error during processing" }
+                }, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+            }
         }
 
         public async Task<string> PerformContextAwareFilteringAsync(string message, string conversationContext)
         {
-            string promptTemplate = $"Review the following message in the context of the conversation. " +
-                           $"Determine if it contains inappropriate language considering the full context (sarcasm, cultural references, dual meanings). " +
-                           $"Return only a JSON object with the structure: " +
-                           $"{{\"originalMessage\": \"original message here\", \"moderatedMessage\": \"modified version here\", " +
-                           $"\"wasModified\": true/false, \"contextualExplanation\": \"explanation about the context-aware decision\"}} " +
-                           $"Conversation context: {conversationContext}";
+            string promptTemplate = 
+                $"Review the following message in the context of the conversation. " +
+                $"Determine if it contains inappropriate language considering the full context (sarcasm, cultural references, dual meanings). " +
+                $"Return only a JSON object with the structure: " +
+                $"{{\"originalMessage\": \"original message here\", \"moderatedMessage\": \"modified version here\", " +
+                $"\"wasModified\": true/false, \"contextualExplanation\": \"explanation about the context-aware decision\"}} " +
+                $"Conversation context: {conversationContext}";
             
             return await RequestProcessor.ProcessModeration(this, message, promptTemplate);
         }

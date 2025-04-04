@@ -13,13 +13,15 @@ using AntiSwearingChatBox.Repository;
 using AntiSwearingChatBox.Repository.Interfaces;
 using AntiSwearingChatBox.Service;
 using AntiSwearingChatBox.Service.Interface;
-using AntiSwearingChatBox.AI.Interfaces;
+using AntiSwearingChatBox.AI.Filter;
 using AntiSwearingChatBox.AI.Services;
 using AntiSwearingChatBox.Server.Service;
 using Microsoft.OpenApi.Models;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using AntiSwearingChatBox.Server.Middleware;
+using Microsoft.AspNetCore.SignalR;
+using AntiSwearingChatBox.AI;
 
 namespace AntiSwearingChatBox.Server
 {
@@ -40,11 +42,22 @@ namespace AntiSwearingChatBox.Server
                 options.JsonSerializerOptions.PropertyNamingPolicy = null;
             });
 
+            // Add SignalR services
+            services.AddSignalR();
+
             // Register database context
             services.AddDbContext<AntiSwearingChatBoxContext>(options =>
             {
                 options.UseSqlServer(Configuration.GetConnectionString("AntiSwearingChatBox"));
             });
+
+            // Add Gemini AI Services
+            services.Configure<GeminiSettings>(options =>
+            {
+                options.ApiKey = Configuration["GeminiSettings:ApiKey"] ?? "AIzaSyAr-Vto1YywEwssTDzeEmkS2P4caVaU13o";
+                options.ModelName = Configuration["GeminiSettings:ModelName"] ?? "gemini-2.0-flash-lite";
+            });
+            services.AddSingleton<GeminiService>();
 
             // Register repositories
             services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -58,8 +71,12 @@ namespace AntiSwearingChatBox.Server
             services.AddScoped<IFilteredWordService, FilteredWordService>();
             services.AddScoped<IAuthService, AuthService>();
 
-            // Register profanity filter service
-            services.AddSingleton<IProfanityFilter, ProfanityFilterService>();
+            // Register profanity filter service with AI capabilities
+            services.AddSingleton<IProfanityFilter, ProfanityFilterService>(sp => 
+            {
+                var geminiService = sp.GetRequiredService<GeminiService>();
+                return new ProfanityFilterService(geminiService);
+            });
 
             // Configure JWT
             var jwtSettings = Configuration.GetSection("JwtSettings").Get<JwtSettings>();
@@ -145,6 +162,7 @@ namespace AntiSwearingChatBox.Server
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHub<Hubs.ChatHub>("/chatHub");
             });
         }
     }

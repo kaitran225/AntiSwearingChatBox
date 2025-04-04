@@ -15,8 +15,8 @@ namespace AntiSwearingChatBox.WPF.Converters
             bool isSent = (bool)value;
 
             return isSent
-                ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#0084ff")) // Blue for sent messages
-                : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#f0f2f5")); // Gray for received messages
+                ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#000000")) // Pure black for sent messages
+                : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#BCD9B4")); // Pastel matcha green for received messages
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

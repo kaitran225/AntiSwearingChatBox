@@ -7,7 +7,7 @@ namespace AntiSwearingChatBox.Server.Controllers
 {
     [ApiController]
     [Route("api/filteredwords")]
-    [AllowAnonymous] // Allow anonymous access for testing
+    [Authorize] // Filtered word operations should be protected
     public class FilteredWordController : ControllerBase
     {
         private readonly IFilteredWordService _filteredWordService;

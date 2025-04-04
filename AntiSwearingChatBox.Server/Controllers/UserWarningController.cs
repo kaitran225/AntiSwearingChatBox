@@ -7,7 +7,7 @@ namespace AntiSwearingChatBox.Server.Controllers
 {
     [ApiController]
     [Route("api/warnings")]
-    [AllowAnonymous] // Allow anonymous access for testing
+    [Authorize] // Warning operations require authentication
     public class UserWarningController : ControllerBase
     {
         private readonly IUserWarningService _userWarningService;

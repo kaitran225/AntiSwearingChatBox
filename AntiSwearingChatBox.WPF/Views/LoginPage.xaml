@@ -15,7 +15,8 @@
     TextElement.FontSize="13"
     TextOptions.TextFormattingMode="Ideal"
     TextOptions.TextRenderingMode="Auto"
-    FontFamily="Segoe UI">
+    FontFamily="Segoe UI"
+    Loaded="Page_Loaded">
 
     <Grid>
         <Grid.RowDefinitions>

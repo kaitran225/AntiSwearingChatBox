@@ -9,8 +9,8 @@ namespace AntiSwearingChatBox.AI
         {
             services.Configure<GeminiSettings>(options => 
             {
-                options.ApiKey = configuration["GeminiSettings:ApiKey"] ?? "AIzaSyD9Odq-PkFqA2HHYsR86EEhPbM85eHF2Sw";
-                options.ModelName = configuration["GeminiSettings:ModelName"] ?? "gemini-pro";
+                options.ApiKey = configuration["GeminiSettings:ApiKey"] ?? "AIzaSyAr-Vto1YywEwssTDzeEmkS2P4caVaU13o";
+                options.ModelName = configuration["GeminiSettings:ModelName"] ?? "gemini-2.0-flash-lite";
             });
             
             services.AddSingleton<GeminiService>();

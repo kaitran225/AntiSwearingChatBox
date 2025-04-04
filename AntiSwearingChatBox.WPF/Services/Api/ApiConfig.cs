@@ -11,7 +11,7 @@ namespace AntiSwearingChatBox.WPF.Services.Api
         public static string ThreadsEndpoint => $"{BaseUrl}/api/chat/threads";
         public static string MessagesEndpoint => $"{BaseUrl}/api/chat/messages";
         
-        // SignalR Hub URL - Fix for the correct path
+        // SignalR Hub URL - Correct path based on server implementation
         public static string ChatHubUrl => $"{BaseUrl}/chatHub";
     }
 } 

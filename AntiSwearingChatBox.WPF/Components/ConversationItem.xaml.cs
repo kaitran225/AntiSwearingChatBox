@@ -17,6 +17,7 @@ namespace AntiSwearingChatBox.WPF.Components
         {
             InitializeComponent();
             this.DataContext = this;
+            UpdateVisualState();
         }
 
         #region Properties
@@ -134,7 +135,7 @@ namespace AntiSwearingChatBox.WPF.Components
         // IsActive property (alias for IsSelected)
         public static readonly DependencyProperty IsActiveProperty =
             DependencyProperty.Register("IsActive", typeof(bool), typeof(ConversationItem),
-                new PropertyMetadata(false));
+                new PropertyMetadata(false, OnIsActiveChanged));
 
         public bool IsActive
         {
@@ -164,6 +165,59 @@ namespace AntiSwearingChatBox.WPF.Components
             set { SetValue(UnreadCountProperty, value); }
         }
 
+        // Online Status Properties
+        public static readonly DependencyProperty IsOnlineProperty =
+            DependencyProperty.Register(nameof(IsOnline), typeof(bool), typeof(ConversationItem),
+                new PropertyMetadata(false));
+
+        public bool IsOnline
+        {
+            get { return (bool)GetValue(IsOnlineProperty); }
+            set { SetValue(IsOnlineProperty, value); }
+        }
+
+        public static readonly DependencyProperty LastSeenProperty =
+            DependencyProperty.Register(nameof(LastSeen), typeof(string), typeof(ConversationItem),
+                new PropertyMetadata(string.Empty));
+
+        public string LastSeen
+        {
+            get { return (string)GetValue(LastSeenProperty); }
+            set { SetValue(LastSeenProperty, value); }
+        }
+
+        public static readonly DependencyProperty ShowLastSeenProperty =
+            DependencyProperty.Register(nameof(ShowLastSeen), typeof(bool), typeof(ConversationItem),
+                new PropertyMetadata(false));
+
+        public bool ShowLastSeen
+        {
+            get { return (bool)GetValue(ShowLastSeenProperty); }
+            set { SetValue(ShowLastSeenProperty, value); }
+        }
+
+        // Typing Indicator Properties
+        public static readonly DependencyProperty IsTypingProperty =
+            DependencyProperty.Register(nameof(IsTyping), typeof(bool), typeof(ConversationItem),
+                new PropertyMetadata(false));
+
+        public bool IsTyping
+        {
+            get { return (bool)GetValue(IsTypingProperty); }
+            set { SetValue(IsTypingProperty, value); }
+        }
+
+        // Message Status Properties
+        public static readonly DependencyProperty MessageStatusProperty =
+            DependencyProperty.Register(nameof(MessageStatus), typeof(MessageStatus), typeof(ConversationItem),
+                new PropertyMetadata(MessageStatus.Sent));
+
+        public MessageStatus MessageStatus
+        {
+            get { return (MessageStatus)GetValue(MessageStatusProperty); }
+            set { SetValue(MessageStatusProperty, value); }
+        }
+
         #endregion
 
         #region Event Handlers
@@ -189,11 +243,49 @@ namespace AntiSwearingChatBox.WPF.Components
             }
         }
 
-        private void UserControl_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void Border_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            IsSelected = true;
-            string? e1 = Tag as string;
-            Selected?.Invoke(this, e1!);
+            Console.WriteLine($"ConversationItem clicked with Tag: {this.Tag}");
+            if (this.Tag is string id)
+            {
+                Console.WriteLine($"Firing Selected event with id: {id}");
+                Selected?.Invoke(this, id);
+                
+                // Mark as selected in UI
+                IsSelected = true;
+                IsActive = true;
+                
+                // Mark as handled to prevent event bubbling
+                e.Handled = true;
+            }
+            else
+            {
+                Console.WriteLine($"ConversationItem clicked but Tag is not a string: {this.Tag}");
+            }
+        }
+
+        private static void OnIsActiveChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is ConversationItem item)
+            {
+                item.UpdateVisualState();
+            }
+        }
+
+        private void UpdateVisualState()
+        {
+            if (IsActive)
+            {
+                Background = (Brush)Application.Current.Resources["TertiaryBackgroundBrush"];
+                BorderBrush = (Brush)Application.Current.Resources["PrimaryGreenBrush"];
+                BorderThickness = new Thickness(1);
+            }
+            else
+            {
+                Background = (Brush)Application.Current.Resources["SecondaryBackgroundBrush"];
+                BorderBrush = (Brush)Application.Current.Resources["BorderBrush"];
+                BorderThickness = new Thickness(0);
+            }
         }
 
         #endregion
@@ -208,5 +300,41 @@ namespace AntiSwearingChatBox.WPF.Components
                 return _unreadBadge;
             }
         }
+
+        #region Public Methods
+
+        public void UpdateMessageStatus(MessageStatus status)
+        {
+            MessageStatus = status;
+        }
+
+        public void UpdateOnlineStatus(bool isOnline, string? lastSeen = null)
+        {
+            IsOnline = isOnline;
+            if (!isOnline && !string.IsNullOrEmpty(lastSeen))
+            {
+                LastSeen = lastSeen;
+                ShowLastSeen = true;
+            }
+            else
+            {
+                ShowLastSeen = false;
+            }
+        }
+
+        public void SetTyping(bool isTyping)
+        {
+            IsTyping = isTyping;
+        }
+
+        #endregion
+    }
+
+    public enum MessageStatus
+    {
+        Sent,
+        Delivered,
+        Read,
+        Failed
     }
 } 

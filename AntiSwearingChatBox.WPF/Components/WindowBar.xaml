@@ -1,43 +1,92 @@
-﻿<UserControl x:Class="AntiSwearingChatBox.WPF.Components.WindowBar"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-             xmlns:local="clr-namespace:AntiSwearingChatBox.WPF.Components"
-            Height="Auto"
-             Width="Auto">
+﻿<UserControl
+    x:Class="AntiSwearingChatBox.WPF.Components.WindowBar"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:AntiSwearingChatBox.WPF.Components"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Width="Auto"
+    Height="Auto">
 
     <UserControl.Resources>
-        <Style x:Key="WindowBarButtonStyle" TargetType="Button" 
-               BasedOn="{StaticResource MaterialDesignIconButton}">
-            <Setter Property="Width" Value="30"/>
-            <Setter Property="Height" Value="30"/>
-            <Setter Property="Padding" Value="0"/>
-            <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="4"/>
+        <Style
+            x:Key="WindowBarButtonStyle"
+            BasedOn="{StaticResource MaterialDesignIconButton}"
+            TargetType="Button">
+            <Setter Property="Width" Value="30" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="4" />
         </Style>
     </UserControl.Resources>
 
-    <Border Grid.Row="0" Background="#111111" BorderThickness="0,0,0,1" BorderBrush="#1E1E1E">
+    <Border
+        Grid.Row="0"
+        Background="#111111"
+        BorderBrush="#1E1E1E"
+        BorderThickness="0,0,0,1"
+        MouseLeftButtonDown="Border_MouseDown">
         <Grid>
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0,0,0">
-                <Border Width="16" Height="16" Background="#121212" CornerRadius="8" Margin="0,0,8,0">
-                    <TextBlock Text="A" Foreground="#BCD9B4" FontSize="10" FontWeight="SemiBold" 
-                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <StackPanel
+                Margin="8,0,0,0"
+                VerticalAlignment="Center"
+                Orientation="Horizontal">
+                <Border
+                    Width="16"
+                    Height="16"
+                    Margin="0,0,8,0"
+                    Background="#121212"
+                    CornerRadius="8">
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        FontSize="10"
+                        FontWeight="SemiBold"
+                        Foreground="#BCD9B4"
+                        Text="A" />
                 </Border>
-                <TextBlock Text="Anti-Swearing Chat - Login" FontSize="11" Foreground="#B3B3B3" 
-                       VerticalAlignment="Center"/>
+                <TextBlock
+                    x:Name="WindowTitle"
+                    VerticalAlignment="Center"
+                    FontSize="11"
+                    Foreground="#B3B3B3"
+                    Text="Anti-Swearing Chat" />
             </StackPanel>
 
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,8,0">
-                <Button x:Name="btnMinimize" Style="{StaticResource WindowBarButtonStyle}" Margin="4,0">
-                    <materialDesign:PackIcon Kind="Minus" Width="16" Height="16" Foreground="#B3B3B3"/>
+            <StackPanel
+                Margin="0,0,8,0"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal">
+                <Button
+                    x:Name="btnMinimize"
+                    Margin="4,0"
+                    Style="{StaticResource WindowBarButtonStyle}">
+                    <materialDesign:PackIcon
+                        Width="16"
+                        Height="16"
+                        Foreground="#B3B3B3"
+                        Kind="Minus" />
                 </Button>
-                <Button x:Name="btnMaximize" Style="{StaticResource WindowBarButtonStyle}" Margin="4,0">
-                    <materialDesign:PackIcon Kind="Fullscreen" Width="16" Height="16" Foreground="#B3B3B3"/>
+                <Button
+                    x:Name="btnMaximize"
+                    Margin="4,0"
+                    Style="{StaticResource WindowBarButtonStyle}">
+                    <materialDesign:PackIcon
+                        Width="16"
+                        Height="16"
+                        Foreground="#B3B3B3"
+                        Kind="Fullscreen" />
                 </Button>
-                <Button x:Name="btnClose" Style="{StaticResource WindowBarButtonStyle}" Margin="4,0">
-                    <materialDesign:PackIcon Kind="Close" Width="16" Height="16" Foreground="#B3B3B3"/>
+                <Button
+                    x:Name="btnClose"
+                    Margin="4,0"
+                    Style="{StaticResource WindowBarButtonStyle}">
+                    <materialDesign:PackIcon
+                        Width="16"
+                        Height="16"
+                        Foreground="#B3B3B3"
+                        Kind="Close" />
                 </Button>
             </StackPanel>
         </Grid>
