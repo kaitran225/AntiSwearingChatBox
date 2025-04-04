@@ -13,45 +13,38 @@ namespace AntiSwearingChatBox.AI
         /// <summary>
         /// Adds constraints and instructions to ensure quality and accuracy
         /// </summary>
-        public static string EnhancePrompt(string originalPrompt, string originalMessage)
+        public static string EnhancePrompt(string originalPrompt, string messageType)
         {
-            var settings = ModelSettings.Instance;
-            string instructions = settings.Moderation.GetEffectivePromptPrefix();
-            instructions += $"\n7. The original message is: \"{EscapeJsonString(originalMessage)}\"\n\n";
-            var responseOptions = settings.Moderation.ResponseOptions;
-            if (responseOptions.IncludeExplanations)
-            {
-                instructions += "8. Include explanations for why content was flagged.\n";
-            }
+            if (string.IsNullOrEmpty(originalPrompt))
+                return originalPrompt;
+                
+            string enhancedPrompt = originalPrompt;
             
-            if (responseOptions.ShowConfidenceScores)
+            // Add special instructions based on message type
+            switch (messageType.ToLower())
             {
-                instructions += "9. Include confidence scores (0.0-1.0) for each detection.\n";
-            }
-            
-            if (responseOptions.AlwaysShowCulturalContext)
-            {
-                instructions += "10. Always include cultural context when moderating non-English content.\n";
-            }
-            
-            var filteringRules = settings.Moderation.FilteringRules;
-            foreach (var rule in filteringRules)
-            {
-                if (rule.Enabled && rule.RuleType == "ProfanityFilter")
-                {
-                    if (rule.AllowedExceptions.Count > 0)
-                    {
-                        instructions += $"11. The following terms are allowed exceptions and should not be flagged: {string.Join(", ", rule.AllowedExceptions)}.\n";
-                    }
+                case "profanity":
+                    enhancedPrompt = 
+                        $"You are a highly sensitive content moderator trained to detect ANY form of profanity or inappropriate language.\n\n" +
+                        $"Carefully analyze this message for ALL variations of profanity including:\n" +
+                        $"- Common misspellings (e.g., 'fuk', 'fvck', 'phuck', 'fcuk', 'f0ck')\n" +
+                        $"- Letter repetition (e.g., 'fuckk', 'fuuuck')\n" +
+                        $"- Letter substitutions (e.g., 'f*ck', 'fu¢k', 'f@ck')\n" +
+                        $"- Character omissions (e.g., 'fk', 'fck')\n" +
+                        $"- Word fragments that suggest profanity\n\n" +
+                        $"Even if you're not 100% certain, flag potential profanity. Err on the side of caution.\n\n" +
+                        $"Message to analyze: \"{originalPrompt}\"\n\n" +
+                        $"Respond with JSON containing:\n" +
+                        $"- 'containsProfanity': boolean (true if ANY variation of profanity is detected)\n" +
+                        $"- 'inappropriateTerms': array of strings (specific terms detected)\n" +
+                        $"- 'explanation': string (why the content was or wasn't flagged)\n" +
+                        $"- 'originalMessage': the original message";
+                    break;
                     
-                    if (rule.AlwaysFilterTerms.Count > 0)
-                    {
-                        instructions += $"12. The following terms should always be filtered: {string.Join(", ", rule.AlwaysFilterTerms)}.\n";
-                    }
-                }
+                // ... keep other existing cases ...
             }
-            string enhancedPrompt = instructions + originalPrompt;
-
+            
+            Console.WriteLine($"Enhanced prompt for message: \"{originalPrompt}\"");
             return enhancedPrompt;
         }
 
@@ -62,9 +55,23 @@ namespace AntiSwearingChatBox.AI
         {
             string enhancedPrompt = EnhancePrompt(promptTemplate, message);
             
-            string response = await service.GenerateJsonResponseAsync(enhancedPrompt);
-            
-            return ValidateAndFixResponse(response, message);
+            try
+            {
+                string response = await service.GenerateJsonResponseAsync(enhancedPrompt);
+                System.Diagnostics.Debug.WriteLine($"Raw AI response: {response}");
+                System.Console.WriteLine($"Raw AI response: {response}");
+                
+                return ValidateAndFixResponse(response, message);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error in ProcessModeration: {ex.Message}");
+                System.Console.WriteLine($"Error in ProcessModeration: {ex.Message}");
+                
+                // Create a fallback response that indicates profanity was detected
+                // This is our conservative approach when AI fails
+                return CreateFallbackResponse(message);
+            }
         }
 
         /// <summary>
@@ -92,11 +99,45 @@ namespace AntiSwearingChatBox.AI
                     }
                 }
                 
+                // Check if we should override AI's decision for known evasion patterns
+                bool containsKnownEvasion = ContainsKnownEvasionPatterns(originalMessage);
+                if (containsKnownEvasion)
+                {
+                    // For detection endpoint
+                    if (doc.RootElement.TryGetProperty("containsProfanity", out var containsProfanity))
+                    {
+                        bool currentValue = containsProfanity.GetBoolean();
+                        if (!currentValue)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Overriding AI decision due to evasion pattern in: \"{originalMessage}\"");
+                            System.Console.WriteLine($"Overriding AI decision due to evasion pattern in: \"{originalMessage}\"");
+                            return UpdateProfanityDetectionInJson(response, true);
+                        }
+                    }
+                    
+                    // For moderation endpoint
+                    if (doc.RootElement.TryGetProperty("wasModified", out var wasModified))
+                    {
+                        bool currentValue = wasModified.GetBoolean();
+                        if (!currentValue)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Overriding AI moderation due to evasion pattern in: \"{originalMessage}\"");
+                            System.Console.WriteLine($"Overriding AI moderation due to evasion pattern in: \"{originalMessage}\"");
+                            
+                            // Create censored text
+                            string censored = new string('*', originalMessage.Length);
+                            return UpdateModerationInJson(response, censored, true);
+                        }
+                    }
+                }
+                
                 return response; // Valid and no issues detected
             }
-            catch
+            catch (Exception ex)
             {
-                return CreateBasicResponse(originalMessage);
+                System.Diagnostics.Debug.WriteLine($"Error validating response: {ex.Message}");
+                System.Console.WriteLine($"Error validating response: {ex.Message}");
+                return CreateFallbackResponse(originalMessage);
             }
         }
 
@@ -160,10 +201,148 @@ namespace AntiSwearingChatBox.AI
                 
                 return System.Text.Encoding.UTF8.GetString(stream.ToArray());
             }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error updating original message: {ex.Message}");
+                System.Console.WriteLine($"Error updating original message: {ex.Message}");
+                return CreateFallbackResponse(correctOriginalMessage);
+            }
+        }
+
+        /// <summary>
+        /// Update containsProfanity in a JSON response
+        /// </summary>
+        private static string UpdateProfanityDetectionInJson(string jsonResponse, bool containsProfanity)
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(jsonResponse);
+                
+                var options = new JsonSerializerOptions { WriteIndented = true };
+                using var stream = new System.IO.MemoryStream();
+                using var writer = new Utf8JsonWriter(stream);
+                
+                writer.WriteStartObject();
+                
+                foreach (var property in doc.RootElement.EnumerateObject())
+                {
+                    if (property.Name.ToLower() == "containsprofanity")
+                    {
+                        writer.WriteBoolean(property.Name, containsProfanity);
+                    }
+                    else if (containsProfanity && property.Name.ToLower() == "explanation" && !property.Value.GetString().Contains("override"))
+                    {
+                        writer.WriteString(property.Name, property.Value.GetString() + " (Override: Known evasion pattern detected)");
+                    }
+                    else
+                    {
+                        property.WriteTo(writer);
+                    }
+                }
+                
+                writer.WriteEndObject();
+                writer.Flush();
+                
+                return System.Text.Encoding.UTF8.GetString(stream.ToArray());
+            }
             catch
             {
-                return CreateBasicResponse(correctOriginalMessage);
+                // If we can't update the JSON, create a new response
+                var response = new
+                {
+                    containsProfanity = containsProfanity,
+                    inappropriateTerms = new[] { "detected evasion pattern" },
+                    explanation = "Override: Known evasion pattern detected",
+                    originalMessage = jsonResponse
+                };
+                
+                return JsonSerializer.Serialize(response, new JsonSerializerOptions { WriteIndented = true });
             }
+        }
+
+        /// <summary>
+        /// Update moderation in a JSON response
+        /// </summary>
+        private static string UpdateModerationInJson(string jsonResponse, string moderatedText, bool wasModified)
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(jsonResponse);
+                
+                var options = new JsonSerializerOptions { WriteIndented = true };
+                using var stream = new System.IO.MemoryStream();
+                using var writer = new Utf8JsonWriter(stream);
+                
+                writer.WriteStartObject();
+                
+                foreach (var property in doc.RootElement.EnumerateObject())
+                {
+                    if (property.Name.ToLower() == "moderated" || property.Name.ToLower() == "moderatedmessage")
+                    {
+                        writer.WriteString(property.Name, moderatedText);
+                    }
+                    else if (property.Name.ToLower() == "wasmodified")
+                    {
+                        writer.WriteBoolean(property.Name, wasModified);
+                    }
+                    else
+                    {
+                        property.WriteTo(writer);
+                    }
+                }
+                
+                writer.WriteEndObject();
+                writer.Flush();
+                
+                return System.Text.Encoding.UTF8.GetString(stream.ToArray());
+            }
+            catch
+            {
+                // If we can't update the JSON, create a new response
+                var response = new
+                {
+                    original = jsonResponse,
+                    moderated = moderatedText,
+                    wasModified = wasModified,
+                    overrideReason = "Known evasion pattern detected"
+                };
+                
+                return JsonSerializer.Serialize(response, new JsonSerializerOptions { WriteIndented = true });
+            }
+        }
+
+        /// <summary>
+        /// Check if message contains known evasion patterns
+        /// </summary>
+        private static bool ContainsKnownEvasionPatterns(string message)
+        {
+            if (string.IsNullOrWhiteSpace(message))
+                return false;
+                
+            string normalizedText = message.ToLower();
+            
+            // Check for common evasion patterns
+            string[] evasionPatterns = new[]
+            {
+                "fuk", "fvck", "fck", "fuq", "phuck", "phuk", "fxck", "f**k", "f-ck",
+                "shi", "sht", "sh1t", "sh!t", "s**t", 
+                "a$$", "a**", "@ss", "azz", 
+                "b!tch", "b1tch", "biatch", "bytch", "btch", "b*tch",
+                "d1ck", "dik", "d!ck", "dikk",
+                "pusy", "pu$$y", "pussi", "pvssy"
+            };
+            
+            foreach (var pattern in evasionPatterns)
+            {
+                if (normalizedText.Contains(pattern))
+                {
+                    System.Diagnostics.Debug.WriteLine($"Evasion pattern detected: {pattern} in \"{message}\"");
+                    System.Console.WriteLine($"Evasion pattern detected: {pattern} in \"{message}\"");
+                    return true;
+                }
+            }
+            
+            return false;
         }
 
         /// <summary>
@@ -180,6 +359,29 @@ namespace AntiSwearingChatBox.AI
             };
             
             return JsonSerializer.Serialize(basicResponse, new JsonSerializerOptions { WriteIndented = true });
+        }
+        
+        /// <summary>
+        /// Create a fallback response that censors the message - used when AI fails
+        /// </summary>
+        private static string CreateFallbackResponse(string originalMessage)
+        {
+            // When AI fails, we take a conservative approach and censor the whole message
+            string censored = new string('*', originalMessage.Length);
+            
+            var fallbackResponse = new
+            {
+                originalMessage = originalMessage,
+                moderatedMessage = censored,
+                wasModified = true,
+                containsProfanity = true,
+                explanation = "AI processing failed; conservative censoring applied for safety"
+            };
+            
+            System.Diagnostics.Debug.WriteLine($"Created fallback response for: \"{originalMessage}\"");
+            System.Console.WriteLine($"Created fallback response for: \"{originalMessage}\"");
+            
+            return JsonSerializer.Serialize(fallbackResponse, new JsonSerializerOptions { WriteIndented = true });
         }
 
         /// <summary>

@@ -5,7 +5,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using AntiSwearingChatBox.Service.Interface;
 using AntiSwearingChatBox.Repository.Models;
-using AntiSwearingChatBox.AI.Interfaces;
+//using AntiSwearingChatBox.Server.Models; // Comment out this line as it doesn't exist
+using System.Text.Json;
+using AntiSwearingChatBox.AI;
+using AntiSwearingChatBox.AI.Filter;
+using Microsoft.Extensions.DependencyInjection;
+using System.Text.Json.Serialization;
+using Microsoft.Extensions.Logging;
 
 namespace AntiSwearingChatBox.Server.Controllers
 {
@@ -58,19 +64,25 @@ namespace AntiSwearingChatBox.Server.Controllers
         private readonly IThreadParticipantService _threadParticipantService;
         private readonly IUserService _userService;
         private readonly IProfanityFilter _profanityFilter;
+        private readonly GeminiService _geminiService;
+        private readonly ILogger<ChatController> _logger;
 
         public ChatController(
             IChatThreadService chatThreadService,
             IMessageHistoryService messageHistoryService,
             IThreadParticipantService threadParticipantService,
             IUserService userService,
-            IProfanityFilter profanityFilter)
+            IProfanityFilter profanityFilter,
+            GeminiService geminiService,
+            ILogger<ChatController> logger)
         {
             _chatThreadService = chatThreadService;
             _messageHistoryService = messageHistoryService;
             _threadParticipantService = threadParticipantService;
             _userService = userService;
             _profanityFilter = profanityFilter;
+            _geminiService = geminiService;
+            _logger = logger;
         }
 
         [HttpGet("threads")]
@@ -245,32 +257,63 @@ namespace AntiSwearingChatBox.Server.Controllers
         }
 
         [HttpPost("threads/{threadId}/messages")]
-        public IActionResult SendMessage(int threadId, [FromBody] SendMessageModel model)
+        public async Task<IActionResult> SendMessage([FromRoute] int threadId, [FromBody] SendMessageModel model)
         {
             try
             {
-                // Validate that thread exists
+                // Validate thread exists
                 var thread = _chatThreadService.GetById(threadId);
                 if (thread == null)
                 {
                     return NotFound(new { Success = false, Message = "Thread not found" });
                 }
                 
-                // Validate that user is a participant in the thread
+                // Validate user is participant in thread
                 var participants = _threadParticipantService.GetByThreadId(threadId);
-                if (!participants.Any(p => p.UserId == model.UserId))
+                var isParticipant = participants.Any(p => p.UserId == model.UserId);
+                if (!isParticipant)
                 {
-                    return BadRequest(new { Success = false, Message = "You are not a participant in this thread" });
+                    return BadRequest(new { Success = false, Message = "User is not a participant in this thread" });
                 }
                 
-                // Filter profanity if moderation is enabled
-                string originalMessage = model.Message;
-                string moderatedMessage = originalMessage;
-                bool wasModified = false;
+                // Check for profanity and perform AI moderation
+                bool containsProfanity = false;
+                string filteredMessage = model.Message;
                 
-                if (thread.ModerationEnabled)
+                try
                 {
-                    (moderatedMessage, wasModified) = _profanityFilter.FilterProfanity(originalMessage);
+                    // Perform AI pre-screening
+                    filteredMessage = await _profanityFilter.FilterProfanityAsync(model.Message);
+                    containsProfanity = filteredMessage != model.Message;
+                    
+                    // If profanity is detected, we might want to analyze it more closely with sentiment analysis
+                    if (containsProfanity && _geminiService != null && thread.ModerationEnabled)
+                    {
+                        var analysisResponse = await _geminiService.AnalyzeSentimentAsync(model.Message);
+                        
+                        // Deserialize the response
+                        var sentimentAnalysis = JsonSerializer.Deserialize<SentimentAnalysisResult>(analysisResponse);
+                        
+                        // Check if the message requires intervention (complete rejection)
+                        if (sentimentAnalysis?.RequiresIntervention == true)
+                        {
+                            // Log the rejected message
+                            _logger.LogWarning($"Message rejected (requires intervention): UserId={model.UserId}, ThreadId={threadId}, Reason={sentimentAnalysis.InterventionReason}");
+                            
+                            // Return a 403 Forbidden with explanation
+                            return StatusCode(403, new
+                            {
+                                Success = false,
+                                Message = "Your message was rejected due to inappropriate content.",
+                                Details = sentimentAnalysis.InterventionReason
+                            });
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log but continue with standard processing if profanity filtering fails
+                    _logger.LogWarning($"Profanity filtering error: {ex.Message}");
                 }
                 
                 // Create message history record
@@ -278,9 +321,9 @@ namespace AntiSwearingChatBox.Server.Controllers
                 {
                     ThreadId = threadId,
                     UserId = model.UserId,
-                    OriginalMessage = originalMessage,
-                    ModeratedMessage = moderatedMessage,
-                    WasModified = wasModified,
+                    OriginalMessage = model.Message,
+                    ModeratedMessage = filteredMessage,
+                    WasModified = containsProfanity,
                     CreatedAt = DateTime.UtcNow
                 };
                 
@@ -320,7 +363,7 @@ namespace AntiSwearingChatBox.Server.Controllers
                     Success = true, 
                     Message = "Message sent successfully",
                     MessageHistory = messageDto,
-                    WasModerated = wasModified
+                    WasModerated = containsProfanity
                 });
             }
             catch (Exception ex)
@@ -608,5 +651,16 @@ namespace AntiSwearingChatBox.Server.Controllers
     {
         public int UserId { get; set; }
         public int RequestedByUserId { get; set; }
+    }
+
+    // Add this class for deserialization
+    internal class SentimentAnalysisResult
+    {
+        public int SentimentScore { get; set; } 
+        public string ToxicityLevel { get; set; } = string.Empty;
+        public List<string> Emotions { get; set; } = new List<string>();
+        public bool RequiresIntervention { get; set; }
+        public string InterventionReason { get; set; } = string.Empty;
+        public string Analysis { get; set; } = string.Empty;
     }
 } 

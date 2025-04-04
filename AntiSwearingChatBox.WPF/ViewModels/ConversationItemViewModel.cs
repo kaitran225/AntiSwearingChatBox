@@ -23,6 +23,8 @@ namespace AntiSwearingChatBox.WPF.ViewModels // Changed namespace to match ViewM
         private bool _showLastSeen;
         private bool _isTyping;
         private MessageStatus _messageStatus;
+        private int? _swearingScore;
+        private bool _isClosed;
 
         public string Id
         {
@@ -103,6 +105,18 @@ namespace AntiSwearingChatBox.WPF.ViewModels // Changed namespace to match ViewM
         {
             get => _messageStatus;
             set { SetField(ref _messageStatus, value); }
+        }
+
+        public int? SwearingScore
+        {
+            get => _swearingScore;
+            set { SetField(ref _swearingScore, value); }
+        }
+
+        public bool IsClosed
+        {
+            get => _isClosed;
+            set { SetField(ref _isClosed, value); }
         }
 
         protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)

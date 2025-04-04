@@ -1,7 +1,8 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using AntiSwearingChatBox.AI.Interfaces;
+using AntiSwearingChatBox.AI;
+using AntiSwearingChatBox.AI.Filter;
 
 namespace AntiSwearingChatBox.Server.Controllers
 {
@@ -17,11 +18,12 @@ namespace AntiSwearingChatBox.Server.Controllers
         }
 
         [HttpPost("filter-profanity")]
-        public IActionResult FilterProfanity([FromBody] FilterProfanityModel model)
+        public async Task<IActionResult> FilterProfanity([FromBody] FilterProfanityModel model)
         {
             try
             {
-                var (filteredText, wasModified) = _profanityFilter.FilterProfanity(model.Text);
+                string filteredText = await _profanityFilter.FilterProfanityAsync(model.Text);
+                bool wasModified = filteredText != model.Text;
                 
                 return Ok(new 
                 {

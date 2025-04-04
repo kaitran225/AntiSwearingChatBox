@@ -774,5 +774,433 @@ namespace AntiSwearingChatBox.WPF.Services.Api
                 }
             }
         }
+
+        #region AI Service Methods
+        
+        /// <summary>
+        /// Generates text using the AI service
+        /// </summary>
+        public async Task<string> GenerateTextAsync(string prompt)
+        {
+            try
+            {
+                var request = new { Prompt = prompt };
+                var content = CreateJsonContent(request);
+                
+                var response = await _httpClient.PostAsync("api/Gemini/generate", content);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var result = JsonConvert.DeserializeAnonymousType(responseContent, new { Text = string.Empty });
+                    return result?.Text ?? string.Empty;
+                }
+                
+                return $"Error: {response.StatusCode}";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error generating text: {ex.Message}");
+                return $"Error: {ex.Message}";
+            }
+        }
+        
+        /// <summary>
+        /// Moderates a chat message using the AI service
+        /// </summary>
+        public async Task<ModerationResult> ModerateChatMessageAsync(string message)
+        {
+            try
+            {
+                var request = new { Message = message };
+                var content = CreateJsonContent(request);
+                
+                var response = await _httpClient.PostAsync("api/Gemini/moderate", content);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<ModerationResult>(responseContent) ?? 
+                           new ModerationResult { OriginalMessage = message, ModeratedMessage = message, WasModified = false };
+                }
+                
+                return new ModerationResult
+                {
+                    OriginalMessage = message,
+                    ModeratedMessage = message,
+                    WasModified = false
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error moderating message: {ex.Message}");
+                return new ModerationResult
+                {
+                    OriginalMessage = message,
+                    ModeratedMessage = message,
+                    WasModified = false
+                };
+            }
+        }
+        
+        /// <summary>
+        /// Detects profanity in a message using the AI service
+        /// </summary>
+        public async Task<ProfanityDetectionResult> DetectProfanityAsync(string message)
+        {
+            try
+            {
+                var request = new { Message = message };
+                var content = CreateJsonContent(request);
+                
+                var response = await _httpClient.PostAsync("api/Gemini/detect-profanity", content);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<ProfanityDetectionResult>(responseContent) ?? 
+                           new ProfanityDetectionResult { OriginalMessage = message, ContainsProfanity = false };
+                }
+                
+                return new ProfanityDetectionResult
+                {
+                    OriginalMessage = message,
+                    ContainsProfanity = false
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error detecting profanity: {ex.Message}");
+                return new ProfanityDetectionResult
+                {
+                    OriginalMessage = message,
+                    ContainsProfanity = false
+                };
+            }
+        }
+        
+        /// <summary>
+        /// Performs context-aware filtering using the AI service
+        /// </summary>
+        public async Task<ContextFilterResult> ContextAwareFilteringAsync(string message, string conversationContext)
+        {
+            try
+            {
+                var request = new { Message = message, ConversationContext = conversationContext };
+                var content = CreateJsonContent(request);
+                
+                var response = await _httpClient.PostAsync("api/Gemini/context-filter", content);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<ContextFilterResult>(responseContent) ?? 
+                           new ContextFilterResult { OriginalMessage = message, ModeratedMessage = message, WasModified = false };
+                }
+                
+                return new ContextFilterResult
+                {
+                    OriginalMessage = message,
+                    ModeratedMessage = message,
+                    WasModified = false
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error performing context filtering: {ex.Message}");
+                return new ContextFilterResult
+                {
+                    OriginalMessage = message,
+                    ModeratedMessage = message,
+                    WasModified = false
+                };
+            }
+        }
+        
+        /// <summary>
+        /// Analyzes sentiment in a message using the AI service
+        /// </summary>
+        public async Task<SentimentAnalysisResult> AnalyzeSentimentAsync(string message)
+        {
+            try
+            {
+                var request = new { Message = message };
+                var content = CreateJsonContent(request);
+                
+                var response = await _httpClient.PostAsync("api/Gemini/analyze-sentiment", content);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<SentimentAnalysisResult>(responseContent) ?? 
+                           new SentimentAnalysisResult { SentimentScore = 5, ToxicityLevel = "none" };
+                }
+                
+                return new SentimentAnalysisResult
+                {
+                    SentimentScore = 5,
+                    ToxicityLevel = "none",
+                    RequiresIntervention = false
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error analyzing sentiment: {ex.Message}");
+                return new SentimentAnalysisResult
+                {
+                    SentimentScore = 5,
+                    ToxicityLevel = "none",
+                    RequiresIntervention = false
+                };
+            }
+        }
+        
+        /// <summary>
+        /// Generates a de-escalation response using the AI service
+        /// </summary>
+        public async Task<DeescalationResult> GenerateDeescalationResponseAsync(string message)
+        {
+            try
+            {
+                var request = new { Message = message };
+                var content = CreateJsonContent(request);
+                
+                var response = await _httpClient.PostAsync("api/Gemini/de-escalate", content);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<DeescalationResult>(responseContent) ?? 
+                           new DeescalationResult { HarmfulMessage = message, DeescalationResponse = "No response generated." };
+                }
+                
+                return new DeescalationResult
+                {
+                    HarmfulMessage = message,
+                    DeescalationResponse = "No response generated.",
+                    ResponseStrategy = "Error occurred."
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error generating de-escalation response: {ex.Message}");
+                return new DeescalationResult
+                {
+                    HarmfulMessage = message,
+                    DeescalationResponse = "No response generated.",
+                    ResponseStrategy = "Error occurred."
+                };
+            }
+        }
+        
+        /// <summary>
+        /// Reviews message history using the AI service
+        /// </summary>
+        public async Task<MessageHistoryAnalysisResult> ReviewMessageHistoryAsync(List<string> messages)
+        {
+            try
+            {
+                var request = new { Messages = messages };
+                var content = CreateJsonContent(request);
+                
+                var response = await _httpClient.PostAsync("api/Gemini/review-message-history", content);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<MessageHistoryAnalysisResult>(responseContent) ?? 
+                           new MessageHistoryAnalysisResult { MessageCount = messages.Count };
+                }
+                
+                return new MessageHistoryAnalysisResult
+                {
+                    MessageCount = messages.Count,
+                    OverallAssessment = "Error analyzing messages."
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error reviewing message history: {ex.Message}");
+                return new MessageHistoryAnalysisResult
+                {
+                    MessageCount = messages.Count,
+                    OverallAssessment = "Error analyzing messages."
+                };
+            }
+        }
+        
+        /// <summary>
+        /// Suggests an alternative message using the AI service
+        /// </summary>
+        public async Task<AlternativeMessageResult> SuggestAlternativeMessageAsync(string message)
+        {
+            try
+            {
+                var request = new { Message = message };
+                var content = CreateJsonContent(request);
+                
+                var response = await _httpClient.PostAsync("api/Gemini/suggest-alternative", content);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<AlternativeMessageResult>(responseContent) ?? 
+                           new AlternativeMessageResult { OriginalMessage = message, SuggestedAlternative = message };
+                }
+                
+                return new AlternativeMessageResult
+                {
+                    OriginalMessage = message,
+                    SuggestedAlternative = message,
+                    Explanation = "Error occurred."
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error suggesting alternative message: {ex.Message}");
+                return new AlternativeMessageResult
+                {
+                    OriginalMessage = message,
+                    SuggestedAlternative = message,
+                    Explanation = "Error occurred."
+                };
+            }
+        }
+        
+        /// <summary>
+        /// Moderates a multi-language message using the AI service
+        /// </summary>
+        public async Task<MultiLanguageModerationResult> ModerateMultiLanguageMessageAsync(string message, string language)
+        {
+            try
+            {
+                var request = new { Message = message, Language = language };
+                var content = CreateJsonContent(request);
+                
+                var response = await _httpClient.PostAsync("api/Gemini/moderate-multi-language", content);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<MultiLanguageModerationResult>(responseContent) ?? 
+                           new MultiLanguageModerationResult { OriginalMessage = message, ModeratedMessage = message, Language = language, WasModified = false };
+                }
+                
+                return new MultiLanguageModerationResult
+                {
+                    OriginalMessage = message,
+                    ModeratedMessage = message,
+                    Language = language,
+                    WasModified = false
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error moderating multi-language message: {ex.Message}");
+                return new MultiLanguageModerationResult
+                {
+                    OriginalMessage = message,
+                    ModeratedMessage = message,
+                    Language = language,
+                    WasModified = false
+                };
+            }
+        }
+        
+        /// <summary>
+        /// Analyzes user reputation using the AI service
+        /// </summary>
+        public async Task<UserReputationResult> AnalyzeUserReputationAsync(List<string> messages, int priorWarnings)
+        {
+            try
+            {
+                var request = new { Messages = messages, PriorWarnings = priorWarnings };
+                var content = CreateJsonContent(request);
+                
+                var response = await _httpClient.PostAsync("api/Gemini/analyze-user-reputation", content);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<UserReputationResult>(responseContent) ?? 
+                           new UserReputationResult { ReputationScore = 50, Trustworthiness = "medium" };
+                }
+                
+                return new UserReputationResult
+                {
+                    ReputationScore = 50,
+                    Trustworthiness = "medium",
+                    Analysis = "Error analyzing user reputation."
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error analyzing user reputation: {ex.Message}");
+                return new UserReputationResult
+                {
+                    ReputationScore = 50,
+                    Trustworthiness = "medium",
+                    Analysis = "Error analyzing user reputation."
+                };
+            }
+        }
+        
+        #endregion
+
+        public async Task<bool> UpdateThreadSwearingScoreAsync(int threadId, int score)
+        {
+            try
+            {
+                // Prepare the URL and content
+                string url = $"{ApiConfig.BaseUrl}/api/threads/{threadId}/swearing-score";
+                var content = new StringContent(
+                    JsonConvert.SerializeObject(new { Score = score }),
+                    Encoding.UTF8,
+                    "application/json");
+                    
+                // Add authorization if available
+                if (!string.IsNullOrEmpty(_token))
+                {
+                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+                }
+                
+                // Send the request
+                var response = await _httpClient.PutAsync(url, content);
+                
+                // Check for success
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating thread swearing score: {ex.Message}");
+                return false;
+            }
+        }
+
+        public async Task<bool> CloseThreadAsync(int threadId)
+        {
+            try
+            {
+                // Prepare the URL
+                string url = $"{ApiConfig.BaseUrl}/api/threads/{threadId}/close";
+                
+                // Add authorization if available
+                if (!string.IsNullOrEmpty(_token))
+                {
+                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+                }
+                
+                // Send the request
+                var response = await _httpClient.PostAsync(url, null);
+                
+                // Check for success
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error closing thread: {ex.Message}");
+                return false;
+            }
+        }
     }
 } 

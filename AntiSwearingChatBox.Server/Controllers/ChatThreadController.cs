@@ -2,6 +2,7 @@ using AntiSwearingChatBox.Repository.Models;
 using AntiSwearingChatBox.Service.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace AntiSwearingChatBox.Server.Controllers
 {
@@ -76,6 +77,79 @@ namespace AntiSwearingChatBox.Server.Controllers
         public ActionResult<IEnumerable<ChatThread>> GetThreadsByUser([FromQuery] int userId)
         {
             return Ok(_chatThreadService.GetUserThreads(userId));
+        }
+
+        [HttpPut("{threadId}/swearing-score")]
+        public IActionResult UpdateSwearingScore(int threadId, [FromBody] UpdateScoreModel model)
+        {
+            try
+            {
+                // Get the thread
+                var thread = _chatThreadService.GetById(threadId);
+                if (thread == null)
+                {
+                    return NotFound(new { Success = false, Message = "Thread not found" });
+                }
+                
+                // Update the swearing score
+                thread.SwearingScore = model.Score;
+                
+                // If the score is over the threshold, close the thread
+                if (model.Score > 5)
+                {
+                    thread.IsClosed = true;
+                }
+                
+                // Save the changes
+                var result = _chatThreadService.Update(thread);
+                if (!result.success)
+                {
+                    return StatusCode(500, new { Success = false, Message = result.message });
+                }
+                
+                return Ok(new { Success = true, Message = "Swearing score updated" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Success = false, Message = $"An error occurred: {ex.Message}" });
+            }
+        }
+
+        [HttpPost("{threadId}/close")]
+        public IActionResult CloseThread(int threadId)
+        {
+            try
+            {
+                // Get the thread
+                var thread = _chatThreadService.GetById(threadId);
+                if (thread == null)
+                {
+                    return NotFound(new { Success = false, Message = "Thread not found" });
+                }
+                
+                // Close the thread
+                thread.IsClosed = true;
+                
+                // Save the changes
+                var result = _chatThreadService.Update(thread);
+                if (!result.success)
+                {
+                    return StatusCode(500, new { Success = false, Message = result.message });
+                }
+                
+                // Note: SignalR notifications can be implemented in the future if needed
+                
+                return Ok(new { Success = true, Message = "Thread closed" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Success = false, Message = $"An error occurred: {ex.Message}" });
+            }
+        }
+
+        public class UpdateScoreModel
+        {
+            public int Score { get; set; }
         }
     }
 } 

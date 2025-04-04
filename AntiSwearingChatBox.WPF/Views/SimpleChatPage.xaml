@@ -302,6 +302,38 @@
                                 </Grid>
                             </Button>
 
+                            <!-- AI Test Tool Button -->
+                            <Button
+                                x:Name="AITestButton"
+                                Margin="0,0,0,8"
+                                Padding="10,8"
+                                HorizontalAlignment="Stretch"
+                                materialDesign:ButtonAssist.CornerRadius="4"
+                                Background="{StaticResource SecondaryBackgroundBrush}"
+                                BorderThickness="0"
+                                Click="AITest_Click"
+                                Cursor="Hand">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <materialDesign:PackIcon
+                                        Width="16"
+                                        Height="16"
+                                        VerticalAlignment="Center"
+                                        Foreground="#8C52FF"
+                                        Kind="RobotOutline" />
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Margin="8,0,0,0"
+                                        VerticalAlignment="Center"
+                                        FontSize="13"
+                                        Foreground="{StaticResource PrimaryTextBrush}"
+                                        Text="AI Test Tool" />
+                                </Grid>
+                            </Button>
+
                             <!--  Admin Dashboard Button  -->
                             <Button
                                 x:Name="AdminDashboardButton"
@@ -436,19 +468,62 @@
                                 Padding="8,4"
                                 VerticalAlignment="Center"
                                 Background="{StaticResource TertiaryBackgroundBrush}"
-                                BorderBrush="{StaticResource BorderBrush}"
-                                BorderThickness="1"
+                                BorderBrush="{Binding SwearingScore, Converter={StaticResource SwearingScoreToColorConverter}, FallbackValue={StaticResource BorderBrush}}"
+                                BorderThickness="2"
                                 CornerRadius="4">
-                                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                                <Grid>
+                                    <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                                        <TextBlock
+                                            FontSize="12"
+                                            FontWeight="SemiBold"
+                                            Foreground="{StaticResource SecondaryTextBrush}"
+                                            Text="Swearing: " />
+                                        <TextBlock FontSize="13" FontWeight="Bold">
+                                            <Run Foreground="{Binding SwearingScore, Converter={StaticResource SwearingScoreToColorConverter}, FallbackValue={StaticResource TertiaryTextBrush}}" Text="{Binding SwearingScore, FallbackValue=0}" />
+                                            <Run Foreground="{StaticResource TertiaryTextBrush}" Text="/5" />
+                                        </TextBlock>
+                                    </StackPanel>
+                                    
+                                    <!-- Severity Indicator -->
+                                    <ProgressBar
+                                        Width="110"
+                                        Height="4"
+                                        Margin="0,22,0,0"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Bottom"
+                                        Background="#EEEEEE"
+                                        Foreground="{Binding SwearingScore, Converter={StaticResource SwearingScoreToColorConverter}, FallbackValue={StaticResource TertiaryTextBrush}}"
+                                        Maximum="5"
+                                        Value="{Binding SwearingScore, FallbackValue=0}" />
+                                </Grid>
+                            </Border>
+                            
+                            <!-- Swearing Warning Notification -->
+                            <Border
+                                x:Name="SwearingWarningBorder"
+                                Grid.Column="1"
+                                Grid.ColumnSpan="2"
+                                Margin="8,0,130,0"
+                                Padding="8,4"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Background="#FFECB3"
+                                BorderBrush="#FFC107"
+                                BorderThickness="1"
+                                CornerRadius="4"
+                                Visibility="Collapsed">
+                                <StackPanel Orientation="Horizontal">
                                     <TextBlock
                                         FontSize="12"
                                         FontWeight="SemiBold"
-                                        Foreground="{StaticResource SecondaryTextBrush}"
-                                        Text="Swearing: " />
-                                    <TextBlock FontSize="12" FontWeight="Bold">
-                                        <Run Foreground="{Binding SwearingScore, Converter={StaticResource SwearingScoreToColorConverter}, FallbackValue={StaticResource TertiaryTextBrush}}" Text="{Binding SwearingScore, FallbackValue=0}" />
-                                        <Run Foreground="{StaticResource TertiaryTextBrush}" Text="/5" />
-                                    </TextBlock>
+                                        Foreground="#FF6D00"
+                                        Text="⚠️ " />
+                                    <TextBlock
+                                        x:Name="SwearingWarningText"
+                                        FontSize="12"
+                                        FontWeight="SemiBold"
+                                        Foreground="#FF6D00"
+                                        Text="Inappropriate language detected. Please be respectful." />
                                 </StackPanel>
                             </Border>
 

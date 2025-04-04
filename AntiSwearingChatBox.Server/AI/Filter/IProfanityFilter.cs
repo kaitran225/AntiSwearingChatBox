@@ -1,28 +1,30 @@
-namespace AntiSwearingChatBox.AI.Interfaces;
+using System.Threading.Tasks;
+
+namespace AntiSwearingChatBox.AI.Filter;
 
 /// <summary>
-/// Interface for profanity filtering services
+/// Interface for profanity filter service that detects and filters out inappropriate language
 /// </summary>
 public interface IProfanityFilter
 {
     /// <summary>
-    /// Checks if the input text contains profanity
-    /// </summary>
-    /// <param name="text">Text to check</param>
-    /// <returns>True if profanity is detected, otherwise false</returns>
-    Task<bool> ContainsProfanityAsync(string text);
-
-    /// <summary>
     /// Filters profanity from the input text
     /// </summary>
-    /// <param name="text">Text to filter</param>
-    /// <returns>Filtered text with profanity replaced</returns>
-    Task<string> FilterTextAsync(string text);
+    /// <param name="text">The text to check for profanity</param>
+    /// <returns>The filtered text with profanity replaced</returns>
+    string FilterProfanity(string text);
     
     /// <summary>
-    /// Filters profanity from text and returns both filtered text and whether it was modified
+    /// Asynchronously filters profanity from the input text
     /// </summary>
-    /// <param name="text">Text to filter</param>
-    /// <returns>Tuple containing filtered text and a flag indicating whether it was modified</returns>
-    (string filteredText, bool wasModified) FilterProfanity(string text);
+    /// <param name="text">The text to check for profanity</param>
+    /// <returns>The filtered text with profanity replaced</returns>
+    Task<string> FilterProfanityAsync(string text);
+    
+    /// <summary>
+    /// Checks if the input text contains profanity
+    /// </summary>
+    /// <param name="text">The text to check for profanity</param>
+    /// <returns>True if the text contains profanity, false otherwise</returns>
+    Task<bool> ContainsProfanityAsync(string text);
 } 

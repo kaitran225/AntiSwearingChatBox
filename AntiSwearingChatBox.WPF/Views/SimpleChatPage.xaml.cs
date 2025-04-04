@@ -45,6 +45,11 @@ namespace AntiSwearingChatBox.WPF.View
                 {
                     _ = CloseThreadDueToExcessiveSwearing();
                 }
+                else if (_swearingScore > 0)
+                {
+                    // Show appropriate warning based on score
+                    ShowSwearingWarning(_swearingScore);
+                }
             }
         }
         
@@ -286,7 +291,7 @@ namespace AntiSwearingChatBox.WPF.View
                     }
                     
                     // Add conversation to UI with last message info
-                    Conversations.Add(new ConversationItemViewModel
+                    var newConversation = new ConversationItemViewModel
                     {
                         Id = thread.ThreadId.ToString(),
                         Title = threadName,
@@ -294,7 +299,10 @@ namespace AntiSwearingChatBox.WPF.View
                         LastMessageTime = lastMessageTime,
                         UnreadCount = 0,
                         IsSelected = false
-                    });
+                    };
+                    newConversation.SwearingScore = thread.SwearingScore;
+                    newConversation.IsClosed = thread.IsClosed;
+                    Conversations.Add(newConversation);
                 }
             }
             catch (Exception ex)
@@ -644,6 +652,10 @@ namespace AntiSwearingChatBox.WPF.View
                     // Make sure to re-subscribe even if joining the group fails
                     _apiService.OnMessageReceived += HandleMessageReceived;
                 }
+
+                // Update local swearing score and thread closed status from server data
+                SwearingScore = conversation.SwearingScore ?? 0;
+                IsThreadClosed = conversation.IsClosed;
             }
             catch (Exception ex)
             {
@@ -710,8 +722,37 @@ namespace AntiSwearingChatBox.WPF.View
 
         private void NewChat_Click(object sender, RoutedEventArgs e)
         {
-            // Open user selection dialog to start a new chat
-            NewChatDialog();
+            try
+            {
+                // Call our existing dialog implementation instead of using NewChatDialog class
+                NewChatDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error creating new chat: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        
+        private void AITest_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Navigate to the AI Test page
+                if (Window.GetWindow(this) is MainWindow mainWindow)
+                {
+                    mainWindow.NavigateToAITest();
+                }
+                else
+                {
+                    MessageBox.Show("Cannot navigate to AI Test page.", "Navigation Error", 
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error navigating to AI Test page: {ex.Message}", "Error", 
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
         
         private async void NewChatDialog()
@@ -1029,6 +1070,59 @@ namespace AntiSwearingChatBox.WPF.View
             }
         }
 
+        private void ShowSwearingWarning(int score)
+        {
+            // Run on UI thread
+            Dispatcher.Invoke(() =>
+            {
+                try
+                {
+                    // Configure warning content based on severity
+                    string warningText;
+                    if (score <= 2)
+                    {
+                        warningText = "Mild inappropriate language detected. Please be respectful.";
+                    }
+                    else if (score <= 4)
+                    {
+                        warningText = "Repeated inappropriate language detected. Further violations may close this chat.";
+                    }
+                    else
+                    {
+                        warningText = "Final warning: Excessive inappropriate language. One more violation will close this chat.";
+                    }
+
+                    // Update the warning text and display it
+                    if (SwearingWarningText != null)
+                    {
+                        SwearingWarningText.Text = warningText;
+                    }
+
+                    if (SwearingWarningBorder != null)
+                    {
+                        SwearingWarningBorder.Visibility = Visibility.Visible;
+                        
+                        // Create a timer to hide the warning after a few seconds
+                        var hideTimer = new System.Timers.Timer(5000); // 5 seconds
+                        hideTimer.AutoReset = false;
+                        hideTimer.Elapsed += (s, e) => 
+                        {
+                            Dispatcher.Invoke(() => 
+                            {
+                                SwearingWarningBorder.Visibility = Visibility.Collapsed;
+                            });
+                            hideTimer.Dispose();
+                        };
+                        hideTimer.Start();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error showing swearing warning: {ex.Message}");
+                }
+            });
+        }
+
         private async Task SendMessage()
         {
             try
@@ -1117,19 +1211,33 @@ namespace AntiSwearingChatBox.WPF.View
                     sentMessage.Text = result.ModeratedMessage;
                     sentMessage.ContainsProfanity = result.WasModified;
                     
-                    // Check if the message was moderated
-                    if (result.WasModified)
+                    // Increase the swearing score locally and on the server
+                    SwearingScore++;
+                    Console.WriteLine($"Message was moderated. Swearing score increased to {SwearingScore}");
+                    
+                    // Update the thread's swearing score on the server
+                    try
                     {
-                        // Increase the swearing score
-                        SwearingScore++;
-                        Console.WriteLine($"Message was moderated. Swearing score increased to {SwearingScore}");
+                        await _apiService.UpdateThreadSwearingScoreAsync(_currentThreadId, SwearingScore);
+                        
+                        // Check if we need to close the thread due to excessive swearing
+                        if (SwearingScore > 5 && !IsThreadClosed)
+                        {
+                            await CloseThreadDueToExcessiveSwearing();
+                        }
+                        else if (SwearingScore > 0)
+                        {
+                            // Show a warning based on the current swearing score
+                            ShowSwearingWarning(SwearingScore);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error updating thread swearing score: {ex.Message}");
                     }
                     
                     // Update the conversation last message
                     UpdateConversationLastMessage(_currentThreadId.ToString(), result.ModeratedMessage, currentTimestamp);
-                    
-                    // The SignalR notification is now triggered directly in ApiService.SendMessageAsync
-                    // This ensures all clients get updated even if SignalR doesn't automatically broadcast
                 }
                 else
                 {
@@ -1157,7 +1265,7 @@ namespace AntiSwearingChatBox.WPF.View
             {
                 Console.WriteLine("Closing thread due to excessive swearing");
                 
-                // Set the thread as closed
+                // Set the thread as closed locally
                 IsThreadClosed = true;
                 
                 // Notify users
@@ -1175,9 +1283,8 @@ namespace AntiSwearingChatBox.WPF.View
                 // Add a delay to ensure UI updates
                 await Task.Delay(100);
                 
-                // If we had an API method to close threads, we would call it here
-                // For example:
-                // await _apiService.CloseThreadAsync(_currentThreadId);
+                // Update the thread on the server to mark it as closed
+                await _apiService.CloseThreadAsync(_currentThreadId);
                 
                 // Show a message box to inform the user
                 await Dispatcher.InvokeAsync(() => {

@@ -10,6 +10,7 @@ namespace AntiSwearingChatBox.WPF.View
         private readonly LoginPage _loginPage;
         private readonly RegisterPage _registerPage;
         private readonly SimpleChatPage _chatPage;
+        private readonly AITestPage _aiTestPage;
 
         
         public MainWindow()
@@ -19,6 +20,7 @@ namespace AntiSwearingChatBox.WPF.View
             _loginPage = new LoginPage();
             _registerPage = new RegisterPage();
             _chatPage = new SimpleChatPage();
+            _aiTestPage = new AITestPage();
             
             // Start with login page
             NavigateToLogin();
@@ -101,6 +103,20 @@ namespace AntiSwearingChatBox.WPF.View
             {
                 // Set window title directly
                 this.Title = "Chat - Anti-Swearing Chat Box";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error setting window title: {ex.Message}");
+            }
+        }
+        
+        public void NavigateToAITest()
+        {
+            MainFrame.Navigate(_aiTestPage);
+            try
+            {
+                // Set window title directly
+                this.Title = "AI Testing - Anti-Swearing Chat Box";
             }
             catch (Exception ex)
             {

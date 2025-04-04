@@ -38,5 +38,27 @@ namespace AntiSwearingChatBox.WPF.Services.Api
         event Action<ChatMessage> OnMessageReceived;
         event Action<ChatThread> OnThreadCreated;
         event Action<int, string> OnUserJoinedThread;
+        
+        // AI Services
+        Task<string> GenerateTextAsync(string prompt);
+        Task<ModerationResult> ModerateChatMessageAsync(string message);
+        Task<ProfanityDetectionResult> DetectProfanityAsync(string message);
+        Task<ContextFilterResult> ContextAwareFilteringAsync(string message, string conversationContext);
+        Task<SentimentAnalysisResult> AnalyzeSentimentAsync(string message);
+        Task<DeescalationResult> GenerateDeescalationResponseAsync(string message);
+        Task<MessageHistoryAnalysisResult> ReviewMessageHistoryAsync(List<string> messages);
+        Task<AlternativeMessageResult> SuggestAlternativeMessageAsync(string message);
+        Task<MultiLanguageModerationResult> ModerateMultiLanguageMessageAsync(string message, string language);
+        Task<UserReputationResult> AnalyzeUserReputationAsync(List<string> messages, int priorWarnings);
+
+        /// <summary>
+        /// Updates the swearing score for a thread
+        /// </summary>
+        Task<bool> UpdateThreadSwearingScoreAsync(int threadId, int score);
+
+        /// <summary>
+        /// Marks a thread as closed (due to excessive swearing or other reasons)
+        /// </summary>
+        Task<bool> CloseThreadAsync(int threadId);
     }
 } 
